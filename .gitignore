@@ -7,3 +7,7 @@ mvnw
 mvnw.cmd
 
 /data
+
+BandManager.iml
+
+/.mvn/wrapper
