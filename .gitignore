@@ -1,0 +1,9 @@
+/target
+
+.gitattributes
+
+mvnw
+
+mvnw.cmd
+
+/data
