@@ -1,4 +1,4 @@
-package org.is.bandmanager.repo;
+package org.is.bandmanager.repository;
 
 import org.is.bandmanager.model.Person;
 import org.springframework.data.jpa.repository.JpaRepository;
