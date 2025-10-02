@@ -1,10 +1,11 @@
 package org.is.bandmanager.model;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
+import org.springframework.data.annotation.CreatedDate;
 
 import java.time.LocalDate;
 import java.util.Date;
@@ -22,61 +23,56 @@ public class MusicBand {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @NotBlank(message = "name не может быть пустым")
+    @NotBlank(message = "MusicBand.Name не может быть пустым")
     @Column(nullable = false)
     private String name;
 
-    @NotNull
+    @NotNull(message = "MusicBand.Coordinates не может быть пустым")
     @ManyToOne(optional = false, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinColumn(name = "coordinates_id", nullable = false)
     private Coordinates coordinates;
 
-    @NotNull
-    @Column(name = "creation_date", nullable = false, updatable = false)
-    private LocalDate creationDate;
-
-    @NotNull
+    @NotNull(message = "MusicBand.MusicGenre не может быть пустым")
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private MusicGenre genre;
 
-    @Min(value = 1, message = "numberOfParticipants должно быть > 0")
+    @NotNull(message = "MusicBand.NumberOfParticipants не может быть пустым")
+    @DecimalMin(value = "0", inclusive = false, message = "MusicBand.NumberOfParticipants должно быть > 0")
     @Column(name = "number_of_participants", nullable = false)
-    private long numberOfParticipants;
+    private Long numberOfParticipants;
 
-    @Min(value = 1, message = "singlesCount должно быть > 0")
+    @NotNull(message = "MusicBand.SinglesCount не может быть пустым")
+    @DecimalMin(value = "0", inclusive = false, message = "MusicBand.NumberOfParticipants должно быть > 0")
     @Column(name = "singles_count", nullable = false)
-    private long singlesCount;
+    private Long singlesCount;
 
-    @NotBlank(message = "description не может быть пустым")
+    @NotBlank(message = "MusicBand.Description не может быть пустым")
     @Column(nullable = false, columnDefinition = "text")
     private String description;
 
-    @NotNull
+    @NotNull(message = "MusicBand.BestAlbum не может быть пустым")
     @ManyToOne(optional = false, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinColumn(name = "best_album_id", nullable = false)
     private Album bestAlbum;
 
-    @NotNull
-    @Min(value = 1, message = "albumsCount должно быть > 0")
+    @NotNull(message = "MusicBand.AlbumsCount не может быть пустым")
     @Column(name = "albums_count", nullable = false)
+    @DecimalMin(value = "0", inclusive = false, message = "MusicBand.AlbumsCount должно быть > 0")
     private Long albumsCount;
 
-    @NotNull
+    @NotNull(message = "MusicBand.EstablishmentDate не может быть пустым")
     @Column(name = "establishment_date", nullable = false)
     @Temporal(TemporalType.TIMESTAMP)
     private Date establishmentDate;
 
-    @NotNull
+    @NotNull(message = "MusicBand.FrontMan не может быть пустым")
     @ManyToOne(optional = false, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinColumn(name = "front_man_id", nullable = false)
     private Person frontMan;
 
-    @PrePersist
-    protected void onCreate() {
-        if (this.creationDate == null) {
-            this.creationDate = LocalDate.now();
-        }
-    }
+    @CreatedDate
+    @Column(name = "creation_date", nullable = false, updatable = false)
+    private LocalDate creationDate;
 
 }

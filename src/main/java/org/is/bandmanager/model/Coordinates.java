@@ -18,13 +18,11 @@ public class Coordinates {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotNull
-    @DecimalMin(value = "-147", inclusive = false, message = "X должно быть больше -147")
+    @NotNull(message = "Coordinates.X не может быть пустым")
+    @DecimalMin(value = "-147", inclusive = false, message = "Coordinates.X должно быть больше -147")
     @Column(nullable = false)
     private Integer x;
 
-    @NotNull
-    @Column(nullable = false)
     private Float y;
 
 }

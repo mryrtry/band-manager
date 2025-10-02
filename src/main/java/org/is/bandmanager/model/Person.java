@@ -19,29 +19,33 @@ public class Person {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotBlank(message = "Имя персоны не может быть пустым")
+    @NotBlank(message = "Person.Name не может быть пустым")
     @Column(nullable = false)
     private String name;
 
+    @NotNull(message = "Person.EyeColor не может быть пустым")
     @Enumerated(EnumType.STRING)
-    @Column(name = "eye_color")
+    @Column(name = "eye_color", nullable = false)
     private Color eyeColor;
 
+    @NotNull(message = "Person.HairColor не может быть пустым")
     @Enumerated(EnumType.STRING)
-    @Column(name = "hair_color")
+    @Column(name = "hair_color", nullable = false)
     private Color hairColor;
 
+    @NotNull(message = "Person.Location не может быть пустым")
     @OneToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
-    @JoinColumn(name = "location_id")
+    @JoinColumn(name = "location_id", nullable = false)
     private Location location;
 
-    @NotNull
-    @DecimalMin(value = "0", inclusive = false, message = "Weight должно быть > 0")
+    @NotNull(message = "Person.Weight не может быть пустым")
+    @DecimalMin(value = "0", inclusive = false, message = "Person.Weight должно быть > 0")
     @Column(nullable = false)
     private Float weight;
 
+    @NotNull(message = "Person.Country не может быть пустым")
     @Enumerated(EnumType.STRING)
-    @Column
+    @Column(nullable = false)
     private Country nationality;
 
 }

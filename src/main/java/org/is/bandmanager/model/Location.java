@@ -17,15 +17,13 @@ public class Location {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotNull
-    @Column(nullable = false)
     private int x;
 
-    @NotNull
+    @NotNull(message = "Location.Y не может быть пустым")
     @Column(nullable = false)
     private Long y;
 
-    @NotNull
+    @NotNull(message = "Location.Z не может быть пустым")
     @Column(nullable = false)
     private Long z;
 
