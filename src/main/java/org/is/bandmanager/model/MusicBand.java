@@ -7,7 +7,6 @@ import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
 
-import java.time.LocalDate;
 import java.util.Date;
 
 @Entity
@@ -73,6 +72,6 @@ public class MusicBand {
 
     @CreatedDate
     @Column(name = "creation_date", nullable = false, updatable = false)
-    private LocalDate creationDate;
+    private Date creationDate;
 
 }

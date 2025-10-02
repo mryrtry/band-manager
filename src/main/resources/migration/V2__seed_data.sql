@@ -23,10 +23,10 @@ VALUES ('Jane Doe', 'BROWN', 'BLACK', 55.0, 'INDIA', 2);
 
 INSERT INTO music_band (name, coordinates_id, creation_date, genre, number_of_participants,
                         singles_count, description, best_album_id, albums_count, establishment_date, front_man_id)
-VALUES ('My First Band', 1, CURRENT_DATE, 'PROGRESSIVE_ROCK', 5,
+VALUES ('My First Band', 1, CURRENT_TIMESTAMP, 'PROGRESSIVE_ROCK', 5,
         3, 'Our first band description', 1, 2, CURRENT_TIMESTAMP, 1);
 
 INSERT INTO music_band (name, coordinates_id, creation_date, genre, number_of_participants,
                         singles_count, description, best_album_id, albums_count, establishment_date, front_man_id)
-VALUES ('Second Band', 2, CURRENT_DATE, 'SOUL', 4,
+VALUES ('Second Band', 2, CURRENT_TIMESTAMP, 'SOUL', 4,
         2, 'Our second band description', 2, 1, CURRENT_TIMESTAMP, 2);
