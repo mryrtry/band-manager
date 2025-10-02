@@ -17,7 +17,7 @@ public class Location {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private int x;
+    private Integer x;
 
     @NotNull(message = "Location.Y не может быть пустым")
     @Column(nullable = false)
