@@ -6,7 +6,4 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface MusicBandRepository extends JpaRepository<MusicBand, Integer> {
-
-    boolean existsById(int id);
-
 }
