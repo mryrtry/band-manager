@@ -1,32 +1,55 @@
-INSERT INTO coordinates (x, y)
-VALUES (10, 5.5);
-INSERT INTO coordinates (x, y)
-VALUES (50, 3.2);
+-- Очистка данных
+TRUNCATE TABLE music_band CASCADE;
+TRUNCATE TABLE person CASCADE;
+TRUNCATE TABLE album CASCADE;
+TRUNCATE TABLE coordinates CASCADE;
+TRUNCATE TABLE location CASCADE;
 
-INSERT INTO album (name, tracks, sales)
-VALUES ('Best Hits', 12, 5000);
+-- Сбрасываем последовательности
+ALTER SEQUENCE location_id_seq RESTART WITH 1;
+ALTER SEQUENCE coordinates_id_seq RESTART WITH 1;
+ALTER SEQUENCE album_id_seq RESTART WITH 1;
+ALTER SEQUENCE person_id_seq RESTART WITH 1;
+ALTER SEQUENCE music_band_id_seq RESTART WITH 1;
 
-INSERT INTO album (name, tracks, sales)
-VALUES ('Super Album', 10, 10000);
-
+-- Вставляем тестовые локации
 INSERT INTO location (x, y, z)
-VALUES (1, 2, 3);
+VALUES (10, 100, 1000),
+       (20, 200, 2000),
+       (30, 300, 3000),
+       (40, 400, 4000),
+       (50, 500, 5000);
 
-INSERT INTO location (x, y, z)
-VALUES (10, 20, 30);
+-- Вставляем тестовые координаты
+INSERT INTO coordinates (x, y)
+VALUES (100, 50.5),
+       (200, 60.5),
+       (300, 70.5),
+       (400, 80.5),
+       (500, 90.5);
 
-INSERT INTO person (name, eye_color, hair_color, weight, nationality, location_id)
-VALUES ('John Doe', 'BLACK', 'ORANGE', 70.5, 'FRANCE', 1);
+-- Вставляем тестовые альбомы
+INSERT INTO album (name, tracks, sales)
+VALUES ('Dark Side of the Moon', 10, 45000000),
+       ('The Wall', 26, 30000000),
+       ('Led Zeppelin IV', 8, 37000000),
+       ('Back in Black', 10, 50000000),
+       ('Thriller', 9, 66000000);
 
-INSERT INTO person (name, eye_color, hair_color, weight, nationality, location_id)
-VALUES ('Jane Doe', 'BROWN', 'BLACK', 55.0, 'INDIA', 2);
+-- Вставляем тестовых людей (исправленные значения цветов согласно enum Color)
+INSERT INTO person (name, eye_color, hair_color, location_id, weight, nationality)
+VALUES ('Roger Waters', 'BLUE', 'BLACK', 1, 75.5, 'UK'),
+       ('David Gilmour', 'GREEN', 'BROWN', 2, 80.0, 'UK'),
+       ('Robert Plant', 'BROWN', 'BLACK', 3, 78.0, 'UK'),
+       ('Angus Young', 'BLACK', 'BLACK', 4, 65.0, 'USA'),
+       ('Michael Jackson', 'BROWN', 'BLACK', 5, 62.5, 'USA');
 
-INSERT INTO music_band (name, coordinates_id, creation_date, genre, number_of_participants,
-                        singles_count, description, best_album_id, albums_count, establishment_date, front_man_id)
-VALUES ('My First Band', 1, CURRENT_TIMESTAMP, 'PROGRESSIVE_ROCK', 5,
-        3, 'Our first band description', 1, 2, CURRENT_TIMESTAMP, 1);
-
-INSERT INTO music_band (name, coordinates_id, creation_date, genre, number_of_participants,
-                        singles_count, description, best_album_id, albums_count, establishment_date, front_man_id)
-VALUES ('Second Band', 2, CURRENT_TIMESTAMP, 'SOUL', 4,
-        2, 'Our second band description', 2, 1, CURRENT_TIMESTAMP, 2);
+-- Вставляем тестовые музыкальные группы
+INSERT INTO music_band (name, coordinates_id, genre, number_of_participants, singles_count, description, best_album_id,
+                        albums_count, establishment_date, front_man_id)
+VALUES ('Pink Floyd', 1, 'PROGRESSIVE_ROCK', 5, 27, 'Legendary progressive rock band from UK', 1, 15,
+        '1965-01-01 00:00:00', 1),
+       ('Led Zeppelin', 2, 'ROCK', 4, 18, 'Iconic rock band that defined hard rock', 3, 9, '1968-09-25 00:00:00', 3),
+       ('AC/DC', 3, 'ROCK', 5, 25, 'Australian hard rock band known for high voltage performance', 4, 17,
+        '1973-11-01 00:00:00', 4),
+       ('Michael Jackson', 4, 'SOUL', 1, 65, 'King of Pop solo career', 5, 10, '1971-01-01 00:00:00', 5);
