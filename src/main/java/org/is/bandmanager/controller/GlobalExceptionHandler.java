@@ -1,5 +1,6 @@
 package org.is.bandmanager.controller;
 
+import org.is.bandmanager.exception.ServiceException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
@@ -24,11 +25,11 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
     }
 
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<Map<String, String>> handleOtherExceptions(Exception ex) {
+    @ExceptionHandler(ServiceException.class)
+    public ResponseEntity<Map<String, String>> handleOtherExceptions(ServiceException ex) {
         Map<String, String> error = new LinkedHashMap<>();
         error.put("error", ex.getMessage());
-        return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
+        return new ResponseEntity<>(error, ex.getHttpStatus());
     }
 
 }
