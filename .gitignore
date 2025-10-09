@@ -11,3 +11,5 @@ mvnw.cmd
 BandManager.iml
 
 /.mvn
+
+/.idea
