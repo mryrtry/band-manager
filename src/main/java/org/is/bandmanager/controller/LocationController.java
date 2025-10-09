@@ -2,8 +2,8 @@ package org.is.bandmanager.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.is.bandmanager.model.dto.LocationDto;
-import org.is.bandmanager.model.request.LocationRequest;
+import org.is.bandmanager.dto.LocationDto;
+import org.is.bandmanager.dto.request.LocationRequest;
 import org.is.bandmanager.service.LocationService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

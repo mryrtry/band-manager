@@ -1,4 +1,4 @@
-package org.is.bandmanager.model.dto;
+package org.is.bandmanager.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,14 +9,14 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class LocationDto {
+public class AlbumDto {
 
     private Long id;
 
-    private Integer x;
+    private String name;
 
-    private Long y;
+    private Long tracks;
 
-    private Long z;
+    private Integer sales;
 
 }

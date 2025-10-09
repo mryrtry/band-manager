@@ -1,4 +1,4 @@
-package org.is.bandmanager.model.dto;
+package org.is.bandmanager.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

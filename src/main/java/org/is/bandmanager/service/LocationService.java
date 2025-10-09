@@ -4,9 +4,9 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.is.bandmanager.exception.ServiceException;
 import org.is.bandmanager.model.Location;
-import org.is.bandmanager.model.dto.LocationDto;
-import org.is.bandmanager.model.dto.LocationMapper;
-import org.is.bandmanager.model.request.LocationRequest;
+import org.is.bandmanager.dto.LocationDto;
+import org.is.bandmanager.dto.LocationMapper;
+import org.is.bandmanager.dto.request.LocationRequest;
 import org.is.bandmanager.repository.LocationRepository;
 import org.springframework.stereotype.Service;
 

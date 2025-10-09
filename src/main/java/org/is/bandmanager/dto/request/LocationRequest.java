@@ -1,4 +1,4 @@
-package org.is.bandmanager.model.request;
+package org.is.bandmanager.dto.request;
 
 import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
