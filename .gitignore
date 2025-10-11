@@ -13,3 +13,5 @@ BandManager.iml
 /.mvn
 
 /.idea
+
+src/main/resources/application-prod.properties
