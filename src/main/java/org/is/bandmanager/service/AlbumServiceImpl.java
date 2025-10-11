@@ -1,7 +1,6 @@
 package org.is.bandmanager.service;
 
 import jakarta.transaction.Transactional;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.is.bandmanager.dto.AlbumDto;
 import org.is.bandmanager.dto.AlbumMapper;
@@ -35,7 +34,7 @@ public class AlbumServiceImpl implements AlbumService {
 
     @Override
     @Transactional
-    public AlbumDto create(@Valid AlbumRequest request) {
+    public AlbumDto create(AlbumRequest request) {
         Album album = albumRepository.save(mapper.toEntity(request));
         return mapper.toDto(album);
     }
@@ -52,7 +51,7 @@ public class AlbumServiceImpl implements AlbumService {
 
     @Override
     @Transactional
-    public AlbumDto update(Long id, @Valid AlbumRequest request) {
+    public AlbumDto update(Long id, AlbumRequest request) {
         findById(id);
         Album updatedAlbum = mapper.toEntity(request);
         updatedAlbum.setId(id);

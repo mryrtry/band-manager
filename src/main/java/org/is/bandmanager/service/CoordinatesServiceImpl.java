@@ -1,7 +1,6 @@
 package org.is.bandmanager.service;
 
 import jakarta.transaction.Transactional;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.is.bandmanager.dto.CoordinatesDto;
 import org.is.bandmanager.dto.CoordinatesMapper;
@@ -35,7 +34,7 @@ public class CoordinatesServiceImpl implements CoordinatesService {
 
     @Override
     @Transactional
-    public CoordinatesDto create(@Valid CoordinatesRequest request) {
+    public CoordinatesDto create(CoordinatesRequest request) {
         Coordinates coordinates = coordinatesRepository.save(mapper.toEntity(request));
         return mapper.toDto(coordinates);
     }
@@ -52,7 +51,7 @@ public class CoordinatesServiceImpl implements CoordinatesService {
 
     @Override
     @Transactional
-    public CoordinatesDto update(Long id, @Valid CoordinatesRequest request) {
+    public CoordinatesDto update(Long id, CoordinatesRequest request) {
         findById(id);
         Coordinates updatedCoordinates = mapper.toEntity(request);
         updatedCoordinates.setId(id);

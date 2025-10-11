@@ -1,7 +1,6 @@
 package org.is.bandmanager.service;
 
 import jakarta.transaction.Transactional;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.is.bandmanager.dto.LocationDto;
 import org.is.bandmanager.dto.LocationMapper;
@@ -35,7 +34,7 @@ public class LocationServiceImpl implements LocationService {
 
     @Override
     @Transactional
-    public LocationDto create(@Valid LocationRequest request) {
+    public LocationDto create(LocationRequest request) {
         Location location = locationRepository.save(mapper.toEntity(request));
         return mapper.toDto(location);
     }
@@ -52,7 +51,7 @@ public class LocationServiceImpl implements LocationService {
 
     @Override
     @Transactional
-    public LocationDto update(Long id, @Valid LocationRequest request) {
+    public LocationDto update(Long id, LocationRequest request) {
         findById(id);
         Location updatedLocation = mapper.toEntity(request);
         updatedLocation.setId(id);

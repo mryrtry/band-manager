@@ -1,5 +1,6 @@
 package org.is.bandmanager.service;
 
+import jakarta.validation.Valid;
 import org.is.bandmanager.dto.MusicBandDto;
 import org.is.bandmanager.dto.request.MusicBandRequest;
 
@@ -7,13 +8,13 @@ import java.util.List;
 
 public interface MusicBandService {
 
-    MusicBandDto create(MusicBandRequest request);
+    MusicBandDto create(@Valid MusicBandRequest request);
 
     List<MusicBandDto> getAll();
 
     MusicBandDto get(Integer id);
 
-    MusicBandDto update(Integer id, MusicBandRequest request);
+    MusicBandDto update(Integer id, @Valid MusicBandRequest request);
 
     MusicBandDto delete(Integer id);
 

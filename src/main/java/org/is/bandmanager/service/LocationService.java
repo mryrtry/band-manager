@@ -1,5 +1,6 @@
 package org.is.bandmanager.service;
 
+import jakarta.validation.Valid;
 import org.is.bandmanager.dto.LocationDto;
 import org.is.bandmanager.dto.request.LocationRequest;
 
@@ -7,13 +8,13 @@ import java.util.List;
 
 public interface LocationService {
 
-    LocationDto create(LocationRequest request);
+    LocationDto create(@Valid LocationRequest request);
 
     List<LocationDto> getAll();
 
     LocationDto get(Long id);
 
-    LocationDto update(Long id, LocationRequest request);
+    LocationDto update(Long id, @Valid LocationRequest request);
 
     LocationDto delete(Long id);
 

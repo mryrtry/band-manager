@@ -1,7 +1,6 @@
 package org.is.bandmanager.service;
 
 import jakarta.transaction.Transactional;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.is.bandmanager.dto.PersonDto;
 import org.is.bandmanager.dto.PersonMapper;
@@ -35,7 +34,7 @@ public class PersonServiceImpl implements PersonService {
 
     @Override
     @Transactional
-    public PersonDto create(@Valid PersonRequest request) {
+    public PersonDto create(PersonRequest request) {
         Person person = personRepository.save(mapper.toEntity(request));
         return mapper.toDto(person);
     }
@@ -52,7 +51,7 @@ public class PersonServiceImpl implements PersonService {
 
     @Override
     @Transactional
-    public PersonDto update(Long id, @Valid PersonRequest request) {
+    public PersonDto update(Long id, PersonRequest request) {
         findById(id);
         Person updatedPerson = mapper.toEntity(request);
         updatedPerson.setId(id);

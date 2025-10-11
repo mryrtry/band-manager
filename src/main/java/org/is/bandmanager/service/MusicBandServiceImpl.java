@@ -1,7 +1,6 @@
 package org.is.bandmanager.service;
 
 import jakarta.transaction.Transactional;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.is.bandmanager.dto.MusicBandDto;
 import org.is.bandmanager.dto.MusicBandMapper;
@@ -35,7 +34,7 @@ public class MusicBandServiceImpl implements MusicBandService {
 
     @Override
     @Transactional
-    public MusicBandDto create(@Valid MusicBandRequest request) {
+    public MusicBandDto create(MusicBandRequest request) {
         MusicBand musicBand = musicBandRepository.save(mapper.toEntity(request));
         return mapper.toDto(musicBand);
     }
@@ -52,7 +51,7 @@ public class MusicBandServiceImpl implements MusicBandService {
 
     @Override
     @Transactional
-    public MusicBandDto update(Integer id, @Valid MusicBandRequest request) {
+    public MusicBandDto update(Integer id, MusicBandRequest request) {
         findById(id);
         MusicBand updatedMusicBand = mapper.toEntity(request);
         updatedMusicBand.setId(id);
