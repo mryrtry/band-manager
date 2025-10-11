@@ -26,10 +26,10 @@ public class MusicBandServiceImpl implements MusicBandService {
 
     private MusicBand findById(Integer id) {
         if (id == null) {
-            throw new ServiceException(MUST_BE_NOT_NULL, "Location.id");
+            throw new ServiceException(MUST_BE_NOT_NULL, "MusicBand.id");
         }
         return musicBandRepository.findById(id)
-                .orElseThrow(() -> new ServiceException(SOURCE_NOT_FOUND, "Location", id));
+                .orElseThrow(() -> new ServiceException(SOURCE_NOT_FOUND, "MusicBand", id));
     }
 
     @Override
