@@ -1,5 +1,6 @@
 package org.is.bandmanager.dto;
 
+import org.is.bandmanager.dto.request.MusicBandRequest;
 import org.is.bandmanager.model.MusicBand;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -20,5 +21,11 @@ public interface MusicBandMapper {
     @Mapping(target = "bestAlbum", source = "bestAlbum")
     @Mapping(target = "frontMan", source = "frontMan")
     MusicBand toEntity(MusicBandDto musicBandDto);
+
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "coordinates", source = "coordinates")
+    @Mapping(target = "bestAlbum", source = "bestAlbum")
+    @Mapping(target = "frontMan", source = "frontMan")
+    MusicBand toEntity(MusicBandRequest request);
 
 }

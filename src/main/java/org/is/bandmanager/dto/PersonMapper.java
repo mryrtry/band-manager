@@ -1,5 +1,6 @@
 package org.is.bandmanager.dto;
 
+import org.is.bandmanager.dto.request.PersonRequest;
 import org.is.bandmanager.model.Person;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -15,5 +16,9 @@ public interface PersonMapper {
 
     @Mapping(target = "location", source = "location")
     Person toEntity(PersonDto personDto);
+
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "location", source = "location")
+    Person toEntity(PersonRequest request);
 
 }

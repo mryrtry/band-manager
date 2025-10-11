@@ -22,14 +22,6 @@ public class LocationService {
     private final LocationRepository locationRepository;
     private final LocationMapper mapper;
 
-    private Location toEntity(LocationRequest request) {
-        return Location.builder()
-                .x(request.getX())
-                .y(request.getY())
-                .z(request.getZ())
-                .build();
-    }
-
     private Location findLocationById(Long id) {
         if (id == null) {
             throw new ServiceException(MUST_BE_NOT_NULL, "Location.id");
@@ -39,7 +31,7 @@ public class LocationService {
     }
 
     public LocationDto createLocation(@Valid LocationRequest request) {
-        Location location = locationRepository.save(toEntity(request));
+        Location location = locationRepository.save(mapper.toEntity(request));
         return mapper.toDto(location);
     }
 
@@ -53,7 +45,7 @@ public class LocationService {
 
     public LocationDto updateLocation(Long id, @Valid LocationRequest request) {
         findLocationById(id);
-        Location updatedLocation = toEntity(request);
+        Location updatedLocation = mapper.toEntity(request);
         updatedLocation.setId(id);
         return mapper.toDto(locationRepository.save(updatedLocation));
     }
