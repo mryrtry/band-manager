@@ -4,8 +4,7 @@ import org.is.bandmanager.config.IntegrationTest;
 import org.is.bandmanager.dto.request.LocationRequest;
 import org.is.bandmanager.model.Location;
 import org.is.bandmanager.repository.LocationRepository;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.http.MediaType;
@@ -16,9 +15,8 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @IntegrationTest
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class LocationControllerTest extends AbstractIntegrationTest {
-
-    private WebTestClient webTestClient;
 
     @Autowired
     private LocationRepository locationRepository;
@@ -26,12 +24,22 @@ class LocationControllerTest extends AbstractIntegrationTest {
     @LocalServerPort
     private int port;
 
-    @BeforeEach
-    void setUp() {
+    private WebTestClient webTestClient;
+
+    @BeforeAll
+    void setClient() {
         this.webTestClient = WebTestClient.bindToServer()
                 .baseUrl("http://localhost:" + port)
                 .build();
+    }
 
+    @BeforeEach
+    void setUp() {
+        locationRepository.deleteAll();
+    }
+
+    @AfterAll
+    void tearDown() {
         locationRepository.deleteAll();
     }
 
