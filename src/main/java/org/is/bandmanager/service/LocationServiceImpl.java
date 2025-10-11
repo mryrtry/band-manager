@@ -1,0 +1,70 @@
+package org.is.bandmanager.service;
+
+import jakarta.transaction.Transactional;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.is.bandmanager.dto.LocationDto;
+import org.is.bandmanager.dto.LocationMapper;
+import org.is.bandmanager.dto.request.LocationRequest;
+import org.is.bandmanager.exception.ServiceException;
+import org.is.bandmanager.model.Location;
+import org.is.bandmanager.repository.LocationRepository;
+import org.springframework.stereotype.Service;
+import org.springframework.validation.annotation.Validated;
+
+import java.util.List;
+
+import static org.is.bandmanager.exception.message.ServiceErrorMessage.MUST_BE_NOT_NULL;
+import static org.is.bandmanager.exception.message.ServiceErrorMessage.SOURCE_NOT_FOUND;
+
+@Service
+@Validated
+@RequiredArgsConstructor
+public class LocationServiceImpl implements LocationService {
+
+    private final LocationRepository locationRepository;
+    private final LocationMapper mapper;
+
+    private Location findById(Long id) {
+        if (id == null) {
+            throw new ServiceException(MUST_BE_NOT_NULL, "Location.id");
+        }
+        return locationRepository.findById(id)
+                .orElseThrow(() -> new ServiceException(SOURCE_NOT_FOUND, "Location", id));
+    }
+
+    @Override
+    @Transactional
+    public LocationDto create(@Valid LocationRequest request) {
+        Location location = locationRepository.save(mapper.toEntity(request));
+        return mapper.toDto(location);
+    }
+
+    @Override
+    public List<LocationDto> getAll() {
+        return locationRepository.findAll().stream().map(mapper::toDto).toList();
+    }
+
+    @Override
+    public LocationDto get(Long id) {
+        return mapper.toDto(findById(id));
+    }
+
+    @Override
+    @Transactional
+    public LocationDto update(Long id, @Valid LocationRequest request) {
+        findById(id);
+        Location updatedLocation = mapper.toEntity(request);
+        updatedLocation.setId(id);
+        return mapper.toDto(locationRepository.save(updatedLocation));
+    }
+
+    @Override
+    @Transactional
+    public LocationDto delete(Long id) {
+        Location location = findById(id);
+        locationRepository.delete(location);
+        return mapper.toDto(location);
+    }
+
+}
