@@ -5,7 +5,7 @@ on:
     branches: [ "master" ]
   pull_request:
     branches: [ "master" ]
-  workflow_dispatch: {}
+  workflow_dispatch: { }
 
 env:
   REMOTE_HOST: se.ifmo.ru
@@ -72,7 +72,6 @@ jobs:
     runs-on: ubuntu-latest
     needs: [ build, test ]
     if: github.ref == 'refs/heads/master'
-
     steps:
       - name: Download built jar
         uses: actions/download-artifact@v4
@@ -85,64 +84,32 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.DEPLOY_KEY }}
 
-      - name: Prepare server (stop old app, ensure dir)
-        uses: appleboy/ssh-action@v0.1.7
-        with:
-          host: ${{ env.REMOTE_HOST }}
-          username: ${{ env.REMOTE_USER }}
-          key: ${{ secrets.DEPLOY_KEY }}
-          port: ${{ env.REMOTE_PORT }}
-          script: |
-            set -e
-            APP_DIR="$HOME/BandManager"
-            APP_JAR="$APP_DIR/BandManager.jar"
+      - name: Upload JAR via plain scp
+        run: |
+          mkdir -p ./artifact_tmp
+          cp ./artifact/${JAR_NAME} ./artifact_tmp/
+          scp -P ${{ env.REMOTE_PORT }} -i ${{ secrets.DEPLOY_KEY }} ./artifact_tmp/${JAR_NAME} ${{ env.REMOTE_USER }}@${{ env.REMOTE_HOST }}:${{ env.REMOTE_JAR }}
 
-            echo "Создаю директорию $APP_DIR..."
-            mkdir -p "$APP_DIR"
-
-            echo "Проверяю, запущен ли старый процесс..."
-            PID=$(pgrep -f "$APP_JAR" || true)
-            if [ -n "$PID" ]; then
-              echo "Останавливаю процесс $PID..."
-              kill $PID || true
-              sleep 3
-              if ps -p $PID > /dev/null 2>&1; then
-                echo "SIGKILL для $PID..."
-                kill -9 $PID || true
-              fi
-            else
-              echo "Старый процесс не найден."
-            fi
-
-      - name: Upload new JAR to server
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ env.REMOTE_HOST }}
-          username: ${{ env.REMOTE_USER }}
-          key: ${{ secrets.DEPLOY_KEY }}
-          port: ${{ env.REMOTE_PORT }}
-          source: ./artifact/${{ env.JAR_NAME }}
-          target: ~/BandManager/
-          overwrite: true
-          tar: false
-
-      - name: Start new app
-        uses: appleboy/ssh-action@v0.1.7
-        with:
-          host: ${{ env.REMOTE_HOST }}
-          username: ${{ env.REMOTE_USER }}
-          key: ${{ secrets.DEPLOY_KEY }}
-          port: ${{ env.REMOTE_PORT }}
-          script: |
-            set -e
-            APP_DIR="$HOME/BandManager"
-            APP_JAR="$APP_DIR/${JAR_NAME}"
-            LOG_FILE="$APP_DIR/band-manager.log"
-
-            echo "Запускаю приложение..."
-            cd "$APP_DIR"
-            nohup java -jar "$APP_JAR" --spring.profiles.active=prod > "$LOG_FILE" 2>&1 &
-
-            sleep 5
-            echo "Проверка, что процесс запущен..."
-            pgrep -f "$APP_JAR" > /dev/null && echo "✅ Приложение запущено успешно." || (echo "❌ Ошибка: процесс не запущен!" && exit 1)
+      - name: Stop old app and start new one via SSH
+        run: |
+          ssh -i ${{ secrets.DEPLOY_KEY }} -p ${{ env.REMOTE_PORT }} ${{ env.REMOTE_USER }}@${{ env.REMOTE_HOST }} "\
+            set -e; \
+            APP_DIR=\$HOME/BandManager; \
+            APP_JAR=\$APP_DIR/BandManager.jar; \
+            LOG_FILE=\$APP_DIR/band-manager.log; \
+            mkdir -p \$APP_DIR; \
+            PID=\$(pgrep -f \$APP_JAR || true); \
+            if [ -n \"\$PID\" ]; then \
+              echo 'Stopping old process' \$PID; \
+              kill \$PID || true; \
+              sleep 3; \
+              if ps -p \$PID > /dev/null 2>&1; then \
+                echo 'SIGKILL ' \$PID; \
+                kill -9 \$PID || true; \
+              fi; \
+            fi; \
+            echo 'Starting new app...'; \
+            nohup java -jar \$APP_JAR --spring.profiles.active=prod > \$LOG_FILE 2>&1 & \
+            sleep 5; \
+            pgrep -f \$APP_JAR > /dev/null && echo '✅ App started' || (echo '❌ App failed' && exit 1) \
+          "
