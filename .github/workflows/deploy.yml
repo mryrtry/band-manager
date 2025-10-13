@@ -22,7 +22,7 @@ jobs:
           cache: maven
 
       - name: Build with Maven
-        run:
+        run: |
           mvn -B clean compile -Dspring.profiles.active=prod
           mvn -B package -DskipTests -Dspring.profiles.active=prod
 
