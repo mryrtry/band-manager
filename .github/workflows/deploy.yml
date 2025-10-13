@@ -78,7 +78,7 @@ jobs:
           ssh -p 2222 s409483@se.ifmo.ru "cd ~/BandManager && pkill -f 'BandManager.jar' || true"
           sleep 5
           ssh -p 2222 s409483@se.ifmo.ru "cd ~/BandManager && _JAVA_OPTIONS='' bash -c 'java -Xmx512m -Xms256m -jar BandManager.jar --spring.profiles.active=prod > band-manager.log 2>&1 &'"
-          sleep 15
+          sleep 25
 
   health-check:
     runs-on: ubuntu-latest
@@ -100,3 +100,7 @@ jobs:
       - name: Check application logs
         run: |
           ssh -p 2222 s409483@se.ifmo.ru "tail -20 ~/BandManager/band-manager.log"
+
+      - name: Check health endpoint
+        run: |
+          ssh -p 2222 s409483@se.ifmo.ru "curl -s -o /dev/null -w 'Health Check: %{http_code}\n' localhost:8080/health"
