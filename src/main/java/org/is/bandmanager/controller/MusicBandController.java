@@ -25,8 +25,14 @@ public class MusicBandController {
 
     @GetMapping("/{id}")
     public ResponseEntity<MusicBandDto> getMusicBand(@PathVariable Integer id) {
-        MusicBandDto MusicBand = musicBandService.get(id);
-        return ResponseEntity.ok(MusicBand);
+        MusicBandDto musicBand = musicBandService.get(id);
+        return ResponseEntity.ok(musicBand);
+    }
+
+    @GetMapping("/max-coordinates")
+    public ResponseEntity<MusicBandDto> getMaxCoordinates() {
+        MusicBandDto musicBand = musicBandService.getWithMaxCoordinates();
+        return ResponseEntity.ok(musicBand);
     }
 
     @PostMapping

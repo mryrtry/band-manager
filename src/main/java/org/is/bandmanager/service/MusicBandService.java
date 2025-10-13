@@ -14,6 +14,8 @@ public interface MusicBandService {
 
     MusicBandDto get(Integer id);
 
+    MusicBandDto getWithMaxCoordinates();
+
     MusicBandDto update(Integer id, @Valid MusicBandRequest request);
 
     MusicBandDto delete(Integer id);

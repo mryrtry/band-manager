@@ -50,6 +50,12 @@ public class MusicBandServiceImpl implements MusicBandService {
     }
 
     @Override
+    public MusicBandDto getWithMaxCoordinates() {
+        MusicBand musicBand = musicBandRepository.findBandWithMaxCoordinates().orElseThrow(() -> new ServiceException(SOURCE_NOT_FOUND, "MusicBand.MaxCoordinates"));
+        return mapper.toDto(musicBand);
+    }
+
+    @Override
     @Transactional
     public MusicBandDto update(Integer id, MusicBandRequest request) {
         findById(id);
