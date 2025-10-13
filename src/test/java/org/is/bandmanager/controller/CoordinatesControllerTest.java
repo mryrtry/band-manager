@@ -51,7 +51,7 @@ class CoordinatesControllerTest extends AbstractIntegrationTest {
                 .build();
 
         webTestClient.post()
-                .uri("/api/coordinates")
+                .uri("/coordinates")
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(request)
                 .exchange()
@@ -75,7 +75,7 @@ class CoordinatesControllerTest extends AbstractIntegrationTest {
                 .build();
 
         webTestClient.post()
-                .uri("/api/coordinates")
+                .uri("/coordinates")
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(request)
                 .exchange()
@@ -92,7 +92,7 @@ class CoordinatesControllerTest extends AbstractIntegrationTest {
                 .build();
 
         webTestClient.post()
-                .uri("/api/coordinates")
+                .uri("/coordinates")
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(request)
                 .exchange()
@@ -108,7 +108,7 @@ class CoordinatesControllerTest extends AbstractIntegrationTest {
         coordinatesRepository.saveAll(List.of(c1, c2));
 
         webTestClient.get()
-                .uri("/api/coordinates")
+                .uri("/coordinates")
                 .exchange()
                 .expectStatus().isOk()
                 .expectBody()
@@ -125,7 +125,7 @@ class CoordinatesControllerTest extends AbstractIntegrationTest {
         Coordinates saved = coordinatesRepository.save(coordinates);
 
         webTestClient.get()
-                .uri("/api/coordinates/{id}", saved.getId())
+                .uri("/coordinates/{id}", saved.getId())
                 .exchange()
                 .expectStatus().isOk()
                 .expectBody()
@@ -137,7 +137,7 @@ class CoordinatesControllerTest extends AbstractIntegrationTest {
     @Test
     void shouldReturnNotFoundWhenGettingNonExistentCoordinates() {
         webTestClient.get()
-                .uri("/api/coordinates/{id}", 999L)
+                .uri("/coordinates/{id}", 999L)
                 .exchange()
                 .expectStatus().isNotFound()
                 .expectBody()
@@ -152,7 +152,7 @@ class CoordinatesControllerTest extends AbstractIntegrationTest {
         CoordinatesRequest updateRequest = CoordinatesRequest.builder().x(99).y(99.9f).build();
 
         webTestClient.put()
-                .uri("/api/coordinates/{id}", saved.getId())
+                .uri("/coordinates/{id}", saved.getId())
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(updateRequest)
                 .exchange()
@@ -172,7 +172,7 @@ class CoordinatesControllerTest extends AbstractIntegrationTest {
         CoordinatesRequest updateRequest = CoordinatesRequest.builder().x(10).y(10f).build();
 
         webTestClient.put()
-                .uri("/api/coordinates/{id}", 999L)
+                .uri("/coordinates/{id}", 999L)
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(updateRequest)
                 .exchange()
@@ -187,7 +187,7 @@ class CoordinatesControllerTest extends AbstractIntegrationTest {
         Coordinates saved = coordinatesRepository.save(c);
 
         webTestClient.delete()
-                .uri("/api/coordinates/{id}", saved.getId())
+                .uri("/coordinates/{id}", saved.getId())
                 .exchange()
                 .expectStatus().isOk()
                 .expectBody()
@@ -201,7 +201,7 @@ class CoordinatesControllerTest extends AbstractIntegrationTest {
     @Test
     void shouldReturnNotFoundWhenDeletingNonExistentCoordinates() {
         webTestClient.delete()
-                .uri("/api/coordinates/{id}", 999L)
+                .uri("/coordinates/{id}", 999L)
                 .exchange()
                 .expectStatus().isNotFound()
                 .expectBody()

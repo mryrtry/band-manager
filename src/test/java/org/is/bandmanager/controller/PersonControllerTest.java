@@ -78,7 +78,7 @@ class PersonControllerTest extends AbstractIntegrationTest {
         PersonRequest request = createSamplePersonRequest();
 
         webTestClient.post()
-                .uri("/api/persons")
+                .uri("/persons")
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(request)
                 .exchange()
@@ -100,7 +100,7 @@ class PersonControllerTest extends AbstractIntegrationTest {
         request.setName("");
 
         webTestClient.post()
-                .uri("/api/persons")
+                .uri("/persons")
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(request)
                 .exchange()
@@ -142,7 +142,7 @@ class PersonControllerTest extends AbstractIntegrationTest {
                 .build());
 
         webTestClient.get()
-                .uri("/api/persons")
+                .uri("/persons")
                 .exchange()
                 .expectStatus().isOk()
                 .expectBody()
@@ -168,7 +168,7 @@ class PersonControllerTest extends AbstractIntegrationTest {
                 .build());
 
         webTestClient.get()
-                .uri("/api/persons/{id}", savedPerson.getId())
+                .uri("/persons/{id}", savedPerson.getId())
                 .exchange()
                 .expectStatus().isOk()
                 .expectBody()
@@ -197,7 +197,7 @@ class PersonControllerTest extends AbstractIntegrationTest {
         updateRequest.getLocation().setY(999L);
 
         webTestClient.put()
-                .uri("/api/persons/{id}", savedPerson.getId())
+                .uri("/persons/{id}", savedPerson.getId())
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(updateRequest)
                 .exchange()
@@ -228,7 +228,7 @@ class PersonControllerTest extends AbstractIntegrationTest {
                 .build());
 
         webTestClient.delete()
-                .uri("/api/persons/{id}", savedPerson.getId())
+                .uri("/persons/{id}", savedPerson.getId())
                 .exchange()
                 .expectStatus().isOk()
                 .expectBody()
@@ -240,7 +240,7 @@ class PersonControllerTest extends AbstractIntegrationTest {
     @Test
     void shouldReturnNotFoundWhenDeletingNonExistentPerson() {
         webTestClient.delete()
-                .uri("/api/persons/{id}", 999L)
+                .uri("/persons/{id}", 999L)
                 .exchange()
                 .expectStatus().isNotFound()
                 .expectBody()

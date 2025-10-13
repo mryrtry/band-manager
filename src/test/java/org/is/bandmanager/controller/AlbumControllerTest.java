@@ -54,7 +54,7 @@ class AlbumControllerTest extends AbstractIntegrationTest {
 
         // When & Then
         webTestClient.post()
-                .uri("/api/albums")
+                .uri("/albums")
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(request)
                 .exchange()
@@ -84,7 +84,7 @@ class AlbumControllerTest extends AbstractIntegrationTest {
 
         // When & Then
         webTestClient.post()
-                .uri("/api/albums")
+                .uri("/albums")
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(request)
                 .exchange()
@@ -104,7 +104,7 @@ class AlbumControllerTest extends AbstractIntegrationTest {
 
         // When & Then
         webTestClient.post()
-                .uri("/api/albums")
+                .uri("/albums")
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(request)
                 .exchange()
@@ -124,7 +124,7 @@ class AlbumControllerTest extends AbstractIntegrationTest {
 
         // When & Then
         webTestClient.post()
-                .uri("/api/albums")
+                .uri("/albums")
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(request)
                 .exchange()
@@ -150,7 +150,7 @@ class AlbumControllerTest extends AbstractIntegrationTest {
 
         // When & Then
         webTestClient.get()
-                .uri("/api/albums")
+                .uri("/albums")
                 .exchange()
                 .expectStatus().isOk()
                 .expectBody()
@@ -168,7 +168,7 @@ class AlbumControllerTest extends AbstractIntegrationTest {
 
         // When & Then
         webTestClient.get()
-                .uri("/api/albums/{id}", album.getId())
+                .uri("/albums/{id}", album.getId())
                 .exchange()
                 .expectStatus().isOk()
                 .expectBody()
@@ -181,7 +181,7 @@ class AlbumControllerTest extends AbstractIntegrationTest {
     @Test
     void shouldReturnNotFoundWhenGettingNonExistentAlbum() {
         webTestClient.get()
-                .uri("/api/albums/{id}", 999L)
+                .uri("/albums/{id}", 999L)
                 .exchange()
                 .expectStatus().isNotFound()
                 .expectBody()
@@ -203,7 +203,7 @@ class AlbumControllerTest extends AbstractIntegrationTest {
 
         // When & Then
         webTestClient.put()
-                .uri("/api/albums/{id}", album.getId())
+                .uri("/albums/{id}", album.getId())
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(update)
                 .exchange()
@@ -232,7 +232,7 @@ class AlbumControllerTest extends AbstractIntegrationTest {
 
         // When & Then
         webTestClient.put()
-                .uri("/api/albums/{id}", 999L)
+                .uri("/albums/{id}", 999L)
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(update)
                 .exchange()
@@ -250,7 +250,7 @@ class AlbumControllerTest extends AbstractIntegrationTest {
 
         // When & Then
         webTestClient.delete()
-                .uri("/api/albums/{id}", album.getId())
+                .uri("/albums/{id}", album.getId())
                 .exchange()
                 .expectStatus().isOk()
                 .expectBody()
@@ -264,7 +264,7 @@ class AlbumControllerTest extends AbstractIntegrationTest {
     @Test
     void shouldReturnNotFoundWhenDeletingNonExistentAlbum() {
         webTestClient.delete()
-                .uri("/api/albums/{id}", 999L)
+                .uri("/albums/{id}", 999L)
                 .exchange()
                 .expectStatus().isNotFound()
                 .expectBody()

@@ -118,7 +118,7 @@ class MusicBandControllerTest extends AbstractIntegrationTest {
         MusicBandRequest request = createMusicBandRequest();
 
         webTestClient.post()
-                .uri("/api/music-bands")
+                .uri("/music-bands")
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(request)
                 .exchange()
@@ -142,7 +142,7 @@ class MusicBandControllerTest extends AbstractIntegrationTest {
         request.setName("");
 
         webTestClient.post()
-                .uri("/api/music-bands")
+                .uri("/music-bands")
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(request)
                 .exchange()
@@ -203,7 +203,7 @@ class MusicBandControllerTest extends AbstractIntegrationTest {
                 .build());
 
         webTestClient.get()
-                .uri("/api/music-bands")
+                .uri("/music-bands")
                 .exchange()
                 .expectStatus().isOk()
                 .expectBody()
@@ -240,7 +240,7 @@ class MusicBandControllerTest extends AbstractIntegrationTest {
                 .build());
 
         webTestClient.get()
-                .uri("/api/music-bands/{id}", saved.getId())
+                .uri("/music-bands/{id}", saved.getId())
                 .exchange()
                 .expectStatus().isOk()
                 .expectBody()
@@ -277,7 +277,7 @@ class MusicBandControllerTest extends AbstractIntegrationTest {
         updateRequest.getBestAlbum().setName("Updated Album");
 
         webTestClient.put()
-                .uri("/api/music-bands/{id}", saved.getId())
+                .uri("/music-bands/{id}", saved.getId())
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(updateRequest)
                 .exchange()
@@ -319,7 +319,7 @@ class MusicBandControllerTest extends AbstractIntegrationTest {
                 .build());
 
         webTestClient.delete()
-                .uri("/api/music-bands/{id}", saved.getId())
+                .uri("/music-bands/{id}", saved.getId())
                 .exchange()
                 .expectStatus().isOk()
                 .expectBody()
@@ -331,7 +331,7 @@ class MusicBandControllerTest extends AbstractIntegrationTest {
     @Test
     void shouldReturnNotFoundWhenDeletingNonExistentBand() {
         webTestClient.delete()
-                .uri("/api/music-bands/{id}", 9999)
+                .uri("/music-bands/{id}", 9999)
                 .exchange()
                 .expectStatus().isNotFound()
                 .expectBody()

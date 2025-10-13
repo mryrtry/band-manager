@@ -54,7 +54,7 @@ class LocationControllerTest extends AbstractIntegrationTest {
 
         // When & Then
         webTestClient.post()
-                .uri("/api/locations")
+                .uri("/locations")
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(request)
                 .exchange()
@@ -84,7 +84,7 @@ class LocationControllerTest extends AbstractIntegrationTest {
 
         // When & Then
         webTestClient.post()
-                .uri("/api/locations")
+                .uri("/locations")
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(request)
                 .exchange()
@@ -104,7 +104,7 @@ class LocationControllerTest extends AbstractIntegrationTest {
 
         // When & Then
         webTestClient.post()
-                .uri("/api/locations")
+                .uri("/locations")
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(request)
                 .exchange()
@@ -132,7 +132,7 @@ class LocationControllerTest extends AbstractIntegrationTest {
 
         // When & Then
         webTestClient.get()
-                .uri("/api/locations")
+                .uri("/locations")
                 .exchange()
                 .expectStatus().isOk()
                 .expectBody()
@@ -157,7 +157,7 @@ class LocationControllerTest extends AbstractIntegrationTest {
 
         // When & Then
         webTestClient.get()
-                .uri("/api/locations/{id}", savedLocation.getId())
+                .uri("/locations/{id}", savedLocation.getId())
                 .exchange()
                 .expectStatus().isOk()
                 .expectBody()
@@ -171,7 +171,7 @@ class LocationControllerTest extends AbstractIntegrationTest {
     void shouldReturnNotFoundWhenGettingNonExistentLocation() {
         // When & Then
         webTestClient.get()
-                .uri("/api/locations/{id}", 999L)
+                .uri("/locations/{id}", 999L)
                 .exchange()
                 .expectStatus().isNotFound()
                 .expectBody()
@@ -196,7 +196,7 @@ class LocationControllerTest extends AbstractIntegrationTest {
 
         // When & Then
         webTestClient.put()
-                .uri("/api/locations/{id}", savedLocation.getId())
+                .uri("/locations/{id}", savedLocation.getId())
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(updateRequest)
                 .exchange()
@@ -225,7 +225,7 @@ class LocationControllerTest extends AbstractIntegrationTest {
 
         // When & Then
         webTestClient.put()
-                .uri("/api/locations/{id}", 999L)
+                .uri("/locations/{id}", 999L)
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(updateRequest)
                 .exchange()
@@ -246,7 +246,7 @@ class LocationControllerTest extends AbstractIntegrationTest {
 
         // When & Then
         webTestClient.delete()
-                .uri("/api/locations/{id}", savedLocation.getId())
+                .uri("/locations/{id}", savedLocation.getId())
                 .exchange()
                 .expectStatus().isOk()
                 .expectBody()
@@ -263,7 +263,7 @@ class LocationControllerTest extends AbstractIntegrationTest {
     void shouldReturnNotFoundWhenDeletingNonExistentLocation() {
         // When & Then
         webTestClient.delete()
-                .uri("/api/locations/{id}", 999L)
+                .uri("/locations/{id}", 999L)
                 .exchange()
                 .expectStatus().isNotFound()
                 .expectBody()
@@ -281,7 +281,7 @@ class LocationControllerTest extends AbstractIntegrationTest {
 
         // When & Then
         webTestClient.post()
-                .uri("/api/locations")
+                .uri("/locations")
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(request)
                 .exchange()
