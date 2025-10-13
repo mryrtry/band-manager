@@ -52,7 +52,7 @@ jobs:
         run: mvn test
 
       - name: Upload jar for deploy
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4`
         with:
           name: bandmanager-jar-for-deploy
           path: target/BandManager-0.1.jar
