@@ -93,9 +93,16 @@ jobs:
           port: ${{ env.REMOTE_PORT }}
           script: |
             set -e
-            mkdir -p ${REMOTE_DIR}
-            PID=$(pgrep -f "${REMOTE_JAR}" || true)
+            APP_DIR="$HOME/BandManager"
+            APP_JAR="$APP_DIR/BandManager.jar"
+
+            echo "Создаю директорию $APP_DIR..."
+            mkdir -p "$APP_DIR"
+
+            echo "Проверяю, запущен ли старый процесс..."
+            PID=$(pgrep -f "$APP_JAR" || true)
             if [ -n "$PID" ]; then
+              echo "Останавливаю процесс $PID..."
               kill $PID || true
               sleep 3
               if ps -p $PID > /dev/null 2>&1; then
@@ -103,6 +110,7 @@ jobs:
                 kill -9 $PID || true
               fi
             else
+              echo "Старый процесс не найден."
             fi
 
       - name: Copy jar to server
@@ -113,7 +121,7 @@ jobs:
           key: ${{ secrets.DEPLOY_KEY }}
           port: ${{ env.REMOTE_PORT }}
           source: ./artifact/${{ env.JAR_NAME }}
-          target: ${{ env.REMOTE_JAR }}
+          target: ~/BandManager/BandManager.jar
 
       - name: Start app on server (nohup)
         uses: appleboy/ssh-action@v0.1.7
@@ -124,7 +132,16 @@ jobs:
           port: ${{ env.REMOTE_PORT }}
           script: |
             set -e
-            cd ${REMOTE_DIR}
-            nohup java -jar ${REMOTE_JAR} --spring.profiles.active=prod > ${REMOTE_LOG} 2>&1 &
+            APP_DIR="~/BandManager"
+            APP_JAR="$APP_DIR/BandManager.jar"
+            LOG_FILE="$APP_DIR/band-manager.log"
+
+            echo "Запускаю приложение..."
+            cd "$APP_DIR"
+            nohup java -jar "$APP_JAR" --spring.profiles.active=prod > "$LOG_FILE" 2>&1 &
+
             sleep 5
-            pgrep -f "${REMOTE_JAR}" || (echo "Ошибка: процесс не запущен!" && exit 1)
+            echo "Проверка, что процесс запущен..."
+            pgrep -f "$APP_JAR" || (echo "Ошибка: процесс не запущен!" && exit 1)
+            echo "✅ Приложение запущено успешно."
+
