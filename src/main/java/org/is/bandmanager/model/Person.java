@@ -34,7 +34,7 @@ public class Person {
     private Color hairColor;
 
     @NotNull(message = "Person.Location не может быть пустым")
-    @OneToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "location_id", nullable = false)
     private Location location;
 

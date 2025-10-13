@@ -1,6 +1,5 @@
 package org.is.bandmanager.dto.request;
 
-import jakarta.validation.Valid;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -22,9 +21,8 @@ public class PersonRequest {
     @NotNull(message = "Person.HairColor не может быть пустым")
     private Color hairColor;
 
-    @Valid
-    @NotNull(message = "Person.LocationRequest не может быть пустым")
-    private LocationRequest location;
+    @NotNull(message = "Person.LocationId не может быть пустым")
+    private Long locationId;
 
     @NotNull(message = "Person.Weight не может быть пустым")
     @DecimalMin(value = "0", inclusive = false, message = "Person.Weight должно быть > 0")

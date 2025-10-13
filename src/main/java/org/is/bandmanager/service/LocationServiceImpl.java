@@ -50,6 +50,11 @@ public class LocationServiceImpl implements LocationService {
     }
 
     @Override
+    public Location getEntity(Long id) {
+        return findById(id);
+    }
+
+    @Override
     @Transactional
     public LocationDto update(Long id, LocationRequest request) {
         findById(id);

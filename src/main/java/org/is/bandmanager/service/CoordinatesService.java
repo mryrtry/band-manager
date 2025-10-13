@@ -3,6 +3,8 @@ package org.is.bandmanager.service;
 import jakarta.validation.Valid;
 import org.is.bandmanager.dto.CoordinatesDto;
 import org.is.bandmanager.dto.request.CoordinatesRequest;
+import org.is.bandmanager.model.Coordinates;
+import org.is.bandmanager.model.Location;
 
 import java.util.List;
 
@@ -13,6 +15,8 @@ public interface CoordinatesService {
     List<CoordinatesDto> getAll();
 
     CoordinatesDto get(Long id);
+
+    Coordinates getEntity(Long id);
 
     CoordinatesDto update(Long id, @Valid CoordinatesRequest request);
 

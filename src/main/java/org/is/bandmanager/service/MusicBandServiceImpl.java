@@ -14,8 +14,7 @@ import org.springframework.validation.annotation.Validated;
 import java.util.Date;
 import java.util.List;
 
-import static org.is.bandmanager.exception.message.ServiceErrorMessage.MUST_BE_NOT_NULL;
-import static org.is.bandmanager.exception.message.ServiceErrorMessage.SOURCE_NOT_FOUND;
+import static org.is.bandmanager.exception.message.ServiceErrorMessage.*;
 
 @Service
 @Validated
@@ -62,6 +61,11 @@ public class MusicBandServiceImpl implements MusicBandService {
     }
 
     @Override
+    public List<Long> getDistinctAlbumsCount() {
+        return musicBandRepository.findDistinctAlbumsCount();
+    }
+
+    @Override
     @Transactional
     public MusicBandDto update(Integer id, MusicBandRequest request) {
         findById(id);
@@ -76,6 +80,16 @@ public class MusicBandServiceImpl implements MusicBandService {
         MusicBand musicBand = findById(id);
         musicBandRepository.delete(musicBand);
         return mapper.toDto(musicBand);
+    }
+
+    @Override
+    public MusicBandDto removeParticipant(Integer id) {
+        MusicBand musicBand = findById(id);
+        if (musicBand.getNumberOfParticipants() <= 1) {
+            throw new ServiceException(CANNOT_REMOVE_LAST_PARTICIPANT);
+        }
+        musicBand.setNumberOfParticipants(musicBand.getNumberOfParticipants() - 1);
+        return mapper.toDto(musicBandRepository.save(musicBand));
     }
 
 }

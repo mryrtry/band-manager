@@ -29,7 +29,7 @@ public class MusicBand {
     private String name;
 
     @NotNull(message = "MusicBand.Coordinates не может быть пустым")
-    @ManyToOne(optional = false, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @ManyToOne(optional = false, fetch = FetchType.EAGER)
     @JoinColumn(name = "coordinates_id", nullable = false)
     private Coordinates coordinates;
 
@@ -53,7 +53,7 @@ public class MusicBand {
     private String description;
 
     @NotNull(message = "MusicBand.BestAlbum не может быть пустым")
-    @ManyToOne(optional = false, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @ManyToOne(optional = false, fetch = FetchType.EAGER)
     @JoinColumn(name = "best_album_id", nullable = false)
     private Album bestAlbum;
 
@@ -68,7 +68,7 @@ public class MusicBand {
     private Date establishmentDate;
 
     @NotNull(message = "MusicBand.FrontMan не может быть пустым")
-    @ManyToOne(optional = false, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @ManyToOne(optional = false, fetch = FetchType.EAGER)
     @JoinColumn(name = "front_man_id", nullable = false)
     private Person frontMan;
 

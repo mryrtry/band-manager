@@ -50,6 +50,11 @@ public class PersonServiceImpl implements PersonService {
     }
 
     @Override
+    public Person getEntity(Long id) {
+        return findById(id);
+    }
+
+    @Override
     @Transactional
     public PersonDto update(Long id, PersonRequest request) {
         findById(id);

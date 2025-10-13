@@ -50,6 +50,11 @@ public class AlbumServiceImpl implements AlbumService {
     }
 
     @Override
+    public Album getEntity(Long id) {
+        return findById(id);
+    }
+
+    @Override
     @Transactional
     public AlbumDto update(Long id, AlbumRequest request) {
         findById(id);
