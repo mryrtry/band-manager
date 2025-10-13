@@ -81,7 +81,11 @@ class CoordinatesControllerTest extends AbstractIntegrationTest {
                 .exchange()
                 .expectStatus().isBadRequest()
                 .expectBody()
-                .jsonPath("$.x").isEqualTo("Coordinates.X не может быть пустым");
+                .jsonPath("$.status").isEqualTo(400)
+                .jsonPath("$.message").isEqualTo("Ошибка валидации данных")
+                .jsonPath("$.details[0].field").isEqualTo("x")
+                .jsonPath("$.details[0].message").isEqualTo("Coordinates.X не может быть пустым")
+                .jsonPath("$.details[0].errorType").isEqualTo("VALIDATION_ERROR");
     }
 
     @Test
@@ -98,7 +102,32 @@ class CoordinatesControllerTest extends AbstractIntegrationTest {
                 .exchange()
                 .expectStatus().isBadRequest()
                 .expectBody()
-                .jsonPath("$.x").isEqualTo("Coordinates.X должно быть больше -147");
+                .jsonPath("$.status").isEqualTo(400)
+                .jsonPath("$.message").isEqualTo("Ошибка валидации данных")
+                .jsonPath("$.details[0].field").isEqualTo("x")
+                .jsonPath("$.details[0].message").isEqualTo("Coordinates.X должно быть больше -147")
+                .jsonPath("$.details[0].errorType").isEqualTo("VALIDATION_ERROR");
+    }
+
+    @Test
+    void shouldReturnBadRequestWhenCreatingCoordinatesWithMultipleErrors() {
+        CoordinatesRequest request = CoordinatesRequest.builder()
+                .x(null)
+                .y(null)
+                .build();
+
+        webTestClient.post()
+                .uri("/coordinates")
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(request)
+                .exchange()
+                .expectStatus().isBadRequest()
+                .expectBody()
+                .jsonPath("$.status").isEqualTo(400)
+                .jsonPath("$.message").isEqualTo("Ошибка валидации данных")
+                .jsonPath("$.details.length()").isEqualTo(1)
+                .jsonPath("$.details[0].field").isEqualTo("x")
+                .jsonPath("$.details[0].message").isEqualTo("Coordinates.X не может быть пустым");
     }
 
     @Test
@@ -141,7 +170,10 @@ class CoordinatesControllerTest extends AbstractIntegrationTest {
                 .exchange()
                 .expectStatus().isNotFound()
                 .expectBody()
-                .jsonPath("$.error").exists();
+                .jsonPath("$.status").isEqualTo(404)
+                .jsonPath("$.message").isEqualTo("Ошибка выполнения операции")
+                .jsonPath("$.details[0].field").isEqualTo("service")
+                .jsonPath("$.details[0].errorType").isEqualTo("SERVICE_ERROR");
     }
 
     @Test
@@ -178,7 +210,32 @@ class CoordinatesControllerTest extends AbstractIntegrationTest {
                 .exchange()
                 .expectStatus().isNotFound()
                 .expectBody()
-                .jsonPath("$.error").exists();
+                .jsonPath("$.status").isEqualTo(404)
+                .jsonPath("$.message").isEqualTo("Ошибка выполнения операции")
+                .jsonPath("$.details[0].field").isEqualTo("service")
+                .jsonPath("$.details[0].errorType").isEqualTo("SERVICE_ERROR");
+    }
+
+    @Test
+    void shouldReturnBadRequestWhenUpdatingWithInvalidData() {
+        Coordinates c = Coordinates.builder().x(1).y(1.1f).build();
+        Coordinates saved = coordinatesRepository.save(c);
+
+        CoordinatesRequest invalidUpdate = CoordinatesRequest.builder()
+                .x(null)
+                .y(-200f)
+                .build();
+
+        webTestClient.put()
+                .uri("/coordinates/{id}", saved.getId())
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(invalidUpdate)
+                .exchange()
+                .expectStatus().isBadRequest()
+                .expectBody()
+                .jsonPath("$.status").isEqualTo(400)
+                .jsonPath("$.message").isEqualTo("Ошибка валидации данных")
+                .jsonPath("$.details.length()").isEqualTo(1);
     }
 
     @Test
@@ -205,7 +262,9 @@ class CoordinatesControllerTest extends AbstractIntegrationTest {
                 .exchange()
                 .expectStatus().isNotFound()
                 .expectBody()
-                .jsonPath("$.error").exists();
+                .jsonPath("$.status").isEqualTo(404)
+                .jsonPath("$.message").isEqualTo("Ошибка выполнения операции")
+                .jsonPath("$.details[0].field").isEqualTo("service")
+                .jsonPath("$.details[0].errorType").isEqualTo("SERVICE_ERROR");
     }
-
 }

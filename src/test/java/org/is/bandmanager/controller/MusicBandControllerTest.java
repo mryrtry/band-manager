@@ -13,6 +13,7 @@ import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.reactive.server.WebTestClient;
 
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 
@@ -111,8 +112,6 @@ class MusicBandControllerTest extends AbstractIntegrationTest {
                 .build();
     }
 
-    // ==== Тесты ====
-
     @Test
     void shouldCreateMusicBandSuccessfully() {
         MusicBandRequest request = createMusicBandRequest();
@@ -148,7 +147,11 @@ class MusicBandControllerTest extends AbstractIntegrationTest {
                 .exchange()
                 .expectStatus().isBadRequest()
                 .expectBody()
-                .jsonPath("$.name").isEqualTo("MusicBand.Name не может быть пустым");
+                .jsonPath("$.status").isEqualTo(400)
+                .jsonPath("$.message").isEqualTo("Ошибка валидации данных")
+                .jsonPath("$.details[0].field").isEqualTo("name")
+                .jsonPath("$.details[0].message").isEqualTo("MusicBand.Name не может быть пустым")
+                .jsonPath("$.details[0].errorType").isEqualTo("VALIDATION_ERROR");
     }
 
     @Test
@@ -249,6 +252,19 @@ class MusicBandControllerTest extends AbstractIntegrationTest {
     }
 
     @Test
+    void shouldReturnNotFoundWhenGettingNonExistentBand() {
+        webTestClient.get()
+                .uri("/music-bands/{id}", 9999)
+                .exchange()
+                .expectStatus().isNotFound()
+                .expectBody()
+                .jsonPath("$.status").isEqualTo(404)
+                .jsonPath("$.message").isEqualTo("Ошибка выполнения операции")
+                .jsonPath("$.details[0].field").isEqualTo("service")
+                .jsonPath("$.details[0].errorType").isEqualTo("SERVICE_ERROR");
+    }
+
+    @Test
     void shouldUpdateMusicBandSuccessfully() {
         MusicBandRequest createRequest = createMusicBandRequest();
         MusicBand saved = musicBandRepository.save(MusicBand.builder()
@@ -289,6 +305,23 @@ class MusicBandControllerTest extends AbstractIntegrationTest {
         MusicBand updated = musicBandRepository.findById(saved.getId()).orElseThrow();
         assertThat(updated.getName()).isEqualTo("Updated Band");
         assertThat(updated.getBestAlbum().getName()).isEqualTo("Updated Album");
+    }
+
+    @Test
+    void shouldReturnNotFoundWhenUpdatingNonExistentBand() {
+        MusicBandRequest updateRequest = createMusicBandRequest();
+
+        webTestClient.put()
+                .uri("/music-bands/{id}", 9999)
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(updateRequest)
+                .exchange()
+                .expectStatus().isNotFound()
+                .expectBody()
+                .jsonPath("$.status").isEqualTo(404)
+                .jsonPath("$.message").isEqualTo("Ошибка выполнения операции")
+                .jsonPath("$.details[0].field").isEqualTo("service")
+                .jsonPath("$.details[0].errorType").isEqualTo("SERVICE_ERROR");
     }
 
     @Test
@@ -335,6 +368,161 @@ class MusicBandControllerTest extends AbstractIntegrationTest {
                 .exchange()
                 .expectStatus().isNotFound()
                 .expectBody()
-                .jsonPath("$.error").exists();
+                .jsonPath("$.status").isEqualTo(404)
+                .jsonPath("$.message").isEqualTo("Ошибка выполнения операции")
+                .jsonPath("$.details[0].field").isEqualTo("service")
+                .jsonPath("$.details[0].errorType").isEqualTo("SERVICE_ERROR");
+    }
+
+    @Test
+    void shouldGetBandsWithMaxCoordinates() {
+        Coordinates c1 = Coordinates.builder().x(100).y(50.5f).build();
+        Coordinates c2 = Coordinates.builder().x(50).y(25.5f).build();
+        Coordinates c3 = Coordinates.builder().x(100).y(30.5f).build();
+
+        MusicBand b1 = createAndSaveBand("Band 1", c1);
+        createAndSaveBand("Band 2", c2);
+        createAndSaveBand("Band 3", c3);
+
+        webTestClient.get()
+                .uri("/music-bands/max-coordinates")
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.id").isEqualTo(b1.getId())
+                .jsonPath("$.name").isEqualTo("Band 1")
+                .jsonPath("$.coordinates.x").isEqualTo(100)
+                .jsonPath("$.coordinates.y").isEqualTo(50.5);
+    }
+
+    @Test
+    void shouldGetBandsEstablishedBeforeDate() throws Exception {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        Date oldDate = sdf.parse("2010-01-01");
+        Date newDate = sdf.parse("2020-01-01");
+
+        MusicBand oldBand = createAndSaveBandWithDate("Old Band", oldDate);
+        createAndSaveBandWithDate("New Band", newDate);
+
+        webTestClient.get()
+                .uri(uriBuilder -> uriBuilder
+                        .path("/music-bands/established-before")
+                        .queryParam("date", "2015-01-01")
+                        .build())
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.length()").isEqualTo(1)
+                .jsonPath("$[0].id").isEqualTo(oldBand.getId())
+                .jsonPath("$[0].name").isEqualTo("Old Band");
+    }
+
+    @Test
+    void shouldReturnBadRequestWhenDateParameterMissing() {
+        webTestClient.get()
+                .uri("/music-bands/established-before")
+                .exchange()
+                .expectStatus().isBadRequest()
+                .expectBody()
+                .jsonPath("$.status").isEqualTo(400)
+                .jsonPath("$.message").isEqualTo("Отсутствуют обязательные параметры")
+                .jsonPath("$.details[0].field").isEqualTo("date")
+                .jsonPath("$.details[0].errorType").isEqualTo("MISSING_PARAMETER");
+    }
+
+    @Test
+    void shouldReturnBadRequestWhenDateInvalidFormat() {
+        webTestClient.get()
+                .uri(uriBuilder -> uriBuilder
+                        .path("/music-bands/established-before")
+                        .queryParam("date", "invalid-date")
+                        .build())
+                .exchange()
+                .expectStatus().isBadRequest()
+                .expectBody()
+                .jsonPath("$.status").isEqualTo(400)
+                .jsonPath("$.message").isEqualTo("Ошибка в параметрах запроса")
+                .jsonPath("$.details[0].field").isEqualTo("date")
+                .jsonPath("$.details[0].errorType").isEqualTo("TYPE_MISMATCH");
+    }
+
+    @Test
+    void shouldReturnEmptyArrayWhenNoBandsFound() {
+        webTestClient.get()
+                .uri(uriBuilder -> uriBuilder
+                        .path("/music-bands/established-before")
+                        .queryParam("date", "1900-01-01")
+                        .build())
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.length()").isEqualTo(0);
+    }
+
+    @Test
+    void shouldReturnBadRequestWhenCreatingWithMissingRequestBody() {
+        webTestClient.post()
+                .uri("/music-bands")
+                .contentType(MediaType.APPLICATION_JSON)
+                .exchange()
+                .expectStatus().isBadRequest()
+                .expectBody()
+                .jsonPath("$.status").isEqualTo(400)
+                .jsonPath("$.message").isEqualTo("Отсутствует тело запроса")
+                .jsonPath("$.details[0].field").isEqualTo("requestBody")
+                .jsonPath("$.details[0].errorType").isEqualTo("INVALID_JSON");
+    }
+
+    private MusicBand createAndSaveBand(String name, Coordinates coordinates) {
+        Album album = Album.builder().name(name + " Album").tracks(10L).sales(100).build();
+        Person person = Person.builder()
+                .name(name + " Frontman")
+                .eyeColor(BLUE)
+                .hairColor(BLACK)
+                .weight(70f)
+                .nationality(USA)
+                .location(Location.builder().x(1).y(2L).z(3L).build())
+                .build();
+
+        return musicBandRepository.save(MusicBand.builder()
+                .name(name)
+                .coordinates(coordinates)
+                .genre(ROCK)
+                .numberOfParticipants(5L)
+                .singlesCount(10L)
+                .description("Description for " + name)
+                .bestAlbum(album)
+                .albumsCount(5L)
+                .establishmentDate(new Date())
+                .frontMan(person)
+                .creationDate(new Date())
+                .build());
+    }
+
+    private MusicBand createAndSaveBandWithDate(String name, Date establishmentDate) {
+        Coordinates coordinates = Coordinates.builder().x(10).y(5.5f).build();
+        Album album = Album.builder().name(name + " Album").tracks(10L).sales(100).build();
+        Person person = Person.builder()
+                .name(name + " Frontman")
+                .eyeColor(BLUE)
+                .hairColor(BLACK)
+                .weight(70f)
+                .nationality(USA)
+                .location(Location.builder().x(1).y(2L).z(3L).build())
+                .build();
+
+        return musicBandRepository.save(MusicBand.builder()
+                .name(name)
+                .coordinates(coordinates)
+                .genre(ROCK)
+                .numberOfParticipants(5L)
+                .singlesCount(10L)
+                .description("Description for " + name)
+                .bestAlbum(album)
+                .albumsCount(5L)
+                .establishmentDate(establishmentDate)
+                .frontMan(person)
+                .creationDate(new Date())
+                .build());
     }
 }
