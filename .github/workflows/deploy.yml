@@ -80,7 +80,7 @@ jobs:
           path: ./artifact
 
       - name: Add SSH key
-        uses: webfactory/ssh-agent@v0.8.1
+        uses: webfactory/ssh-agent@v0.7.0
         with:
           ssh-private-key: ${{ secrets.DEPLOY_KEY }}
 
