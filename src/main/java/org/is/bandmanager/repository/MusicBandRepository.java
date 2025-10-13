@@ -22,4 +22,7 @@ public interface MusicBandRepository extends JpaRepository<MusicBand, Integer> {
 
     List<MusicBand> findByEstablishmentDateBefore(Date date);
 
+    @Query("SELECT DISTINCT m.albumsCount FROM MusicBand m ORDER BY m.albumsCount")
+    List<Long> findDistinctAlbumsCount();
+
 }

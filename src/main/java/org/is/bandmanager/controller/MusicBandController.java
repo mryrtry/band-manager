@@ -51,6 +51,12 @@ public class MusicBandController {
         return ResponseEntity.ok(bands);
     }
 
+    @GetMapping("/unique-albums-count")
+    public ResponseEntity<List<Long>> getUniqueAlbumsCount() {
+        List<Long> uniqueCounts = musicBandService.getDistinctAlbumsCount();
+        return ResponseEntity.ok(uniqueCounts);
+    }
+
     @PostMapping
     public ResponseEntity<MusicBandDto> createMusicBand(@Valid @RequestBody MusicBandRequest request) {
         MusicBandDto createdMusicBand = musicBandService.create(request);

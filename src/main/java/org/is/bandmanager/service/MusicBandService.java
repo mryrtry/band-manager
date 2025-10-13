@@ -19,6 +19,8 @@ public interface MusicBandService {
 
     List<MusicBandDto> getByEstablishmentDateBefore(Date date);
 
+    List<Long> getDistinctAlbumsCount();
+
     MusicBandDto update(Integer id, @Valid MusicBandRequest request);
 
     MusicBandDto delete(Integer id);

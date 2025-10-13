@@ -473,6 +473,16 @@ class MusicBandControllerTest extends AbstractIntegrationTest {
                 .jsonPath("$.details[0].errorType").isEqualTo("INVALID_JSON");
     }
 
+    @Test
+    void shouldReturnEmptyArrayWhenNoBands() {
+        webTestClient.get()
+                .uri("/music-bands/unique-albums-count")
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.length()").isEqualTo(0);
+    }
+
     private MusicBand createAndSaveBand(String name, Coordinates coordinates) {
         Album album = Album.builder().name(name + " Album").tracks(10L).sales(100).build();
         Person person = Person.builder()
@@ -525,4 +535,51 @@ class MusicBandControllerTest extends AbstractIntegrationTest {
                 .creationDate(new Date())
                 .build());
     }
+
+    @Test
+    void shouldGetUniqueAlbumsCount() {
+        createAndSaveBand("Band 1", 5L);
+        createAndSaveBand("Band 2", 3L);
+        createAndSaveBand("Band 3", 5L);
+        createAndSaveBand("Band 4", 7L);
+
+        // When & Then
+        webTestClient.get()
+                .uri("/music-bands/unique-albums-count")
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.length()").isEqualTo(3)
+                .jsonPath("$[0]").isEqualTo(3)
+                .jsonPath("$[1]").isEqualTo(5)
+                .jsonPath("$[2]").isEqualTo(7);
+    }
+
+    private void createAndSaveBand(String name, Long albumsCount) {
+        Coordinates coordinates = Coordinates.builder().x(10).y(5.5f).build();
+        Album album = Album.builder().name(name + " Album").tracks(10L).sales(100).build();
+        Person person = Person.builder()
+                .name(name + " Frontman")
+                .eyeColor(BLUE)
+                .hairColor(BLACK)
+                .weight(70f)
+                .nationality(USA)
+                .location(Location.builder().x(1).y(2L).z(3L).build())
+                .build();
+
+        musicBandRepository.save(MusicBand.builder()
+                .name(name)
+                .coordinates(coordinates)
+                .genre(ROCK)
+                .numberOfParticipants(5L)
+                .singlesCount(10L)
+                .description("Description for " + name)
+                .bestAlbum(album)
+                .albumsCount(albumsCount)
+                .establishmentDate(new Date())
+                .frontMan(person)
+                .creationDate(new Date())
+                .build());
+    }
+
 }

@@ -62,6 +62,11 @@ public class MusicBandServiceImpl implements MusicBandService {
     }
 
     @Override
+    public List<Long> getDistinctAlbumsCount() {
+        return musicBandRepository.findDistinctAlbumsCount();
+    }
+
+    @Override
     @Transactional
     public MusicBandDto update(Integer id, MusicBandRequest request) {
         findById(id);
