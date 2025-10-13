@@ -71,6 +71,12 @@ public class MusicBandController {
         return ResponseEntity.ok(updatedMusicBand);
     }
 
+    @PutMapping("/{id}/remove-participant")
+    public ResponseEntity<MusicBandDto> removeParticipant(@PathVariable Integer id) {
+        MusicBandDto updatedBand = musicBandService.removeParticipant(id);
+        return ResponseEntity.ok(updatedBand);
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<MusicBandDto> deleteMusicBand(@PathVariable Integer id) {
         MusicBandDto deletedMusicBand = musicBandService.delete(id);

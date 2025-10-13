@@ -25,4 +25,6 @@ public interface MusicBandService {
 
     MusicBandDto delete(Integer id);
 
+    MusicBandDto removeParticipant(Integer id);
+
 }

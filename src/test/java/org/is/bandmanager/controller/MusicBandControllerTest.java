@@ -509,6 +509,131 @@ class MusicBandControllerTest extends AbstractIntegrationTest {
                 .build());
     }
 
+    @Test
+    void shouldGetUniqueAlbumsCount() {
+        createAndSaveBand("Band 1", 5L);
+        createAndSaveBand("Band 2", 3L);
+        createAndSaveBand("Band 3", 5L);
+        createAndSaveBand("Band 4", 7L);
+
+        // When & Then
+        webTestClient.get()
+                .uri("/music-bands/unique-albums-count")
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.length()").isEqualTo(3)
+                .jsonPath("$[0]").isEqualTo(3)
+                .jsonPath("$[1]").isEqualTo(5)
+                .jsonPath("$[2]").isEqualTo(7);
+    }
+
+    @Test
+    void shouldRemoveParticipantFromBand() {
+        // Given - группа с 5 участниками
+        MusicBand band = createAndSaveBandWithParticipants("Test Band", 5L);
+
+        // When & Then
+        webTestClient.put()
+                .uri("/music-bands/{id}/remove-participant", band.getId())
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.id").isEqualTo(band.getId())
+                .jsonPath("$.name").isEqualTo("Test Band")
+                .jsonPath("$.numberOfParticipants").isEqualTo(4);
+
+        // Verify in database
+        MusicBand updated = musicBandRepository.findById(band.getId()).orElseThrow();
+        assertThat(updated.getNumberOfParticipants()).isEqualTo(4L);
+    }
+
+    @Test
+    void shouldRemoveMultipleParticipants() {
+        // Given - группа с 3 участниками
+        MusicBand band = createAndSaveBandWithParticipants("Three Member Band", 3L);
+
+        // When - удаляем двух участников
+        webTestClient.put()
+                .uri("/music-bands/{id}/remove-participant", band.getId())
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.numberOfParticipants").isEqualTo(2);
+
+        webTestClient.put()
+                .uri("/music-bands/{id}/remove-participant", band.getId())
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.numberOfParticipants").isEqualTo(1);
+
+        // Verify final state
+        MusicBand updated = musicBandRepository.findById(band.getId()).orElseThrow();
+        assertThat(updated.getNumberOfParticipants()).isEqualTo(1L);
+    }
+
+    @Test
+    void shouldReturnBadRequestWhenRemovingLastParticipant() {
+        // Given - группа с 1 участником
+        MusicBand band = createAndSaveBandWithParticipants("Solo Band", 1L);
+
+        // When & Then - попытка удалить последнего участника
+        webTestClient.put()
+                .uri("/music-bands/{id}/remove-participant", band.getId())
+                .exchange()
+                .expectStatus().isBadRequest()
+                .expectBody()
+                .jsonPath("$.status").isEqualTo(400)
+                .jsonPath("$.message").isEqualTo("Ошибка выполнения операции")
+                .jsonPath("$.details[0].field").isEqualTo("service")
+                .jsonPath("$.details[0].message").isEqualTo("Невозможно удалить участника - в группе должен остаться хотя бы 1 участник")
+                .jsonPath("$.details[0].errorType").isEqualTo("SERVICE_ERROR");
+
+        MusicBand unchanged = musicBandRepository.findById(band.getId()).orElseThrow();
+        assertThat(unchanged.getNumberOfParticipants()).isEqualTo(1L);
+    }
+
+    @Test
+    void shouldReturnNotFoundWhenRemovingFromNonExistentBand() {
+        webTestClient.put()
+                .uri("/music-bands/{id}/remove-participant", 9999)
+                .exchange()
+                .expectStatus().isNotFound()
+                .expectBody()
+                .jsonPath("$.status").isEqualTo(404)
+                .jsonPath("$.message").isEqualTo("Ошибка выполнения операции")
+                .jsonPath("$.details[0].field").isEqualTo("service")
+                .jsonPath("$.details[0].errorType").isEqualTo("SERVICE_ERROR");
+    }
+
+    private MusicBand createAndSaveBandWithParticipants(String name, Long numberOfParticipants) {
+        Coordinates coordinates = Coordinates.builder().x(10).y(5.5f).build();
+        Album album = Album.builder().name(name + " Album").tracks(10L).sales(100).build();
+        Person person = Person.builder()
+                .name(name + " Frontman")
+                .eyeColor(BLUE)
+                .hairColor(BLACK)
+                .weight(70f)
+                .nationality(USA)
+                .location(Location.builder().x(1).y(2L).z(3L).build())
+                .build();
+
+        return musicBandRepository.save(MusicBand.builder()
+                .name(name)
+                .coordinates(coordinates)
+                .genre(ROCK)
+                .numberOfParticipants(numberOfParticipants)
+                .singlesCount(10L)
+                .description("Description for " + name)
+                .bestAlbum(album)
+                .albumsCount(5L)
+                .establishmentDate(new Date())
+                .frontMan(person)
+                .creationDate(new Date())
+                .build());
+    }
+
     private MusicBand createAndSaveBandWithDate(String name, Date establishmentDate) {
         Coordinates coordinates = Coordinates.builder().x(10).y(5.5f).build();
         Album album = Album.builder().name(name + " Album").tracks(10L).sales(100).build();
@@ -534,25 +659,6 @@ class MusicBandControllerTest extends AbstractIntegrationTest {
                 .frontMan(person)
                 .creationDate(new Date())
                 .build());
-    }
-
-    @Test
-    void shouldGetUniqueAlbumsCount() {
-        createAndSaveBand("Band 1", 5L);
-        createAndSaveBand("Band 2", 3L);
-        createAndSaveBand("Band 3", 5L);
-        createAndSaveBand("Band 4", 7L);
-
-        // When & Then
-        webTestClient.get()
-                .uri("/music-bands/unique-albums-count")
-                .exchange()
-                .expectStatus().isOk()
-                .expectBody()
-                .jsonPath("$.length()").isEqualTo(3)
-                .jsonPath("$[0]").isEqualTo(3)
-                .jsonPath("$[1]").isEqualTo(5)
-                .jsonPath("$[2]").isEqualTo(7);
     }
 
     private void createAndSaveBand(String name, Long albumsCount) {
