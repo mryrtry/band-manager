@@ -70,7 +70,7 @@ jobs:
 
       - name: Start application
         run: |
-          ssh -p 2222 s409483@se.ifmo.ru "cd ~/BandManager && _JAVA_OPTIONS='' nohup java -Xmx512m -Xms256m -jar BandManager.jar --spring.profiles.active=prod > band-manager.log 2>&1 &"
+          ssh -p 2222 s409483@se.ifmo.ru "cd ~/BandManager && _JAVA_OPTIONS='' nohup java -Xmx512m -Xms3200m -jar BandManager.jar --spring.profiles.active=prod > band-manager.log 2>&1 &"
           sleep 15
 
   health-check:
@@ -89,13 +89,3 @@ jobs:
       - name: Check application process
         run: |
           ssh -p 2222 s409483@se.ifmo.ru "ps aux | grep BandManager.jar | grep -v grep"
-
-      - name: Check application logs
-        run: |
-          ssh -p 2222 s409483@se.ifmo.ru "tail -20 ~/BandManager/band-manager.log"
-
-      - name: Check application response
-        run: |
-          # Assuming your Spring Boot app runs on port 8080
-          # You might need to adjust this based on your actual endpoint
-          ssh -p 2222 s409483@se.ifmo.ru "curl -f http://localhost:8080/actuator/health || curl -f http://localhost:8080/ || echo 'Application is running but health endpoint not available'"
