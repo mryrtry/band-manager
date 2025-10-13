@@ -11,9 +11,9 @@ env:
   REMOTE_HOST: se.ifmo.ru
   REMOTE_PORT: 2222
   REMOTE_USER: s409483
-  REMOTE_DIR: ~/BandManager
-  REMOTE_JAR: ~/BandManager/BandManager.jar
-  REMOTE_LOG: ~/BandManager/band-manager.log
+  REMOTE_DIR: $HOME/BandManager
+  REMOTE_JAR: $HOME/BandManager/BandManager.jar
+  REMOTE_LOG: $HOME/BandManager/band-manager.log
   JAR_NAME: BandManager-0.1.jar
 
 jobs:
