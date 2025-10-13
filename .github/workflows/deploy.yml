@@ -84,15 +84,15 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.DEPLOY_KEY }}
 
-      - name: Upload JAR via plain scp
+      - name: Upload JAR via SCP
         run: |
           mkdir -p ./artifact_tmp
           cp ./artifact/${JAR_NAME} ./artifact_tmp/
-          scp -P ${{ env.REMOTE_PORT }} -i ${{ secrets.DEPLOY_KEY }} ./artifact_tmp/${JAR_NAME} ${{ env.REMOTE_USER }}@${{ env.REMOTE_HOST }}:${{ env.REMOTE_JAR }}
+          scp -P ${{ env.REMOTE_PORT }} -o StrictHostKeyChecking=no ./artifact_tmp/${JAR_NAME} ${{ env.REMOTE_USER }}@${{ env.REMOTE_HOST }}:${{ env.REMOTE_JAR }}
 
       - name: Stop old app and start new one via SSH
         run: |
-          ssh -i ${{ secrets.DEPLOY_KEY }} -p ${{ env.REMOTE_PORT }} ${{ env.REMOTE_USER }}@${{ env.REMOTE_HOST }} "\
+          ssh -p ${{ env.REMOTE_PORT }} -o StrictHostKeyChecking=no ${{ env.REMOTE_USER }}@${{ env.REMOTE_HOST }} "\
             set -e; \
             APP_DIR=\$HOME/BandManager; \
             APP_JAR=\$APP_DIR/BandManager.jar; \
