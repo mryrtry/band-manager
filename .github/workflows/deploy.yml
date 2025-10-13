@@ -24,7 +24,7 @@ jobs:
         run: mvn clean package -DskipTests
 
       - name: Upload jar artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: bandmanager-jar
           path: target/BandManager-0.1.jar
@@ -43,7 +43,7 @@ jobs:
           java-version: '17'
 
       - name: Download built jar
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: bandmanager-jar
           path: target/
@@ -62,7 +62,7 @@ jobs:
     needs: test
     steps:
       - name: Download jar for deploy
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: bandmanager-jar-for-deploy
           path: target/
