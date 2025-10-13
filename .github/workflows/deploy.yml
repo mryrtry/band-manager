@@ -75,8 +75,10 @@ jobs:
 
       - name: Start application
         run: |
+          ssh -p 2222 s409483@se.ifmo.ru "cd ~/BandManager && pkill -f 'BandManager.jar' || true"
+          sleep 5
           ssh -p 2222 s409483@se.ifmo.ru "cd ~/BandManager && _JAVA_OPTIONS='' nohup java -Xmx512m -Xms256m -jar BandManager.jar --spring.profiles.active=prod > band-manager.log 2>&1 &"
-          sleep 20
+          sleep 15
 
   health-check:
     runs-on: ubuntu-latest
