@@ -27,17 +27,11 @@ class PersonRequestTests {
     @Test
     void shouldCreateValidPersonRequest() {
         // Given
-        LocationRequest location = LocationRequest.builder()
-                .x(100)
-                .y(200L)
-                .z(300L)
-                .build();
-
         PersonRequest request = PersonRequest.builder()
                 .name("John Doe")
                 .eyeColor(Color.BLUE)
                 .hairColor(Color.BLACK)
-                .location(location)
+                .locationId(1L)  // ID существующей локации
                 .weight(75.5f)
                 .nationality(Country.USA)
                 .build();
@@ -52,17 +46,11 @@ class PersonRequestTests {
     @Test
     void shouldFailWhenNameIsNull() {
         // Given
-        LocationRequest location = LocationRequest.builder()
-                .x(100)
-                .y(200L)
-                .z(300L)
-                .build();
-
         PersonRequest request = PersonRequest.builder()
                 .name(null)
                 .eyeColor(Color.BLUE)
                 .hairColor(Color.BLACK)
-                .location(location)
+                .locationId(1L)
                 .weight(75.5f)
                 .nationality(Country.USA)
                 .build();
@@ -80,17 +68,11 @@ class PersonRequestTests {
     @Test
     void shouldFailWhenNameIsBlank() {
         // Given
-        LocationRequest location = LocationRequest.builder()
-                .x(100)
-                .y(200L)
-                .z(300L)
-                .build();
-
         PersonRequest request = PersonRequest.builder()
                 .name("   ")
                 .eyeColor(Color.BLUE)
                 .hairColor(Color.BLACK)
-                .location(location)
+                .locationId(1L)
                 .weight(75.5f)
                 .nationality(Country.USA)
                 .build();
@@ -108,17 +90,11 @@ class PersonRequestTests {
     @Test
     void shouldFailWhenNameIsEmpty() {
         // Given
-        LocationRequest location = LocationRequest.builder()
-                .x(100)
-                .y(200L)
-                .z(300L)
-                .build();
-
         PersonRequest request = PersonRequest.builder()
                 .name("")
                 .eyeColor(Color.BLUE)
                 .hairColor(Color.BLACK)
-                .location(location)
+                .locationId(1L)
                 .weight(75.5f)
                 .nationality(Country.USA)
                 .build();
@@ -136,17 +112,11 @@ class PersonRequestTests {
     @Test
     void shouldFailWhenEyeColorIsNull() {
         // Given
-        LocationRequest location = LocationRequest.builder()
-                .x(100)
-                .y(200L)
-                .z(300L)
-                .build();
-
         PersonRequest request = PersonRequest.builder()
                 .name("John Doe")
                 .eyeColor(null)
                 .hairColor(Color.BLACK)
-                .location(location)
+                .locationId(1L)
                 .weight(75.5f)
                 .nationality(Country.USA)
                 .build();
@@ -164,17 +134,11 @@ class PersonRequestTests {
     @Test
     void shouldFailWhenHairColorIsNull() {
         // Given
-        LocationRequest location = LocationRequest.builder()
-                .x(100)
-                .y(200L)
-                .z(300L)
-                .build();
-
         PersonRequest request = PersonRequest.builder()
                 .name("John Doe")
                 .eyeColor(Color.BLUE)
                 .hairColor(null)
-                .location(location)
+                .locationId(1L)
                 .weight(75.5f)
                 .nationality(Country.USA)
                 .build();
@@ -190,13 +154,13 @@ class PersonRequestTests {
     }
 
     @Test
-    void shouldFailWhenLocationIsNull() {
+    void shouldFailWhenLocationIdIsNull() {
         // Given
         PersonRequest request = PersonRequest.builder()
                 .name("John Doe")
                 .eyeColor(Color.BLUE)
                 .hairColor(Color.BLACK)
-                .location(null)
+                .locationId(null)
                 .weight(75.5f)
                 .nationality(Country.USA)
                 .build();
@@ -207,53 +171,18 @@ class PersonRequestTests {
         // Then
         assertThat(violations).hasSize(1);
         ConstraintViolation<PersonRequest> violation = violations.iterator().next();
-        assertThat(violation.getPropertyPath().toString()).isEqualTo("location");
-        assertThat(violation.getMessage()).isEqualTo("Person.LocationRequest не может быть пустым");
-    }
-
-    @Test
-    void shouldFailWhenLocationIsInvalid() {
-        // Given - Location с null полями Y и Z (что невалидно)
-        LocationRequest invalidLocation = LocationRequest.builder()
-                .x(100)
-                .y(null)
-                .z(null)
-                .build();
-
-        PersonRequest request = PersonRequest.builder()
-                .name("John Doe")
-                .eyeColor(Color.BLUE)
-                .hairColor(Color.BLACK)
-                .location(invalidLocation)
-                .weight(75.5f)
-                .nationality(Country.USA)
-                .build();
-
-        // When
-        Set<ConstraintViolation<PersonRequest>> violations = validator.validate(request);
-
-        // Then - должна сработать каскадная валидация LocationRequest
-        assertThat(violations).hasSize(2);
-        assertThat(violations)
-                .extracting(ConstraintViolation::getPropertyPath)
-                .extracting(Object::toString)
-                .containsExactlyInAnyOrder("location.y", "location.z");
+        assertThat(violation.getPropertyPath().toString()).isEqualTo("locationId");
+        assertThat(violation.getMessage()).isEqualTo("Person.Location не может быть пустым");
     }
 
     @Test
     void shouldFailWhenWeightIsNull() {
         // Given
-        LocationRequest location = LocationRequest.builder()
-                .x(100)
-                .y(200L)
-                .z(300L)
-                .build();
-
         PersonRequest request = PersonRequest.builder()
                 .name("John Doe")
                 .eyeColor(Color.BLUE)
                 .hairColor(Color.BLACK)
-                .location(location)
+                .locationId(1L)
                 .weight(null)
                 .nationality(Country.USA)
                 .build();
@@ -271,17 +200,11 @@ class PersonRequestTests {
     @Test
     void shouldFailWhenWeightIsZero() {
         // Given
-        LocationRequest location = LocationRequest.builder()
-                .x(100)
-                .y(200L)
-                .z(300L)
-                .build();
-
         PersonRequest request = PersonRequest.builder()
                 .name("John Doe")
                 .eyeColor(Color.BLUE)
                 .hairColor(Color.BLACK)
-                .location(location)
+                .locationId(1L)
                 .weight(0.0f)
                 .nationality(Country.USA)
                 .build();
@@ -299,17 +222,11 @@ class PersonRequestTests {
     @Test
     void shouldFailWhenWeightIsNegative() {
         // Given
-        LocationRequest location = LocationRequest.builder()
-                .x(100)
-                .y(200L)
-                .z(300L)
-                .build();
-
         PersonRequest request = PersonRequest.builder()
                 .name("John Doe")
                 .eyeColor(Color.BLUE)
                 .hairColor(Color.BLACK)
-                .location(location)
+                .locationId(1L)
                 .weight(-5.5f)
                 .nationality(Country.USA)
                 .build();
@@ -327,17 +244,11 @@ class PersonRequestTests {
     @Test
     void shouldFailWhenNationalityIsNull() {
         // Given
-        LocationRequest location = LocationRequest.builder()
-                .x(100)
-                .y(200L)
-                .z(300L)
-                .build();
-
         PersonRequest request = PersonRequest.builder()
                 .name("John Doe")
                 .eyeColor(Color.BLUE)
                 .hairColor(Color.BLACK)
-                .location(location)
+                .locationId(1L)
                 .weight(75.5f)
                 .nationality(null)
                 .build();
@@ -355,17 +266,11 @@ class PersonRequestTests {
     @Test
     void shouldFailWithMultipleViolations() {
         // Given
-        LocationRequest invalidLocation = LocationRequest.builder()
-                .x(100)
-                .y(null)
-                .z(null)
-                .build();
-
         PersonRequest request = PersonRequest.builder()
                 .name("")
                 .eyeColor(null)
                 .hairColor(null)
-                .location(invalidLocation)
+                .locationId(null)
                 .weight(0.0f)
                 .nationality(null)
                 .build();
@@ -374,7 +279,7 @@ class PersonRequestTests {
         Set<ConstraintViolation<PersonRequest>> violations = validator.validate(request);
 
         // Then
-        assertThat(violations).hasSize(7);
+        assertThat(violations).hasSize(6);
         assertThat(violations)
                 .extracting(ConstraintViolation::getPropertyPath)
                 .extracting(Object::toString)
@@ -382,8 +287,7 @@ class PersonRequestTests {
                         "name",
                         "eyeColor",
                         "hairColor",
-                        "location.y",
-                        "location.z",
+                        "locationId",
                         "weight",
                         "nationality"
                 );
@@ -392,17 +296,11 @@ class PersonRequestTests {
     @Test
     void shouldBeValidWithMinimalPositiveWeight() {
         // Given
-        LocationRequest location = LocationRequest.builder()
-                .x(100)
-                .y(200L)
-                .z(300L)
-                .build();
-
         PersonRequest request = PersonRequest.builder()
                 .name("John Doe")
                 .eyeColor(Color.BLUE)
                 .hairColor(Color.BLACK)
-                .location(location)
+                .locationId(1L)
                 .weight(Float.MIN_VALUE) // Самое маленькое положительное значение
                 .nationality(Country.USA)
                 .build();
@@ -417,17 +315,11 @@ class PersonRequestTests {
     @Test
     void shouldBeValidWithDifferentEnumValues() {
         // Given
-        LocationRequest location = LocationRequest.builder()
-                .x(100)
-                .y(200L)
-                .z(300L)
-                .build();
-
         PersonRequest request = PersonRequest.builder()
                 .name("Jane Doe")
                 .eyeColor(Color.GREEN)
                 .hairColor(Color.BROWN)
-                .location(location)
+                .locationId(2L)
                 .weight(60.0f)
                 .nationality(Country.UK)
                 .build();
@@ -438,4 +330,43 @@ class PersonRequestTests {
         // Then
         assertThat(violations).isEmpty();
     }
+
+    @Test
+    void shouldBeValidWithZeroLocationId() {
+        // Given
+        PersonRequest request = PersonRequest.builder()
+                .name("John Doe")
+                .eyeColor(Color.BLUE)
+                .hairColor(Color.BLACK)
+                .locationId(0L) // 0 - валидный Long, но невалидный ID в БД
+                .weight(75.5f)
+                .nationality(Country.USA)
+                .build();
+
+        // When
+        Set<ConstraintViolation<PersonRequest>> violations = validator.validate(request);
+
+        // Then - locationId не может быть null, но 0L - валидное значение Long
+        assertThat(violations).isEmpty();
+    }
+
+    @Test
+    void shouldBeValidWithNegativeLocationId() {
+        // Given
+        PersonRequest request = PersonRequest.builder()
+                .name("John Doe")
+                .eyeColor(Color.BLUE)
+                .hairColor(Color.BLACK)
+                .locationId(-1L) // Отрицательный ID - валидный Long
+                .weight(75.5f)
+                .nationality(Country.USA)
+                .build();
+
+        // When
+        Set<ConstraintViolation<PersonRequest>> violations = validator.validate(request);
+
+        // Then - валидация проходит, но такой ID не будет найден в БД
+        assertThat(violations).isEmpty();
+    }
+
 }

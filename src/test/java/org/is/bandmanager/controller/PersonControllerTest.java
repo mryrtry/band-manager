@@ -1,7 +1,6 @@
 package org.is.bandmanager.controller;
 
 import org.is.bandmanager.config.IntegrationTest;
-import org.is.bandmanager.dto.request.LocationRequest;
 import org.is.bandmanager.dto.request.PersonRequest;
 import org.is.bandmanager.model.Location;
 import org.is.bandmanager.model.Person;
@@ -35,6 +34,8 @@ class PersonControllerTest extends AbstractIntegrationTest {
 
     private WebTestClient webTestClient;
 
+    private Location savedLocation;
+
     @BeforeAll
     void setClient() {
         this.webTestClient = WebTestClient.bindToServer()
@@ -46,6 +47,13 @@ class PersonControllerTest extends AbstractIntegrationTest {
     void setUp() {
         personRepository.deleteAll();
         locationRepository.deleteAll();
+
+        // Создаем тестовую локацию для использования в тестах
+        savedLocation = locationRepository.save(Location.builder()
+                .x(10)
+                .y(20L)
+                .z(30L)
+                .build());
     }
 
     @AfterAll
@@ -54,20 +62,12 @@ class PersonControllerTest extends AbstractIntegrationTest {
         locationRepository.deleteAll();
     }
 
-    private LocationRequest createSampleLocationRequest() {
-        return LocationRequest.builder()
-                .x(10)
-                .y(20L)
-                .z(30L)
-                .build();
-    }
-
     private PersonRequest createSamplePersonRequest() {
         return PersonRequest.builder()
                 .name("John Doe")
                 .eyeColor(BLUE)
                 .hairColor(BLACK)
-                .location(createSampleLocationRequest())
+                .locationId(savedLocation.getId()) // Используем ID существующей локации
                 .weight(70f)
                 .nationality(USA)
                 .build();
@@ -91,6 +91,7 @@ class PersonControllerTest extends AbstractIntegrationTest {
 
         List<Person> persons = personRepository.findAll();
         assertThat(persons).hasSize(1);
+        assertThat(persons.get(0).getLocation().getId()).isEqualTo(savedLocation.getId());
         assertThat(persons.get(0).getLocation().getY()).isEqualTo(20L);
     }
 
@@ -133,9 +134,9 @@ class PersonControllerTest extends AbstractIntegrationTest {
     }
 
     @Test
-    void shouldReturnBadRequestWhenLocationIsNull() {
+    void shouldReturnBadRequestWhenLocationIdIsNull() {
         PersonRequest request = createSamplePersonRequest();
-        request.setLocation(null);
+        request.setLocationId(null);
 
         webTestClient.post()
                 .uri("/persons")
@@ -146,9 +147,25 @@ class PersonControllerTest extends AbstractIntegrationTest {
                 .expectBody()
                 .jsonPath("$.status").isEqualTo(400)
                 .jsonPath("$.message").isEqualTo("Ошибка валидации данных")
-                .jsonPath("$.details[0].field").isEqualTo("location")
-                .jsonPath("$.details[0].message").isEqualTo("Person.LocationRequest не может быть пустым")
+                .jsonPath("$.details[0].field").isEqualTo("locationId")
+                .jsonPath("$.details[0].message").isEqualTo("Person.LocationId не может быть пустым")
                 .jsonPath("$.details[0].errorType").isEqualTo("VALIDATION_ERROR");
+    }
+
+    @Test
+    void shouldReturnNotFoundWhenLocationIdDoesNotExist() {
+        PersonRequest request = createSamplePersonRequest();
+        request.setLocationId(999L); // Несуществующий ID
+
+        webTestClient.post()
+                .uri("/persons")
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(request)
+                .exchange()
+                .expectStatus().isNotFound()
+                .expectBody()
+                .jsonPath("$.status").isEqualTo(404)
+                .jsonPath("$.message").isEqualTo("Location с id 999 не найден");
     }
 
     @Test
@@ -156,7 +173,7 @@ class PersonControllerTest extends AbstractIntegrationTest {
         PersonRequest request = createSamplePersonRequest();
         request.setName("");
         request.setWeight(-10f);
-        request.setLocation(null);
+        request.setLocationId(null);
 
         webTestClient.post()
                 .uri("/persons")
@@ -172,34 +189,23 @@ class PersonControllerTest extends AbstractIntegrationTest {
 
     @Test
     void shouldGetAllPersons() {
-        PersonRequest request1 = createSamplePersonRequest();
-        PersonRequest request2 = createSamplePersonRequest();
-        request2.setName("Jane Doe");
-
-        Person p1 = personRepository.save(Person.builder()
-                .name(request1.getName())
-                .eyeColor(request1.getEyeColor())
-                .hairColor(request1.getHairColor())
-                .location(Location.builder()
-                        .x(request1.getLocation().getX())
-                        .y(request1.getLocation().getY())
-                        .z(request1.getLocation().getZ())
-                        .build())
-                .weight(request1.getWeight())
-                .nationality(request1.getNationality())
+        // Создаем несколько персон
+        Person person1 = personRepository.save(Person.builder()
+                .name("John Doe")
+                .eyeColor(BLUE)
+                .hairColor(BLACK)
+                .location(savedLocation)
+                .weight(70f)
+                .nationality(USA)
                 .build());
 
-        Person p2 = personRepository.save(Person.builder()
-                .name(request2.getName())
-                .eyeColor(request2.getEyeColor())
-                .hairColor(request2.getHairColor())
-                .location(Location.builder()
-                        .x(request2.getLocation().getX())
-                        .y(request2.getLocation().getY())
-                        .z(request2.getLocation().getZ())
-                        .build())
-                .weight(request2.getWeight())
-                .nationality(request2.getNationality())
+        Person person2 = personRepository.save(Person.builder()
+                .name("Jane Doe")
+                .eyeColor(BLACK)
+                .hairColor(BLUE)
+                .location(savedLocation)
+                .weight(65f)
+                .nationality(USA)
                 .build());
 
         webTestClient.get()
@@ -208,24 +214,19 @@ class PersonControllerTest extends AbstractIntegrationTest {
                 .expectStatus().isOk()
                 .expectBody()
                 .jsonPath("$.length()").isEqualTo(2)
-                .jsonPath("$[0].id").isEqualTo(p1.getId().intValue())
-                .jsonPath("$[1].id").isEqualTo(p2.getId().intValue());
+                .jsonPath("$[0].id").isEqualTo(person1.getId().intValue())
+                .jsonPath("$[1].id").isEqualTo(person2.getId().intValue());
     }
 
     @Test
     void shouldGetPersonById() {
-        PersonRequest request = createSamplePersonRequest();
         Person savedPerson = personRepository.save(Person.builder()
-                .name(request.getName())
-                .eyeColor(request.getEyeColor())
-                .hairColor(request.getHairColor())
-                .location(Location.builder()
-                        .x(request.getLocation().getX())
-                        .y(request.getLocation().getY())
-                        .z(request.getLocation().getZ())
-                        .build())
-                .weight(request.getWeight())
-                .nationality(request.getNationality())
+                .name("John Doe")
+                .eyeColor(BLUE)
+                .hairColor(BLACK)
+                .location(savedLocation)
+                .weight(70f)
+                .nationality(USA)
                 .build());
 
         webTestClient.get()
@@ -234,6 +235,7 @@ class PersonControllerTest extends AbstractIntegrationTest {
                 .expectStatus().isOk()
                 .expectBody()
                 .jsonPath("$.id").isEqualTo(savedPerson.getId())
+                .jsonPath("$.name").isEqualTo("John Doe")
                 .jsonPath("$.location.y").isEqualTo(20);
     }
 
@@ -252,23 +254,30 @@ class PersonControllerTest extends AbstractIntegrationTest {
 
     @Test
     void shouldUpdatePersonSuccessfully() {
-        PersonRequest request = createSamplePersonRequest();
         Person savedPerson = personRepository.save(Person.builder()
-                .name(request.getName())
-                .eyeColor(request.getEyeColor())
-                .hairColor(request.getHairColor())
-                .location(Location.builder()
-                        .x(request.getLocation().getX())
-                        .y(request.getLocation().getY())
-                        .z(request.getLocation().getZ())
-                        .build())
-                .weight(request.getWeight())
-                .nationality(request.getNationality())
+                .name("John Doe")
+                .eyeColor(BLUE)
+                .hairColor(BLACK)
+                .location(savedLocation)
+                .weight(70f)
+                .nationality(USA)
                 .build());
 
-        PersonRequest updateRequest = createSamplePersonRequest();
-        updateRequest.setName("Updated Name");
-        updateRequest.getLocation().setY(999L);
+        // Создаем новую локацию для обновления
+        Location newLocation = locationRepository.save(Location.builder()
+                .x(100)
+                .y(200L)
+                .z(300L)
+                .build());
+
+        PersonRequest updateRequest = PersonRequest.builder()
+                .name("Updated Name")
+                .eyeColor(BLACK)
+                .hairColor(BLUE)
+                .locationId(newLocation.getId())
+                .weight(75f)
+                .nationality(USA)
+                .build();
 
         webTestClient.put()
                 .uri("/persons/{id}", savedPerson.getId())
@@ -278,11 +287,12 @@ class PersonControllerTest extends AbstractIntegrationTest {
                 .expectStatus().isOk()
                 .expectBody()
                 .jsonPath("$.name").isEqualTo("Updated Name")
-                .jsonPath("$.location.y").isEqualTo(999);
+                .jsonPath("$.location.y").isEqualTo(200);
 
         Person updatedPerson = personRepository.findById(savedPerson.getId()).orElseThrow();
         assertThat(updatedPerson.getName()).isEqualTo("Updated Name");
-        assertThat(updatedPerson.getLocation().getY()).isEqualTo(999L);
+        assertThat(updatedPerson.getLocation().getId()).isEqualTo(newLocation.getId());
+        assertThat(updatedPerson.getWeight()).isEqualTo(75f);
     }
 
     @Test
@@ -304,23 +314,23 @@ class PersonControllerTest extends AbstractIntegrationTest {
 
     @Test
     void shouldReturnBadRequestWhenUpdatingWithInvalidData() {
-        PersonRequest request = createSamplePersonRequest();
         Person savedPerson = personRepository.save(Person.builder()
-                .name(request.getName())
-                .eyeColor(request.getEyeColor())
-                .hairColor(request.getHairColor())
-                .location(Location.builder()
-                        .x(request.getLocation().getX())
-                        .y(request.getLocation().getY())
-                        .z(request.getLocation().getZ())
-                        .build())
-                .weight(request.getWeight())
-                .nationality(request.getNationality())
+                .name("John Doe")
+                .eyeColor(BLUE)
+                .hairColor(BLACK)
+                .location(savedLocation)
+                .weight(70f)
+                .nationality(USA)
                 .build());
 
-        PersonRequest invalidUpdate = createSamplePersonRequest();
-        invalidUpdate.setName("");
-        invalidUpdate.setWeight(-5f);
+        PersonRequest invalidUpdate = PersonRequest.builder()
+                .name("")
+                .eyeColor(BLUE)
+                .hairColor(BLACK)
+                .locationId(savedLocation.getId())
+                .weight(-5f)
+                .nationality(USA)
+                .build();
 
         webTestClient.put()
                 .uri("/persons/{id}", savedPerson.getId())
@@ -336,18 +346,13 @@ class PersonControllerTest extends AbstractIntegrationTest {
 
     @Test
     void shouldDeletePersonSuccessfully() {
-        PersonRequest request = createSamplePersonRequest();
         Person savedPerson = personRepository.save(Person.builder()
-                .name(request.getName())
-                .eyeColor(request.getEyeColor())
-                .hairColor(request.getHairColor())
-                .location(Location.builder()
-                        .x(request.getLocation().getX())
-                        .y(request.getLocation().getY())
-                        .z(request.getLocation().getZ())
-                        .build())
-                .weight(request.getWeight())
-                .nationality(request.getNationality())
+                .name("John Doe")
+                .eyeColor(BLUE)
+                .hairColor(BLACK)
+                .location(savedLocation)
+                .weight(70f)
+                .nationality(USA)
                 .build());
 
         webTestClient.delete()
