@@ -90,7 +90,11 @@ class AlbumControllerTest extends AbstractIntegrationTest {
                 .exchange()
                 .expectStatus().isBadRequest()
                 .expectBody()
-                .jsonPath("$.name").isEqualTo("Album.Name не может быть пустым");
+                .jsonPath("$.status").isEqualTo(400)
+                .jsonPath("$.message").isEqualTo("Ошибка валидации данных")
+                .jsonPath("$.details[0].field").isEqualTo("name")
+                .jsonPath("$.details[0].message").isEqualTo("Album.Name не может быть пустым")
+                .jsonPath("$.details[0].errorType").isEqualTo("VALIDATION_ERROR");
     }
 
     @Test
@@ -110,7 +114,11 @@ class AlbumControllerTest extends AbstractIntegrationTest {
                 .exchange()
                 .expectStatus().isBadRequest()
                 .expectBody()
-                .jsonPath("$.tracks").isEqualTo("Album.Tracks не может быть пустым");
+                .jsonPath("$.status").isEqualTo(400)
+                .jsonPath("$.message").isEqualTo("Ошибка валидации данных")
+                .jsonPath("$.details[0].field").isEqualTo("tracks")
+                .jsonPath("$.details[0].message").isEqualTo("Album.Tracks не может быть пустым")
+                .jsonPath("$.details[0].errorType").isEqualTo("VALIDATION_ERROR");
     }
 
     @Test
@@ -130,7 +138,39 @@ class AlbumControllerTest extends AbstractIntegrationTest {
                 .exchange()
                 .expectStatus().isBadRequest()
                 .expectBody()
-                .jsonPath("$.sales").isEqualTo("Album.Sales должно быть > 0");
+                .jsonPath("$.status").isEqualTo(400)
+                .jsonPath("$.message").isEqualTo("Ошибка валидации данных")
+                .jsonPath("$.details[0].field").isEqualTo("sales")
+                .jsonPath("$.details[0].message").isEqualTo("Album.Sales должно быть > 0")
+                .jsonPath("$.details[0].errorType").isEqualTo("VALIDATION_ERROR");
+    }
+
+    @Test
+    void shouldReturnBadRequestWhenCreatingAlbumWithMultipleErrors() {
+        // Given
+        AlbumRequest request = AlbumRequest.builder()
+                .name("") // Invalid
+                .tracks(null) // Invalid
+                .sales(-5) // Invalid
+                .build();
+
+        // When & Then
+        webTestClient.post()
+                .uri("/albums")
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(request)
+                .exchange()
+                .expectStatus().isBadRequest()
+                .expectBody()
+                .jsonPath("$.status").isEqualTo(400)
+                .jsonPath("$.message").isEqualTo("Ошибка валидации данных")
+                .jsonPath("$.details.length()").isEqualTo(3)
+                .jsonPath("$.details[0].field").isEqualTo("name")
+                .jsonPath("$.details[0].message").isEqualTo("Album.Name не может быть пустым")
+                .jsonPath("$.details[1].field").isEqualTo("tracks")
+                .jsonPath("$.details[1].message").isEqualTo("Album.Tracks не может быть пустым")
+                .jsonPath("$.details[2].field").isEqualTo("sales")
+                .jsonPath("$.details[2].message").isEqualTo("Album.Sales должно быть > 0");
     }
 
     @Test
@@ -185,7 +225,10 @@ class AlbumControllerTest extends AbstractIntegrationTest {
                 .exchange()
                 .expectStatus().isNotFound()
                 .expectBody()
-                .jsonPath("$.error").exists();
+                .jsonPath("$.status").isEqualTo(404)
+                .jsonPath("$.message").isEqualTo("Ошибка выполнения операции")
+                .jsonPath("$.details[0].field").isEqualTo("service")
+                .jsonPath("$.details[0].errorType").isEqualTo("SERVICE_ERROR");
     }
 
     @Test
@@ -238,7 +281,10 @@ class AlbumControllerTest extends AbstractIntegrationTest {
                 .exchange()
                 .expectStatus().isNotFound()
                 .expectBody()
-                .jsonPath("$.error").exists();
+                .jsonPath("$.status").isEqualTo(404)
+                .jsonPath("$.message").isEqualTo("Ошибка выполнения операции")
+                .jsonPath("$.details[0].field").isEqualTo("service")
+                .jsonPath("$.details[0].errorType").isEqualTo("SERVICE_ERROR");
     }
 
     @Test
@@ -268,7 +314,35 @@ class AlbumControllerTest extends AbstractIntegrationTest {
                 .exchange()
                 .expectStatus().isNotFound()
                 .expectBody()
-                .jsonPath("$.error").exists();
+                .jsonPath("$.status").isEqualTo(404)
+                .jsonPath("$.message").isEqualTo("Ошибка выполнения операции")
+                .jsonPath("$.details[0].field").isEqualTo("service")
+                .jsonPath("$.details[0].errorType").isEqualTo("SERVICE_ERROR");
     }
 
+    @Test
+    void shouldReturnBadRequestWhenUpdatingWithInvalidData() {
+        // Given
+        Album album = albumRepository.save(
+                Album.builder().name("Valid Album").tracks(5L).sales(50).build()
+        );
+
+        AlbumRequest invalidUpdate = AlbumRequest.builder()
+                .name("") // Invalid
+                .tracks(null) // Invalid
+                .sales(-10) // Invalid
+                .build();
+
+        // When & Then
+        webTestClient.put()
+                .uri("/albums/{id}", album.getId())
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(invalidUpdate)
+                .exchange()
+                .expectStatus().isBadRequest()
+                .expectBody()
+                .jsonPath("$.status").isEqualTo(400)
+                .jsonPath("$.message").isEqualTo("Ошибка валидации данных")
+                .jsonPath("$.details.length()").isEqualTo(3);
+    }
 }

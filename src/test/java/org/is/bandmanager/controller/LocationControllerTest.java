@@ -90,7 +90,11 @@ class LocationControllerTest extends AbstractIntegrationTest {
                 .exchange()
                 .expectStatus().isBadRequest()
                 .expectBody()
-                .jsonPath("$.y").isEqualTo("Location.Y не может быть пустым");
+                .jsonPath("$.status").isEqualTo(400)
+                .jsonPath("$.message").isEqualTo("Ошибка валидации данных")
+                .jsonPath("$.details[0].field").isEqualTo("y")
+                .jsonPath("$.details[0].message").isEqualTo("Location.Y не может быть пустым")
+                .jsonPath("$.details[0].errorType").isEqualTo("VALIDATION_ERROR");
     }
 
     @Test
@@ -110,7 +114,37 @@ class LocationControllerTest extends AbstractIntegrationTest {
                 .exchange()
                 .expectStatus().isBadRequest()
                 .expectBody()
-                .jsonPath("$.z").isEqualTo("Location.Z не может быть пустым");
+                .jsonPath("$.status").isEqualTo(400)
+                .jsonPath("$.message").isEqualTo("Ошибка валидации данных")
+                .jsonPath("$.details[0].field").isEqualTo("z")
+                .jsonPath("$.details[0].message").isEqualTo("Location.Z не может быть пустым")
+                .jsonPath("$.details[0].errorType").isEqualTo("VALIDATION_ERROR");
+    }
+
+    @Test
+    void shouldReturnBadRequestWhenCreatingLocationWithMultipleErrors() {
+        // Given
+        LocationRequest request = LocationRequest.builder()
+                .x(10)
+                .y(null) // Invalid
+                .z(null) // Invalid
+                .build();
+
+        // When & Then
+        webTestClient.post()
+                .uri("/locations")
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(request)
+                .exchange()
+                .expectStatus().isBadRequest()
+                .expectBody()
+                .jsonPath("$.status").isEqualTo(400)
+                .jsonPath("$.message").isEqualTo("Ошибка валидации данных")
+                .jsonPath("$.details.length()").isEqualTo(2)
+                .jsonPath("$.details[0].field").isEqualTo("y")
+                .jsonPath("$.details[0].message").isEqualTo("Location.Y не может быть пустым")
+                .jsonPath("$.details[1].field").isEqualTo("z")
+                .jsonPath("$.details[1].message").isEqualTo("Location.Z не может быть пустым");
     }
 
     @Test
@@ -175,7 +209,10 @@ class LocationControllerTest extends AbstractIntegrationTest {
                 .exchange()
                 .expectStatus().isNotFound()
                 .expectBody()
-                .jsonPath("$.error").exists();
+                .jsonPath("$.status").isEqualTo(404)
+                .jsonPath("$.message").isEqualTo("Ошибка выполнения операции")
+                .jsonPath("$.details[0].field").isEqualTo("service")
+                .jsonPath("$.details[0].errorType").isEqualTo("SERVICE_ERROR");
     }
 
     @Test
@@ -231,7 +268,39 @@ class LocationControllerTest extends AbstractIntegrationTest {
                 .exchange()
                 .expectStatus().isNotFound()
                 .expectBody()
-                .jsonPath("$.error").exists();
+                .jsonPath("$.status").isEqualTo(404)
+                .jsonPath("$.message").isEqualTo("Ошибка выполнения операции")
+                .jsonPath("$.details[0].field").isEqualTo("service")
+                .jsonPath("$.details[0].errorType").isEqualTo("SERVICE_ERROR");
+    }
+
+    @Test
+    void shouldReturnBadRequestWhenUpdatingWithInvalidData() {
+        // Given
+        Location location = Location.builder()
+                .x(1)
+                .y(10L)
+                .z(100L)
+                .build();
+        Location savedLocation = locationRepository.save(location);
+
+        LocationRequest invalidUpdate = LocationRequest.builder()
+                .x(10)
+                .y(null) // Invalid
+                .z(null) // Invalid
+                .build();
+
+        // When & Then
+        webTestClient.put()
+                .uri("/locations/{id}", savedLocation.getId())
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(invalidUpdate)
+                .exchange()
+                .expectStatus().isBadRequest()
+                .expectBody()
+                .jsonPath("$.status").isEqualTo(400)
+                .jsonPath("$.message").isEqualTo("Ошибка валидации данных")
+                .jsonPath("$.details.length()").isEqualTo(2);
     }
 
     @Test
@@ -267,7 +336,10 @@ class LocationControllerTest extends AbstractIntegrationTest {
                 .exchange()
                 .expectStatus().isNotFound()
                 .expectBody()
-                .jsonPath("$.error").exists();
+                .jsonPath("$.status").isEqualTo(404)
+                .jsonPath("$.message").isEqualTo("Ошибка выполнения операции")
+                .jsonPath("$.details[0].field").isEqualTo("service")
+                .jsonPath("$.details[0].errorType").isEqualTo("SERVICE_ERROR");
     }
 
     @Test
@@ -291,6 +363,20 @@ class LocationControllerTest extends AbstractIntegrationTest {
                 .jsonPath("$.x").isEmpty()
                 .jsonPath("$.y").isEqualTo(20)
                 .jsonPath("$.z").isEqualTo(30);
+    }
+
+    @Test
+    void shouldReturnBadRequestWhenCreatingWithMissingRequestBody() {
+        webTestClient.post()
+                .uri("/locations")
+                .contentType(MediaType.APPLICATION_JSON)
+                .exchange() // Нет bodyValue()
+                .expectStatus().isBadRequest()
+                .expectBody()
+                .jsonPath("$.status").isEqualTo(400)
+                .jsonPath("$.message").isEqualTo("Отсутствует тело запроса")
+                .jsonPath("$.details[0].field").isEqualTo("requestBody")
+                .jsonPath("$.details[0].errorType").isEqualTo("INVALID_JSON");
     }
 
 }

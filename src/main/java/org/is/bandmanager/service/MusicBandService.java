@@ -4,6 +4,7 @@ import jakarta.validation.Valid;
 import org.is.bandmanager.dto.MusicBandDto;
 import org.is.bandmanager.dto.request.MusicBandRequest;
 
+import java.util.Date;
 import java.util.List;
 
 public interface MusicBandService {
@@ -13,6 +14,10 @@ public interface MusicBandService {
     List<MusicBandDto> getAll();
 
     MusicBandDto get(Integer id);
+
+    MusicBandDto getWithMaxCoordinates();
+
+    List<MusicBandDto> getByEstablishmentDateBefore(Date date);
 
     MusicBandDto update(Integer id, @Valid MusicBandRequest request);
 

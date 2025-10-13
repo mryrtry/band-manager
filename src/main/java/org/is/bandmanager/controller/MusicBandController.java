@@ -1,14 +1,18 @@
 package org.is.bandmanager.controller;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.PastOrPresent;
 import lombok.RequiredArgsConstructor;
 import org.is.bandmanager.dto.MusicBandDto;
 import org.is.bandmanager.dto.request.MusicBandRequest;
 import org.is.bandmanager.service.MusicBandService;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Date;
 import java.util.List;
 
 @RestController
@@ -25,8 +29,26 @@ public class MusicBandController {
 
     @GetMapping("/{id}")
     public ResponseEntity<MusicBandDto> getMusicBand(@PathVariable Integer id) {
-        MusicBandDto MusicBand = musicBandService.get(id);
-        return ResponseEntity.ok(MusicBand);
+        MusicBandDto musicBand = musicBandService.get(id);
+        return ResponseEntity.ok(musicBand);
+    }
+
+    @GetMapping("/max-coordinates")
+    public ResponseEntity<MusicBandDto> getMaxCoordinates() {
+        MusicBandDto musicBand = musicBandService.getWithMaxCoordinates();
+        return ResponseEntity.ok(musicBand);
+    }
+
+    @GetMapping("/established-before")
+    public ResponseEntity<List<MusicBandDto>> getBandsEstablishedBefore(
+            @RequestParam
+            @NotNull(message = "Date parameter is required")
+            @DateTimeFormat(pattern = "yyyy-MM-dd")
+            @PastOrPresent(message = "Date cannot be in the future")
+            Date date) {
+
+        List<MusicBandDto> bands = musicBandService.getByEstablishmentDateBefore(date);
+        return ResponseEntity.ok(bands);
     }
 
     @PostMapping

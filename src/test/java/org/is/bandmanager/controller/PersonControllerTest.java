@@ -106,7 +106,68 @@ class PersonControllerTest extends AbstractIntegrationTest {
                 .exchange()
                 .expectStatus().isBadRequest()
                 .expectBody()
-                .jsonPath("$.name").isEqualTo("Person.Name не может быть пустым");
+                .jsonPath("$.status").isEqualTo(400)
+                .jsonPath("$.message").isEqualTo("Ошибка валидации данных")
+                .jsonPath("$.details[0].field").isEqualTo("name")
+                .jsonPath("$.details[0].message").isEqualTo("Person.Name не может быть пустым")
+                .jsonPath("$.details[0].errorType").isEqualTo("VALIDATION_ERROR");
+    }
+
+    @Test
+    void shouldReturnBadRequestWhenWeightIsNegative() {
+        PersonRequest request = createSamplePersonRequest();
+        request.setWeight(-5f);
+
+        webTestClient.post()
+                .uri("/persons")
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(request)
+                .exchange()
+                .expectStatus().isBadRequest()
+                .expectBody()
+                .jsonPath("$.status").isEqualTo(400)
+                .jsonPath("$.message").isEqualTo("Ошибка валидации данных")
+                .jsonPath("$.details[0].field").isEqualTo("weight")
+                .jsonPath("$.details[0].message").isEqualTo("Person.Weight должно быть > 0")
+                .jsonPath("$.details[0].errorType").isEqualTo("VALIDATION_ERROR");
+    }
+
+    @Test
+    void shouldReturnBadRequestWhenLocationIsNull() {
+        PersonRequest request = createSamplePersonRequest();
+        request.setLocation(null);
+
+        webTestClient.post()
+                .uri("/persons")
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(request)
+                .exchange()
+                .expectStatus().isBadRequest()
+                .expectBody()
+                .jsonPath("$.status").isEqualTo(400)
+                .jsonPath("$.message").isEqualTo("Ошибка валидации данных")
+                .jsonPath("$.details[0].field").isEqualTo("location")
+                .jsonPath("$.details[0].message").isEqualTo("Person.LocationRequest не может быть пустым")
+                .jsonPath("$.details[0].errorType").isEqualTo("VALIDATION_ERROR");
+    }
+
+    @Test
+    void shouldReturnBadRequestWhenMultipleValidationErrors() {
+        PersonRequest request = createSamplePersonRequest();
+        request.setName("");
+        request.setWeight(-10f);
+        request.setLocation(null);
+
+        webTestClient.post()
+                .uri("/persons")
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(request)
+                .exchange()
+                .expectStatus().isBadRequest()
+                .expectBody()
+                .jsonPath("$.status").isEqualTo(400)
+                .jsonPath("$.message").isEqualTo("Ошибка валидации данных")
+                .jsonPath("$.details.length()").isEqualTo(3);
     }
 
     @Test
@@ -177,6 +238,19 @@ class PersonControllerTest extends AbstractIntegrationTest {
     }
 
     @Test
+    void shouldReturnNotFoundWhenGettingNonExistentPerson() {
+        webTestClient.get()
+                .uri("/persons/{id}", 999L)
+                .exchange()
+                .expectStatus().isNotFound()
+                .expectBody()
+                .jsonPath("$.status").isEqualTo(404)
+                .jsonPath("$.message").isEqualTo("Ошибка выполнения операции")
+                .jsonPath("$.details[0].field").isEqualTo("service")
+                .jsonPath("$.details[0].errorType").isEqualTo("SERVICE_ERROR");
+    }
+
+    @Test
     void shouldUpdatePersonSuccessfully() {
         PersonRequest request = createSamplePersonRequest();
         Person savedPerson = personRepository.save(Person.builder()
@@ -212,6 +286,55 @@ class PersonControllerTest extends AbstractIntegrationTest {
     }
 
     @Test
+    void shouldReturnNotFoundWhenUpdatingNonExistentPerson() {
+        PersonRequest updateRequest = createSamplePersonRequest();
+
+        webTestClient.put()
+                .uri("/persons/{id}", 999L)
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(updateRequest)
+                .exchange()
+                .expectStatus().isNotFound()
+                .expectBody()
+                .jsonPath("$.status").isEqualTo(404)
+                .jsonPath("$.message").isEqualTo("Ошибка выполнения операции")
+                .jsonPath("$.details[0].field").isEqualTo("service")
+                .jsonPath("$.details[0].errorType").isEqualTo("SERVICE_ERROR");
+    }
+
+    @Test
+    void shouldReturnBadRequestWhenUpdatingWithInvalidData() {
+        PersonRequest request = createSamplePersonRequest();
+        Person savedPerson = personRepository.save(Person.builder()
+                .name(request.getName())
+                .eyeColor(request.getEyeColor())
+                .hairColor(request.getHairColor())
+                .location(Location.builder()
+                        .x(request.getLocation().getX())
+                        .y(request.getLocation().getY())
+                        .z(request.getLocation().getZ())
+                        .build())
+                .weight(request.getWeight())
+                .nationality(request.getNationality())
+                .build());
+
+        PersonRequest invalidUpdate = createSamplePersonRequest();
+        invalidUpdate.setName("");
+        invalidUpdate.setWeight(-5f);
+
+        webTestClient.put()
+                .uri("/persons/{id}", savedPerson.getId())
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(invalidUpdate)
+                .exchange()
+                .expectStatus().isBadRequest()
+                .expectBody()
+                .jsonPath("$.status").isEqualTo(400)
+                .jsonPath("$.message").isEqualTo("Ошибка валидации данных")
+                .jsonPath("$.details.length()").isEqualTo(2);
+    }
+
+    @Test
     void shouldDeletePersonSuccessfully() {
         PersonRequest request = createSamplePersonRequest();
         Person savedPerson = personRepository.save(Person.builder()
@@ -244,7 +367,24 @@ class PersonControllerTest extends AbstractIntegrationTest {
                 .exchange()
                 .expectStatus().isNotFound()
                 .expectBody()
-                .jsonPath("$.error").exists();
+                .jsonPath("$.status").isEqualTo(404)
+                .jsonPath("$.message").isEqualTo("Ошибка выполнения операции")
+                .jsonPath("$.details[0].field").isEqualTo("service")
+                .jsonPath("$.details[0].errorType").isEqualTo("SERVICE_ERROR");
+    }
+
+    @Test
+    void shouldReturnBadRequestWhenCreatingWithMissingRequestBody() {
+        webTestClient.post()
+                .uri("/persons")
+                .contentType(MediaType.APPLICATION_JSON)
+                .exchange()
+                .expectStatus().isBadRequest()
+                .expectBody()
+                .jsonPath("$.status").isEqualTo(400)
+                .jsonPath("$.message").isEqualTo("Отсутствует тело запроса")
+                .jsonPath("$.details[0].field").isEqualTo("requestBody")
+                .jsonPath("$.details[0].errorType").isEqualTo("INVALID_JSON");
     }
 
 }
