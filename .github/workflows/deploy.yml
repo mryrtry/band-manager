@@ -5,15 +5,15 @@ on:
     branches: [ "master" ]
   pull_request:
     branches: [ "master" ]
-  workflow_dispatch: { }
+  workflow_dispatch: {}
 
 env:
   REMOTE_HOST: se.ifmo.ru
   REMOTE_PORT: 2222
   REMOTE_USER: s409483
-  REMOTE_DIR: $HOME/BandManager
-  REMOTE_JAR: $HOME/BandManager/BandManager.jar
-  REMOTE_LOG: $HOME/BandManager/band-manager.log
+  REMOTE_DIR: ~/BandManager
+  REMOTE_JAR: ~/BandManager/BandManager.jar
+  REMOTE_LOG: ~/BandManager/band-manager.log
   JAR_NAME: BandManager-0.1.jar
 
 jobs:
@@ -33,7 +33,7 @@ jobs:
           java-version: 17
           cache: maven
 
-      - name: Build project
+      - name: Build project (skip tests)
         run: mvn -B clean package -DskipTests
 
       - name: Upload built jar as artifact
@@ -72,6 +72,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: [ build, test ]
     if: github.ref == 'refs/heads/master'
+
     steps:
       - name: Download built jar
         uses: actions/download-artifact@v4
@@ -84,7 +85,7 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.DEPLOY_KEY }}
 
-      - name: Ensure directory exists & stop old app
+      - name: Prepare server (stop old app, ensure dir)
         uses: appleboy/ssh-action@v0.1.7
         with:
           host: ${{ env.REMOTE_HOST }}
@@ -113,7 +114,7 @@ jobs:
               echo "Старый процесс не найден."
             fi
 
-      - name: Copy jar to server
+      - name: Upload new JAR to server
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ env.REMOTE_HOST }}
@@ -121,9 +122,10 @@ jobs:
           key: ${{ secrets.DEPLOY_KEY }}
           port: ${{ env.REMOTE_PORT }}
           source: ./artifact/${{ env.JAR_NAME }}
-          target: ~/BandManager/BandManager.jar
+          target: ~/BandManager/
+          overwrite: true
 
-      - name: Start app on server (nohup)
+      - name: Start new app
         uses: appleboy/ssh-action@v0.1.7
         with:
           host: ${{ env.REMOTE_HOST }}
@@ -132,8 +134,8 @@ jobs:
           port: ${{ env.REMOTE_PORT }}
           script: |
             set -e
-            APP_DIR="~/BandManager"
-            APP_JAR="$APP_DIR/BandManager.jar"
+            APP_DIR="$HOME/BandManager"
+            APP_JAR="$APP_DIR/${JAR_NAME}"
             LOG_FILE="$APP_DIR/band-manager.log"
 
             echo "Запускаю приложение..."
@@ -142,6 +144,4 @@ jobs:
 
             sleep 5
             echo "Проверка, что процесс запущен..."
-            pgrep -f "$APP_JAR" || (echo "Ошибка: процесс не запущен!" && exit 1)
-            echo "✅ Приложение запущено успешно."
-
+            pgrep -f "$APP_JAR" > /dev/null && echo "✅ Приложение запущено успешно." || (echo "❌ Ошибка: процесс не запущен!" && exit 1)
