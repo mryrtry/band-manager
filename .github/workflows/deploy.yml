@@ -1,0 +1,45 @@
+name: Deploy to Helios
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Build jar with Maven (prod profile)
+        run: mvn clean package -Pprod -DskipTests
+
+      - name: Copy jar to Helios
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: se.ifmo.ru
+          port: 2222
+          username: s409483
+          key: ${{ secrets.DEPLOY_KEY }}
+          source: "target/BandManager-0.1.jar"
+          target: "~/BandManager/BandManager.jar"
+
+      - name: Restart app on Helios
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: se.ifmo.ru
+          port: 2222
+          username: s409483
+          key: ${{ secrets.DEPLOY_KEY }}
+          script: |
+            pkill -f 'java.*BandManager.jar' || true
+            nohup java -jar ~/app/BandManager.jar --spring.profiles.active=prod > ~/app/app.log 2>&1 &
+            echo "✅ Application restarted!"
