@@ -3,6 +3,7 @@ package org.is.bandmanager.service;
 import jakarta.validation.Valid;
 import org.is.bandmanager.dto.MusicBandDto;
 import org.is.bandmanager.dto.request.MusicBandRequest;
+import org.is.bandmanager.model.MusicBand;
 
 import java.util.Date;
 import java.util.List;
@@ -14,6 +15,8 @@ public interface MusicBandService {
     List<MusicBandDto> getAll();
 
     MusicBandDto get(Integer id);
+
+    MusicBand getEntity(Integer id);
 
     MusicBandDto getWithMaxCoordinates();
 
