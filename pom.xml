@@ -32,14 +32,6 @@
             <properties>
                 <spring.profiles.active>prod</spring.profiles.active>
             </properties>
-            <build>
-                <resources>
-                    <resource>
-                        <directory>src/main/resources</directory>
-                        <filtering>true</filtering>
-                    </resource>
-                </resources>
-            </build>
         </profile>
     </profiles>
 
