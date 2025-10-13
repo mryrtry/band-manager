@@ -124,6 +124,7 @@ jobs:
           source: ./artifact/${{ env.JAR_NAME }}
           target: ~/BandManager/
           overwrite: true
+          tar_exec: false
 
       - name: Start new app
         uses: appleboy/ssh-action@v0.1.7
