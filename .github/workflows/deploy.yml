@@ -31,6 +31,7 @@ jobs:
           key: ${{ secrets.DEPLOY_KEY }}
           source: "target/BandManager-0.1.jar"
           target: "~/BandManager/BandManager.jar"
+          strip_components: 0
 
       - name: Restart app on Helios
         uses: appleboy/ssh-action@v1.2.0
@@ -40,5 +41,7 @@ jobs:
           username: s409483
           key: ${{ secrets.DEPLOY_KEY }}
           script: |
+            # убиваем старое приложение (если есть)
             pkill -f 'java.*BandManager.jar' || true
+            # запускаем новое в фоне с логом
             nohup java -jar ~/BandManager/BandManager.jar --spring.profiles.active=prod > ~/BandManager/band-manager.log 2>&1 &
