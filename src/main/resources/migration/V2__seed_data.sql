@@ -11,6 +11,7 @@ ALTER SEQUENCE coordinates_id_seq RESTART WITH 1;
 ALTER SEQUENCE album_id_seq RESTART WITH 1;
 ALTER SEQUENCE person_id_seq RESTART WITH 1;
 ALTER SEQUENCE music_band_id_seq RESTART WITH 1;
+ALTER SEQUENCE best_band_award_id_seq RESTART WITH 1;
 
 -- Вставляем тестовые локации
 INSERT INTO location (x, y, z)
@@ -53,3 +54,10 @@ VALUES ('Pink Floyd', 1, 'PROGRESSIVE_ROCK', 5, 27, 'Legendary progressive rock 
        ('AC/DC', 3, 'ROCK', 5, 25, 'Australian hard rock band known for high voltage performance', 4, 17,
         '1973-11-01 00:00:00', 4),
        ('Michael Jackson', 4, 'SOUL', 1, 65, 'King of Pop solo career', 5, 10, '1971-01-01 00:00:00', 5);
+
+INSERT INTO best_band_award (band_id, genre, created_at)
+VALUES (1, 'PROGRESSIVE_ROCK', '2024-01-15 10:00:00'), -- Pink Floyd - лучшая в прогрессивном роке
+       (2, 'ROCK', '2024-02-20 11:30:00'),             -- Led Zeppelin - лучшая в роке
+       (3, 'ROCK', '2023-12-10 09:15:00'),             -- AC/DC - лучшая в роке (другой год)
+       (1, 'PROGRESSIVE_ROCK', '2023-06-05 14:20:00'), -- Pink Floyd - снова лучшая в прогрессивном роке
+       (4, 'SOUL', '2024-03-01 16:45:00'); -- Michael Jackson - лучшая в соуле
