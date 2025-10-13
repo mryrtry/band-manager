@@ -1,4 +1,4 @@
-name: Deploy to Helios
+name: CI/CD Deploy to Helios
 
 on:
   push:
@@ -8,6 +8,8 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    outputs:
+      jar-name: BandManager-0.1.jar
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -18,8 +20,14 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Build project
+      - name: Build jar (skip tests)
         run: mvn clean package -DskipTests
+
+      - name: Upload jar artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: bandmanager-jar
+          path: target/BandManager-0.1.jar
 
   test:
     runs-on: ubuntu-latest
@@ -34,13 +42,31 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Run tests
+      - name: Download built jar
+        uses: actions/download-artifact@v3
+        with:
+          name: bandmanager-jar
+          path: target/
+
+      - name: Run tests using the built jar
         run: mvn test
+
+      - name: Upload jar for deploy
+        uses: actions/upload-artifact@v3
+        with:
+          name: bandmanager-jar-for-deploy
+          path: target/BandManager-0.1.jar
 
   deploy:
     runs-on: ubuntu-latest
     needs: test
     steps:
+      - name: Download jar for deploy
+        uses: actions/download-artifact@v3
+        with:
+          name: bandmanager-jar-for-deploy
+          path: target/
+
       - name: Prepare remote server
         uses: appleboy/ssh-action@v1.2.0
         with:
@@ -49,9 +75,9 @@ jobs:
           username: s409483
           key: ${{ secrets.DEPLOY_KEY }}
           script: |
-            echo "Ensuring remote folder exists"
+            echo "Ensure remote folder exists"
             mkdir -p ~/BandManager
-            echo "Removing old BandManager.jar if it exists"
+            echo "Remove old BandManager.jar if it exists"
             rm -rf ~/BandManager/BandManager.jar
 
       - name: Copy jar to Helios
@@ -61,14 +87,10 @@ jobs:
           port: 2222
           username: s409483
           key: ${{ secrets.DEPLOY_KEY }}
-          source: "target/BandManager-0.1.jar"
-          target: "~/BandManager/BandManager.jar"
+          source: target/BandManager-0.1.jar
+          target: ~/BandManager/BandManager.jar
           strip_components: 0
 
-  restart:
-    runs-on: ubuntu-latest
-    needs: deploy
-    steps:
       - name: Restart app on Helios
         uses: appleboy/ssh-action@v1.2.0
         with:
@@ -82,3 +104,25 @@ jobs:
             echo "Starting new instance"
             nohup java -jar ~/BandManager/BandManager.jar --spring.profiles.active=prod > ~/BandManager/band-manager.log 2>&1 &
             echo "Application restarted successfully"
+
+  check:
+    runs-on: ubuntu-latest
+    needs: deploy
+    steps:
+      - name: Check if app is running
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: se.ifmo.ru
+          port: 2222
+          username: s409483
+          key: ${{ secrets.DEPLOY_KEY }}
+          script: |
+            echo "Checking if BandManager process is running..."
+            if pgrep -f 'java.*BandManager.jar' > /dev/null; then
+              echo "Application is running!"
+            else
+              echo "Application is NOT running!"
+              exit 1
+            fi
+            echo "Tail last 10 lines of log:"
+            tail -n 10 ~/BandManager/band-manager.log
