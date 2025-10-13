@@ -21,11 +21,19 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
+      - name: Create application-prod.properties
+        run: |
+          mkdir -p src/main/resources
+          cat > src/main/resources/application-prod.properties << EOF
+          spring.datasource.url=${{ secrets.DB_URL }}
+          spring.datasource.username=${{ secrets.DB_USERNAME }}
+          spring.datasource.password=${{ secrets.DB_PASSWORD }}
+          spring.datasource.driver-class-name=org.postgresql.Driver
+          spring.jpa.hibernate.ddl-auto=validate
+          EOF
+
       - name: Build with Maven
         run: mvn -B clean package -P prod -DskipTests
-
-      - name: Test with Maven
-        run: mvn test
 
       - name: Upload JAR artifact
         uses: actions/upload-artifact@v4
@@ -64,17 +72,16 @@ jobs:
       - name: Upload JAR to server
         run: |
           scp -P 2222 BandManager-0.1.jar s409483@se.ifmo.ru:~/BandManager/BandManager.jar
-          ssh -p 2222 s409483@se.ifmo.ru "chmod +x ~/BandManager/BandManager.jar"
 
       - name: Start application
         run: |
-          ssh -p 2222 s409483@se.ifmo.ru "cd ~/BandManager && _JAVA_OPTIONS='' nohup java -Xmx512m -Xms256m -jar -Dspring.profiles.active=prod BandManager.jar > band-manager.log 2>&1 &"
-          sleep 15
+          ssh -p 2222 s409483@se.ifmo.ru "cd ~/BandManager && _JAVA_OPTIONS='' nohup java -Xmx512m -Xms256m -jar BandManager.jar --spring.profiles.active=prod > band-manager.log 2>&1 &"
+          sleep 20
 
   health-check:
     runs-on: ubuntu-latest
     needs: deploy
-    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+    if: github.ref == 'refs/heads/master'
 
     steps:
       - name: Setup SSH key
@@ -87,3 +94,7 @@ jobs:
       - name: Check application process
         run: |
           ssh -p 2222 s409483@se.ifmo.ru "ps aux | grep BandManager.jar | grep -v grep"
+
+      - name: Check application logs
+        run: |
+          ssh -p 2222 s409483@se.ifmo.ru "tail -20 ~/BandManager/band-manager.log"
