@@ -1,31 +1,34 @@
 package org.is.bandmanager.dto;
 
 import org.is.bandmanager.dto.request.PersonRequest;
-import org.is.bandmanager.model.Location;
 import org.is.bandmanager.model.Person;
 import org.is.bandmanager.service.LocationService;
-import org.mapstruct.*;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.springframework.beans.factory.annotation.Autowired;
 
-@Mapper(componentModel = "spring", uses = {LocationMapper.class})
+@Mapper(componentModel = "spring")
 public abstract class PersonMapper {
+
+    @Autowired
+    private LocationService locationService;
 
     @Mapping(target = "location", source = "location")
     public abstract PersonDto toDto(Person person);
 
-    @Mapping(target = "location", ignore = true)
-    public abstract Person toEntity(PersonRequest request);
-
     @Mapping(target = "location", source = "location")
     public abstract Person toEntity(PersonDto personDto);
 
-    @AfterMapping
-    protected void mapLocationIdToLocation(PersonRequest request,
-                                           @MappingTarget Person person,
-                                           @Context LocationService locationService) {
-        if (request.getLocationId() != null) {
-            Location location = locationService.getEntity(request.getLocationId());
-            person.setLocation(location);
-        }
+    @Mapping(target = "location", ignore = true)
+    public Person toEntity(PersonRequest request) {
+        return Person.builder()
+                .name(request.getName())
+                .eyeColor(request.getEyeColor())
+                .hairColor(request.getHairColor())
+                .location(locationService.getEntity(request.getLocationId()))
+                .weight(request.getWeight())
+                .nationality(request.getNationality())
+                .build();
     }
 
 }

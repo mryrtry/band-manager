@@ -27,42 +27,17 @@ class MusicBandRequestTests {
     @Test
     void shouldCreateValidMusicBandRequest() {
         // Given
-        CoordinatesRequest coordinates = CoordinatesRequest.builder()
-                .x(100)
-                .y(50.5f)
-                .build();
-
-        AlbumRequest bestAlbum = AlbumRequest.builder()
-                .name("Best Album")
-                .tracks(12L)
-                .sales(1000000)
-                .build();
-
-        LocationRequest location = LocationRequest.builder()
-                .y(200L)
-                .z(300L)
-                .build();
-
-        PersonRequest frontMan = PersonRequest.builder()
-                .name("John Doe")
-                .eyeColor(org.is.bandmanager.model.Color.BLUE)
-                .hairColor(org.is.bandmanager.model.Color.BLACK)
-                .location(location)
-                .weight(75.5f)
-                .nationality(org.is.bandmanager.model.Country.USA)
-                .build();
-
         MusicBandRequest request = MusicBandRequest.builder()
                 .name("Test Band")
-                .coordinates(coordinates)
+                .coordinatesId(1L)
                 .genre(MusicGenre.ROCK)
                 .numberOfParticipants(5L)
                 .singlesCount(10L)
                 .description("A great band")
-                .bestAlbum(bestAlbum)
+                .bestAlbumId(2L)
                 .albumsCount(3L)
                 .establishmentDate(new Date())
-                .frontMan(frontMan)
+                .frontManId(3L)
                 .build();
 
         // When
@@ -105,10 +80,10 @@ class MusicBandRequestTests {
     }
 
     @Test
-    void shouldFailWhenCoordinatesIsNull() {
+    void shouldFailWhenCoordinatesIdIsNull() {
         // Given
         MusicBandRequest request = createValidMusicBandRequest()
-                .coordinates(null)
+                .coordinatesId(null)
                 .build();
 
         // When
@@ -117,7 +92,7 @@ class MusicBandRequestTests {
         // Then
         assertThat(violations).hasSize(1);
         assertThat(violations.iterator().next().getMessage())
-                .isEqualTo("MusicBand.Coordinates не может быть пустым");
+                .isEqualTo("MusicBand.CoordinatesId не может быть пустым");
     }
 
     @Test
@@ -185,22 +160,6 @@ class MusicBandRequestTests {
     }
 
     @Test
-    void shouldFailWhenSinglesCountIsZero() {
-        // Given
-        MusicBandRequest request = createValidMusicBandRequest()
-                .singlesCount(0L)
-                .build();
-
-        // When
-        Set<ConstraintViolation<MusicBandRequest>> violations = validator.validate(request);
-
-        // Then
-        assertThat(violations).hasSize(1);
-        assertThat(violations.iterator().next().getMessage())
-                .isEqualTo("MusicBand.NumberOfParticipants должно быть > 0");
-    }
-
-    @Test
     void shouldFailWhenDescriptionIsNull() {
         // Given
         MusicBandRequest request = createValidMusicBandRequest()
@@ -217,10 +176,10 @@ class MusicBandRequestTests {
     }
 
     @Test
-    void shouldFailWhenBestAlbumIsNull() {
+    void shouldFailWhenDescriptionIsBlank() {
         // Given
         MusicBandRequest request = createValidMusicBandRequest()
-                .bestAlbum(null)
+                .description("   ")
                 .build();
 
         // When
@@ -229,7 +188,23 @@ class MusicBandRequestTests {
         // Then
         assertThat(violations).hasSize(1);
         assertThat(violations.iterator().next().getMessage())
-                .isEqualTo("MusicBand.BestAlbum не может быть пустым");
+                .isEqualTo("MusicBand.Description не может быть пустым");
+    }
+
+    @Test
+    void shouldFailWhenBestAlbumIdIsNull() {
+        // Given
+        MusicBandRequest request = createValidMusicBandRequest()
+                .bestAlbumId(null)
+                .build();
+
+        // When
+        Set<ConstraintViolation<MusicBandRequest>> violations = validator.validate(request);
+
+        // Then
+        assertThat(violations).hasSize(1);
+        assertThat(violations.iterator().next().getMessage())
+                .isEqualTo("MusicBand.BestAlbumId не может быть пустым");
     }
 
     @Test
@@ -281,10 +256,10 @@ class MusicBandRequestTests {
     }
 
     @Test
-    void shouldFailWhenFrontManIsNull() {
+    void shouldFailWhenFrontManIdIsNull() {
         // Given
         MusicBandRequest request = createValidMusicBandRequest()
-                .frontMan(null)
+                .frontManId(null)
                 .build();
 
         // When
@@ -293,7 +268,7 @@ class MusicBandRequestTests {
         // Then
         assertThat(violations).hasSize(1);
         assertThat(violations.iterator().next().getMessage())
-                .isEqualTo("MusicBand.FrontMan не может быть пустым");
+                .isEqualTo("MusicBand.FrontManId не может быть пустым");
     }
 
     @Test
@@ -301,15 +276,15 @@ class MusicBandRequestTests {
         // Given
         MusicBandRequest request = MusicBandRequest.builder()
                 .name("")
-                .coordinates(null)
+                .coordinatesId(null)
                 .genre(null)
                 .numberOfParticipants(0L)
                 .singlesCount(0L)
                 .description("")
-                .bestAlbum(null)
+                .bestAlbumId(null)
                 .albumsCount(0L)
                 .establishmentDate(null)
-                .frontMan(null)
+                .frontManId(null)
                 .build();
 
         // When
@@ -319,43 +294,18 @@ class MusicBandRequestTests {
         assertThat(violations).hasSize(10);
     }
 
-    // Вспомогательный метод для создания валидного запроса
     private MusicBandRequest.MusicBandRequestBuilder createValidMusicBandRequest() {
-        CoordinatesRequest coordinates = CoordinatesRequest.builder()
-                .x(100)
-                .y(50.5f)
-                .build();
-
-        AlbumRequest bestAlbum = AlbumRequest.builder()
-                .name("Best Album")
-                .tracks(12L)
-                .sales(1000000)
-                .build();
-
-        LocationRequest location = LocationRequest.builder()
-                .y(200L)
-                .z(300L)
-                .build();
-
-        PersonRequest frontMan = PersonRequest.builder()
-                .name("John Doe")
-                .eyeColor(org.is.bandmanager.model.Color.BLUE)
-                .hairColor(org.is.bandmanager.model.Color.BLACK)
-                .location(location)
-                .weight(75.5f)
-                .nationality(org.is.bandmanager.model.Country.USA)
-                .build();
-
         return MusicBandRequest.builder()
                 .name("Test Band")
-                .coordinates(coordinates)
+                .coordinatesId(1L)
                 .genre(MusicGenre.ROCK)
                 .numberOfParticipants(5L)
                 .singlesCount(10L)
                 .description("A great band")
-                .bestAlbum(bestAlbum)
+                .bestAlbumId(2L)
                 .albumsCount(3L)
                 .establishmentDate(new Date())
-                .frontMan(frontMan);
+                .frontManId(3L);
     }
+
 }

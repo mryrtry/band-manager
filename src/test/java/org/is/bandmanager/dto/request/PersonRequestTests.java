@@ -172,7 +172,7 @@ class PersonRequestTests {
         assertThat(violations).hasSize(1);
         ConstraintViolation<PersonRequest> violation = violations.iterator().next();
         assertThat(violation.getPropertyPath().toString()).isEqualTo("locationId");
-        assertThat(violation.getMessage()).isEqualTo("Person.Location не может быть пустым");
+        assertThat(violation.getMessage()).isEqualTo("Person.LocationId не может быть пустым");
     }
 
     @Test

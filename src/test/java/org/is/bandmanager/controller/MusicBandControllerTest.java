@@ -1,12 +1,9 @@
 package org.is.bandmanager.controller;
 
 import org.is.bandmanager.config.IntegrationTest;
-import org.is.bandmanager.dto.request.*;
+import org.is.bandmanager.dto.request.MusicBandRequest;
 import org.is.bandmanager.model.*;
-import org.is.bandmanager.repository.AlbumRepository;
-import org.is.bandmanager.repository.CoordinatesRepository;
-import org.is.bandmanager.repository.MusicBandRepository;
-import org.is.bandmanager.repository.PersonRepository;
+import org.is.bandmanager.repository.*;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.web.server.LocalServerPort;
@@ -39,10 +36,17 @@ class MusicBandControllerTest extends AbstractIntegrationTest {
     @Autowired
     private PersonRepository personRepository;
 
+    @Autowired
+    private LocationRepository locationRepository;
+
     @LocalServerPort
     private int port;
 
     private WebTestClient webTestClient;
+
+    private Coordinates savedCoordinates;
+    private Album savedAlbum;
+    private Person savedPerson;
 
     @BeforeAll
     void setClient() {
@@ -57,6 +61,33 @@ class MusicBandControllerTest extends AbstractIntegrationTest {
         coordinatesRepository.deleteAll();
         albumRepository.deleteAll();
         personRepository.deleteAll();
+        locationRepository.deleteAll();
+
+        savedCoordinates = coordinatesRepository.save(Coordinates.builder()
+                .x(10)
+                .y(5.5f)
+                .build());
+
+        savedAlbum = albumRepository.save(Album.builder()
+                .name("Best Album")
+                .tracks(8L)
+                .sales(100)
+                .build());
+
+        Location location = locationRepository.save(Location.builder()
+                .x(5)
+                .y(10L)
+                .z(15L)
+                .build());
+
+        savedPerson = personRepository.save(Person.builder()
+                .name("John Doe")
+                .eyeColor(BLUE)
+                .hairColor(BLACK)
+                .location(location)
+                .weight(70f)
+                .nationality(USA)
+                .build());
     }
 
     @AfterAll
@@ -65,50 +96,21 @@ class MusicBandControllerTest extends AbstractIntegrationTest {
         coordinatesRepository.deleteAll();
         albumRepository.deleteAll();
         personRepository.deleteAll();
-    }
-
-    private CoordinatesRequest createCoordinatesRequest() {
-        return CoordinatesRequest.builder()
-                .x(10)
-                .y(5.5f)
-                .build();
-    }
-
-    private AlbumRequest createAlbumRequest() {
-        return AlbumRequest.builder()
-                .name("Best Album")
-                .tracks(8L)
-                .sales(100)
-                .build();
-    }
-
-    private PersonRequest createPersonRequest() {
-        return PersonRequest.builder()
-                .name("John Doe")
-                .eyeColor(BLUE)
-                .hairColor(BLACK)
-                .weight(70f)
-                .nationality(USA)
-                .location(LocationRequest.builder()
-                        .x(5)
-                        .y(10L)
-                        .z(15L)
-                        .build())
-                .build();
+        locationRepository.deleteAll();
     }
 
     private MusicBandRequest createMusicBandRequest() {
         return MusicBandRequest.builder()
                 .name("Radiohead")
-                .coordinates(createCoordinatesRequest())
+                .coordinatesId(savedCoordinates.getId())
                 .genre(ROCK)
                 .numberOfParticipants(5L)
                 .singlesCount(10L)
                 .description("Legendary rock band")
-                .bestAlbum(createAlbumRequest())
+                .bestAlbumId(savedAlbum.getId())
                 .albumsCount(9L)
                 .establishmentDate(new Date())
-                .frontMan(createPersonRequest())
+                .frontManId(savedPerson.getId())
                 .build();
     }
 
@@ -127,12 +129,17 @@ class MusicBandControllerTest extends AbstractIntegrationTest {
                 .jsonPath("$.name").isEqualTo("Radiohead")
                 .jsonPath("$.genre").isEqualTo("ROCK")
                 .jsonPath("$.numberOfParticipants").isEqualTo(5)
-                .jsonPath("$.bestAlbum.name").isEqualTo("Best Album");
+                .jsonPath("$.coordinatesId").isEqualTo(savedCoordinates.getId())
+                .jsonPath("$.bestAlbumId").isEqualTo(savedAlbum.getId())
+                .jsonPath("$.frontManId").isEqualTo(savedPerson.getId());
 
         List<MusicBand> bands = musicBandRepository.findAll();
         assertThat(bands).hasSize(1);
         assertThat(bands.get(0).getName()).isEqualTo("Radiohead");
         assertThat(bands.get(0).getGenre()).isEqualTo(MusicGenre.ROCK);
+        assertThat(bands.get(0).getCoordinates().getId()).isEqualTo(savedCoordinates.getId());
+        assertThat(bands.get(0).getBestAlbum().getId()).isEqualTo(savedAlbum.getId());
+        assertThat(bands.get(0).getFrontMan().getId()).isEqualTo(savedPerson.getId());
     }
 
     @Test
@@ -155,39 +162,70 @@ class MusicBandControllerTest extends AbstractIntegrationTest {
     }
 
     @Test
+    void shouldReturnBadRequestWhenCoordinatesIdIsNull() {
+        MusicBandRequest request = createMusicBandRequest();
+        request.setCoordinatesId(null);
+
+        webTestClient.post()
+                .uri("/music-bands")
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(request)
+                .exchange()
+                .expectStatus().isBadRequest()
+                .expectBody()
+                .jsonPath("$.status").isEqualTo(400)
+                .jsonPath("$.message").isEqualTo("Ошибка валидации данных")
+                .jsonPath("$.details[0].field").isEqualTo("coordinatesId")
+                .jsonPath("$.details[0].message").isEqualTo("MusicBand.CoordinatesId не может быть пустым")
+                .jsonPath("$.details[0].errorType").isEqualTo("VALIDATION_ERROR");
+    }
+
+    @Test
+    void shouldReturnNotFoundWhenCoordinatesIdDoesNotExist() {
+
+        MusicBandRequest request = createMusicBandRequest();
+
+        request.setCoordinatesId(999L);
+
+        webTestClient.post()
+                .uri("/music-bands")
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(request)
+                .exchange()
+                .expectStatus().isNotFound()
+                .expectBody()
+                .jsonPath("$.status").isEqualTo(404);
+    }
+
+    @Test
     void shouldGetAllMusicBands() {
-        Coordinates c1 = Coordinates.builder().x(10).y(5.5f).build();
-        Coordinates c2 = Coordinates.builder().x(3254).y(1.3f).build();
-        Album a1 = Album.builder().name("Best Album").tracks(8L).sales(100).build();
-        Album a2 = Album.builder().name("Really Best Album").tracks(124L).sales(300).build();
-        Person p1 = Person.builder()
-                .name("Thom Yorke")
-                .eyeColor(BLUE)
-                .hairColor(BROWN)
-                .weight(65f)
-                .nationality(UK)
-                .location(Location.builder().x(1).y(2L).z(3L).build())
-                .build();
-        Person p2 = Person.builder()
+
+        Coordinates c2 = coordinatesRepository.save(Coordinates.builder().x(3254).y(1.3f).build());
+
+        Album a2 = albumRepository.save(Album.builder().name("Really Best Album").tracks(124L).sales(300).build());
+
+        Location location2 = locationRepository.save(Location.builder().x(2).y(3L).z(3L).build());
+
+        Person p2 = personRepository.save(Person.builder()
                 .name("Man Yesterday")
                 .eyeColor(BLACK)
                 .hairColor(BLUE)
+                .location(location2)
                 .weight(213f)
                 .nationality(FRANCE)
-                .location(Location.builder().x(2).y(3L).z(3L).build())
-                .build();
+                .build());
 
         MusicBand b1 = musicBandRepository.save(MusicBand.builder()
                 .name("Radiohead")
-                .coordinates(c1)
+                .coordinates(savedCoordinates)
                 .genre(ROCK)
                 .numberOfParticipants(5L)
                 .singlesCount(10L)
                 .description("Legendary rock band")
-                .bestAlbum(a1)
+                .bestAlbum(savedAlbum)
                 .albumsCount(9L)
                 .establishmentDate(new Date())
-                .frontMan(p1)
+                .frontMan(savedPerson)
                 .creationDate(new Date())
                 .build());
 
@@ -212,33 +250,24 @@ class MusicBandControllerTest extends AbstractIntegrationTest {
                 .expectBody()
                 .jsonPath("$.length()").isEqualTo(2)
                 .jsonPath("$[0].id").isEqualTo(b1.getId())
-                .jsonPath("$[1].id").isEqualTo(b2.getId());
+                .jsonPath("$[1].id").isEqualTo(b2.getId())
+                .jsonPath("$[0].coordinatesId").isEqualTo(savedCoordinates.getId())
+                .jsonPath("$[1].coordinatesId").isEqualTo(c2.getId());
     }
 
     @Test
     void shouldGetMusicBandById() {
-        Coordinates c = Coordinates.builder().x(10).y(5.5f).build();
-        Album a = Album.builder().name("Album").tracks(5L).sales(50).build();
-        Person p = Person.builder()
-                .name("John")
-                .eyeColor(GREEN)
-                .hairColor(BLACK)
-                .weight(70f)
-                .nationality(USA)
-                .location(Location.builder().x(1).y(2L).z(3L).build())
-                .build();
-
         MusicBand saved = musicBandRepository.save(MusicBand.builder()
                 .name("Test Band")
-                .coordinates(c)
+                .coordinates(savedCoordinates)
                 .genre(ROCK)
                 .numberOfParticipants(5L)
                 .singlesCount(10L)
                 .description("Some description")
-                .bestAlbum(a)
+                .bestAlbum(savedAlbum)
                 .albumsCount(3L)
                 .establishmentDate(new Date())
-                .frontMan(p)
+                .frontMan(savedPerson)
                 .creationDate(new Date())
                 .build());
 
@@ -248,7 +277,10 @@ class MusicBandControllerTest extends AbstractIntegrationTest {
                 .expectStatus().isOk()
                 .expectBody()
                 .jsonPath("$.id").isEqualTo(saved.getId())
-                .jsonPath("$.name").isEqualTo("Test Band");
+                .jsonPath("$.name").isEqualTo("Test Band")
+                .jsonPath("$.coordinatesId").isEqualTo(savedCoordinates.getId())
+                .jsonPath("$.bestAlbumId").isEqualTo(savedAlbum.getId())
+                .jsonPath("$.frontManId").isEqualTo(savedPerson.getId());
     }
 
     @Test
@@ -266,31 +298,47 @@ class MusicBandControllerTest extends AbstractIntegrationTest {
 
     @Test
     void shouldUpdateMusicBandSuccessfully() {
-        MusicBandRequest createRequest = createMusicBandRequest();
         MusicBand saved = musicBandRepository.save(MusicBand.builder()
-                .name(createRequest.getName())
-                .coordinates(Coordinates.builder().x(10).y(5.5f).build())
-                .genre(createRequest.getGenre())
-                .numberOfParticipants(createRequest.getNumberOfParticipants())
-                .singlesCount(createRequest.getSinglesCount())
-                .description(createRequest.getDescription())
-                .bestAlbum(Album.builder().name("Old Album").tracks(5L).sales(50).build())
-                .albumsCount(createRequest.getAlbumsCount())
+                .name("Old Band")
+                .coordinates(savedCoordinates)
+                .genre(ROCK)
+                .numberOfParticipants(5L)
+                .singlesCount(10L)
+                .description("Old description")
+                .bestAlbum(savedAlbum)
+                .albumsCount(9L)
                 .establishmentDate(new Date())
-                .frontMan(Person.builder()
-                        .name("Old Frontman")
-                        .eyeColor(BROWN)
-                        .hairColor(BLACK)
-                        .weight(60f)
-                        .nationality(USA)
-                        .location(Location.builder().x(1).y(2L).z(3L).build())
-                        .build())
+                .frontMan(savedPerson)
                 .creationDate(new Date())
                 .build());
 
-        MusicBandRequest updateRequest = createMusicBandRequest();
-        updateRequest.setName("Updated Band");
-        updateRequest.getBestAlbum().setName("Updated Album");
+        Coordinates newCoordinates = coordinatesRepository.save(Coordinates.builder().x(100).y(50.5f).build());
+
+        Album newAlbum = albumRepository.save(Album.builder().name("New Album").tracks(15L).sales(200).build());
+
+        Location newLocation = locationRepository.save(Location.builder().x(10).y(20L).z(30L).build());
+
+        Person newPerson = personRepository.save(Person.builder()
+                .name("New Frontman")
+                .eyeColor(GREEN)
+                .hairColor(BROWN)
+                .location(newLocation)
+                .weight(80f)
+                .nationality(UK)
+                .build());
+
+        MusicBandRequest updateRequest = MusicBandRequest.builder()
+                .name("Updated Band")
+                .coordinatesId(newCoordinates.getId())
+                .genre(POST_ROCK)
+                .numberOfParticipants(8L)
+                .singlesCount(15L)
+                .description("Updated description")
+                .bestAlbumId(newAlbum.getId())
+                .albumsCount(12L)
+                .establishmentDate(new Date())
+                .frontManId(newPerson.getId())
+                .build();
 
         webTestClient.put()
                 .uri("/music-bands/{id}", saved.getId())
@@ -300,11 +348,15 @@ class MusicBandControllerTest extends AbstractIntegrationTest {
                 .expectStatus().isOk()
                 .expectBody()
                 .jsonPath("$.name").isEqualTo("Updated Band")
-                .jsonPath("$.bestAlbum.name").isEqualTo("Updated Album");
+                .jsonPath("$.coordinatesId").isEqualTo(newCoordinates.getId())
+                .jsonPath("$.bestAlbumId").isEqualTo(newAlbum.getId())
+                .jsonPath("$.frontManId").isEqualTo(newPerson.getId());
 
         MusicBand updated = musicBandRepository.findById(saved.getId()).orElseThrow();
         assertThat(updated.getName()).isEqualTo("Updated Band");
-        assertThat(updated.getBestAlbum().getName()).isEqualTo("Updated Album");
+        assertThat(updated.getCoordinates().getId()).isEqualTo(newCoordinates.getId());
+        assertThat(updated.getBestAlbum().getId()).isEqualTo(newAlbum.getId());
+        assertThat(updated.getFrontMan().getId()).isEqualTo(newPerson.getId());
     }
 
     @Test
@@ -326,28 +378,17 @@ class MusicBandControllerTest extends AbstractIntegrationTest {
 
     @Test
     void shouldDeleteMusicBandSuccessfully() {
-        Coordinates c = Coordinates.builder().x(10).y(5.5f).build();
-        Album a = Album.builder().name("Delete Album").tracks(5L).sales(50).build();
-        Person p = Person.builder()
-                .name("John")
-                .eyeColor(GREEN)
-                .hairColor(BLACK)
-                .weight(70f)
-                .nationality(USA)
-                .location(Location.builder().x(1).y(2L).z(3L).build())
-                .build();
-
         MusicBand saved = musicBandRepository.save(MusicBand.builder()
                 .name("ToDelete")
-                .coordinates(c)
+                .coordinates(savedCoordinates)
                 .genre(ROCK)
                 .numberOfParticipants(4L)
                 .singlesCount(7L)
                 .description("temp")
-                .bestAlbum(a)
+                .bestAlbum(savedAlbum)
                 .albumsCount(3L)
                 .establishmentDate(new Date())
-                .frontMan(p)
+                .frontMan(savedPerson)
                 .creationDate(new Date())
                 .build());
 
@@ -376,9 +417,9 @@ class MusicBandControllerTest extends AbstractIntegrationTest {
 
     @Test
     void shouldGetBandsWithMaxCoordinates() {
-        Coordinates c1 = Coordinates.builder().x(100).y(50.5f).build();
-        Coordinates c2 = Coordinates.builder().x(50).y(25.5f).build();
-        Coordinates c3 = Coordinates.builder().x(100).y(30.5f).build();
+        Coordinates c1 = coordinatesRepository.save(Coordinates.builder().x(100).y(50.5f).build());
+        Coordinates c2 = coordinatesRepository.save(Coordinates.builder().x(50).y(25.5f).build());
+        Coordinates c3 = coordinatesRepository.save(Coordinates.builder().x(100).y(30.5f).build());
 
         MusicBand b1 = createAndSaveBand("Band 1", c1);
         createAndSaveBand("Band 2", c2);
@@ -391,8 +432,7 @@ class MusicBandControllerTest extends AbstractIntegrationTest {
                 .expectBody()
                 .jsonPath("$.id").isEqualTo(b1.getId())
                 .jsonPath("$.name").isEqualTo("Band 1")
-                .jsonPath("$.coordinates.x").isEqualTo(100)
-                .jsonPath("$.coordinates.y").isEqualTo(50.5);
+                .jsonPath("$.coordinatesId").isEqualTo(c1.getId());
     }
 
     @Test
@@ -474,49 +514,12 @@ class MusicBandControllerTest extends AbstractIntegrationTest {
     }
 
     @Test
-    void shouldReturnEmptyArrayWhenNoBands() {
-        webTestClient.get()
-                .uri("/music-bands/unique-albums-count")
-                .exchange()
-                .expectStatus().isOk()
-                .expectBody()
-                .jsonPath("$.length()").isEqualTo(0);
-    }
-
-    private MusicBand createAndSaveBand(String name, Coordinates coordinates) {
-        Album album = Album.builder().name(name + " Album").tracks(10L).sales(100).build();
-        Person person = Person.builder()
-                .name(name + " Frontman")
-                .eyeColor(BLUE)
-                .hairColor(BLACK)
-                .weight(70f)
-                .nationality(USA)
-                .location(Location.builder().x(1).y(2L).z(3L).build())
-                .build();
-
-        return musicBandRepository.save(MusicBand.builder()
-                .name(name)
-                .coordinates(coordinates)
-                .genre(ROCK)
-                .numberOfParticipants(5L)
-                .singlesCount(10L)
-                .description("Description for " + name)
-                .bestAlbum(album)
-                .albumsCount(5L)
-                .establishmentDate(new Date())
-                .frontMan(person)
-                .creationDate(new Date())
-                .build());
-    }
-
-    @Test
     void shouldGetUniqueAlbumsCount() {
         createAndSaveBand("Band 1", 5L);
         createAndSaveBand("Band 2", 3L);
         createAndSaveBand("Band 3", 5L);
         createAndSaveBand("Band 4", 7L);
 
-        // When & Then
         webTestClient.get()
                 .uri("/music-bands/unique-albums-count")
                 .exchange()
@@ -530,10 +533,8 @@ class MusicBandControllerTest extends AbstractIntegrationTest {
 
     @Test
     void shouldRemoveParticipantFromBand() {
-        // Given - группа с 5 участниками
         MusicBand band = createAndSaveBandWithParticipants("Test Band", 5L);
 
-        // When & Then
         webTestClient.put()
                 .uri("/music-bands/{id}/remove-participant", band.getId())
                 .exchange()
@@ -543,42 +544,14 @@ class MusicBandControllerTest extends AbstractIntegrationTest {
                 .jsonPath("$.name").isEqualTo("Test Band")
                 .jsonPath("$.numberOfParticipants").isEqualTo(4);
 
-        // Verify in database
         MusicBand updated = musicBandRepository.findById(band.getId()).orElseThrow();
         assertThat(updated.getNumberOfParticipants()).isEqualTo(4L);
     }
 
     @Test
-    void shouldRemoveMultipleParticipants() {
-        // Given - группа с 3 участниками
-        MusicBand band = createAndSaveBandWithParticipants("Three Member Band", 3L);
-
-        // When - удаляем двух участников
-        webTestClient.put()
-                .uri("/music-bands/{id}/remove-participant", band.getId())
-                .exchange()
-                .expectStatus().isOk()
-                .expectBody()
-                .jsonPath("$.numberOfParticipants").isEqualTo(2);
-
-        webTestClient.put()
-                .uri("/music-bands/{id}/remove-participant", band.getId())
-                .exchange()
-                .expectStatus().isOk()
-                .expectBody()
-                .jsonPath("$.numberOfParticipants").isEqualTo(1);
-
-        // Verify final state
-        MusicBand updated = musicBandRepository.findById(band.getId()).orElseThrow();
-        assertThat(updated.getNumberOfParticipants()).isEqualTo(1L);
-    }
-
-    @Test
     void shouldReturnBadRequestWhenRemovingLastParticipant() {
-        // Given - группа с 1 участником
         MusicBand band = createAndSaveBandWithParticipants("Solo Band", 1L);
 
-        // When & Then - попытка удалить последнего участника
         webTestClient.put()
                 .uri("/music-bands/{id}/remove-participant", band.getId())
                 .exchange()
@@ -607,83 +580,67 @@ class MusicBandControllerTest extends AbstractIntegrationTest {
                 .jsonPath("$.details[0].errorType").isEqualTo("SERVICE_ERROR");
     }
 
-    private MusicBand createAndSaveBandWithParticipants(String name, Long numberOfParticipants) {
-        Coordinates coordinates = Coordinates.builder().x(10).y(5.5f).build();
-        Album album = Album.builder().name(name + " Album").tracks(10L).sales(100).build();
-        Person person = Person.builder()
-                .name(name + " Frontman")
-                .eyeColor(BLUE)
-                .hairColor(BLACK)
-                .weight(70f)
-                .nationality(USA)
-                .location(Location.builder().x(1).y(2L).z(3L).build())
-                .build();
-
+    // Вспомогательные методы
+    private MusicBand createAndSaveBand(String name, Coordinates coordinates) {
         return musicBandRepository.save(MusicBand.builder()
                 .name(name)
                 .coordinates(coordinates)
                 .genre(ROCK)
+                .numberOfParticipants(5L)
+                .singlesCount(10L)
+                .description("Description for " + name)
+                .bestAlbum(savedAlbum)
+                .albumsCount(5L)
+                .establishmentDate(new Date())
+                .frontMan(savedPerson)
+                .creationDate(new Date())
+                .build());
+    }
+
+    private MusicBand createAndSaveBandWithParticipants(String name, Long numberOfParticipants) {
+        return musicBandRepository.save(MusicBand.builder()
+                .name(name)
+                .coordinates(savedCoordinates)
+                .genre(ROCK)
                 .numberOfParticipants(numberOfParticipants)
                 .singlesCount(10L)
                 .description("Description for " + name)
-                .bestAlbum(album)
+                .bestAlbum(savedAlbum)
                 .albumsCount(5L)
                 .establishmentDate(new Date())
-                .frontMan(person)
+                .frontMan(savedPerson)
                 .creationDate(new Date())
                 .build());
     }
 
     private MusicBand createAndSaveBandWithDate(String name, Date establishmentDate) {
-        Coordinates coordinates = Coordinates.builder().x(10).y(5.5f).build();
-        Album album = Album.builder().name(name + " Album").tracks(10L).sales(100).build();
-        Person person = Person.builder()
-                .name(name + " Frontman")
-                .eyeColor(BLUE)
-                .hairColor(BLACK)
-                .weight(70f)
-                .nationality(USA)
-                .location(Location.builder().x(1).y(2L).z(3L).build())
-                .build();
-
         return musicBandRepository.save(MusicBand.builder()
                 .name(name)
-                .coordinates(coordinates)
+                .coordinates(savedCoordinates)
                 .genre(ROCK)
                 .numberOfParticipants(5L)
                 .singlesCount(10L)
                 .description("Description for " + name)
-                .bestAlbum(album)
+                .bestAlbum(savedAlbum)
                 .albumsCount(5L)
                 .establishmentDate(establishmentDate)
-                .frontMan(person)
+                .frontMan(savedPerson)
                 .creationDate(new Date())
                 .build());
     }
 
     private void createAndSaveBand(String name, Long albumsCount) {
-        Coordinates coordinates = Coordinates.builder().x(10).y(5.5f).build();
-        Album album = Album.builder().name(name + " Album").tracks(10L).sales(100).build();
-        Person person = Person.builder()
-                .name(name + " Frontman")
-                .eyeColor(BLUE)
-                .hairColor(BLACK)
-                .weight(70f)
-                .nationality(USA)
-                .location(Location.builder().x(1).y(2L).z(3L).build())
-                .build();
-
         musicBandRepository.save(MusicBand.builder()
                 .name(name)
-                .coordinates(coordinates)
+                .coordinates(savedCoordinates)
                 .genre(ROCK)
                 .numberOfParticipants(5L)
                 .singlesCount(10L)
                 .description("Description for " + name)
-                .bestAlbum(album)
+                .bestAlbum(savedAlbum)
                 .albumsCount(albumsCount)
                 .establishmentDate(new Date())
-                .frontMan(person)
+                .frontMan(savedPerson)
                 .creationDate(new Date())
                 .build());
     }

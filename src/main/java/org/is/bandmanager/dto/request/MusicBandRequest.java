@@ -20,8 +20,8 @@ public class MusicBandRequest {
     private String name;
 
     @Valid
-    @NotNull(message = "MusicBand.Coordinates не может быть пустым")
-    private CoordinatesRequest coordinates;
+    @NotNull(message = "MusicBand.CoordinatesId не может быть пустым")
+    private Long coordinatesId;
 
     @NotNull(message = "MusicBand.MusicGenre не может быть пустым")
     private MusicGenre genre;
@@ -38,8 +38,8 @@ public class MusicBandRequest {
     private String description;
 
     @Valid
-    @NotNull(message = "MusicBand.BestAlbum не может быть пустым")
-    private AlbumRequest bestAlbum;
+    @NotNull(message = "MusicBand.BestAlbumId не может быть пустым")
+    private Long bestAlbumId;
 
     @NotNull(message = "MusicBand.AlbumsCount не может быть пустым")
     @DecimalMin(value = "0", inclusive = false, message = "MusicBand.AlbumsCount должно быть > 0")
@@ -49,7 +49,7 @@ public class MusicBandRequest {
     private Date establishmentDate;
 
     @Valid
-    @NotNull(message = "MusicBand.FrontMan не может быть пустым")
-    private PersonRequest frontMan;
+    @NotNull(message = "MusicBand.FrontManId не может быть пустым")
+    private Long frontManId;
 
 }

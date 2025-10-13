@@ -50,6 +50,11 @@ public class CoordinatesServiceImpl implements CoordinatesService {
     }
 
     @Override
+    public Coordinates getEntity(Long id) {
+        return  findById(id);
+    }
+
+    @Override
     @Transactional
     public CoordinatesDto update(Long id, CoordinatesRequest request) {
         findById(id);

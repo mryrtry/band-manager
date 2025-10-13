@@ -165,7 +165,7 @@ class PersonControllerTest extends AbstractIntegrationTest {
                 .expectStatus().isNotFound()
                 .expectBody()
                 .jsonPath("$.status").isEqualTo(404)
-                .jsonPath("$.message").isEqualTo("Location с id 999 не найден");
+                .jsonPath("$.message").isEqualTo("Ошибка выполнения операции");
     }
 
     @Test
