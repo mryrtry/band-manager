@@ -11,6 +11,7 @@ import org.is.bandmanager.repository.MusicBandRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 
+import java.util.Date;
 import java.util.List;
 
 import static org.is.bandmanager.exception.message.ServiceErrorMessage.MUST_BE_NOT_NULL;
@@ -53,6 +54,11 @@ public class MusicBandServiceImpl implements MusicBandService {
     public MusicBandDto getWithMaxCoordinates() {
         MusicBand musicBand = musicBandRepository.findBandWithMaxCoordinates().orElseThrow(() -> new ServiceException(SOURCE_NOT_FOUND, "MusicBand.MaxCoordinates"));
         return mapper.toDto(musicBand);
+    }
+
+    @Override
+    public List<MusicBandDto> getByEstablishmentDateBefore(Date date) {
+        return musicBandRepository.findByEstablishmentDateBefore(date).stream().map(mapper::toDto).toList();
     }
 
     @Override

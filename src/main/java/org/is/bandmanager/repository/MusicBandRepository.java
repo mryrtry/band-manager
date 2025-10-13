@@ -5,6 +5,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import java.util.Date;
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -17,5 +19,7 @@ public interface MusicBandRepository extends JpaRepository<MusicBand, Integer> {
              LIMIT 1
             \s""", nativeQuery = true)
     Optional<MusicBand> findBandWithMaxCoordinates();
+
+    List<MusicBand> findByEstablishmentDateBefore(Date date);
 
 }
