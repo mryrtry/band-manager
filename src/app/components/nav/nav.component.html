@@ -1,0 +1,14 @@
+<nav class="navigation">
+  <div class="container">
+    @for (item of navItems; track item.path) {
+      <a
+        [routerLink]="item.path"
+        routerLinkActive="nav-item--active"
+        [routerLinkActiveOptions]="{ exact: true }"
+        class="nav-item">
+        <img [src]="item.icon" [alt]="item.label" class="nav-icon">
+        <span class="nav-label">{{ item.label }}</span>
+      </a>
+    }
+  </div>
+</nav>

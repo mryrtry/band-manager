@@ -29,6 +29,7 @@ aside {
 
 html,
 body {
+  padding: 5px 15px;
   height: 100%;
   width: 100%;
   line-height: 1;
@@ -94,4 +95,9 @@ button {
 
 .hidden_img {
   display: none;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
 }
