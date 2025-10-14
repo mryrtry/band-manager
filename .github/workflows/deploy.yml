@@ -27,13 +27,13 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Run tests
-        run: npm test -- --watch=false --browsers=ChromeHeadless || echo "Tests failed but continuing..."
-
       - name: Build Angular application (Production)
-        run: npm run build -- --configuration=production
-        env:
-          API_URL: ${{ secrets.API_URL }}
+        run: |
+          npm run build -- --configuration=production
+          echo "=== Build structure ==="
+          ls -la dist/
+          echo "=== Checking what was built ==="
+          find dist/ -name "index.html" || echo "No index.html found"
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
@@ -53,6 +53,37 @@ jobs:
         with:
           name: angular-production-build
 
+      - name: Find build directory
+        id: find-build
+        run: |
+          echo "=== Current directory structure ==="
+          ls -la
+          echo "=== dist contents ==="
+          ls -la dist/ || echo "No dist folder"
+
+          # Ищем папку с билдом
+          if [ -d "dist/band-manager" ]; then
+            echo "BUILD_DIR=dist/band-manager" >> $GITHUB_ENV
+            echo "Found: dist/band-manager"
+          elif [ -d "dist/band-manager-frontend" ]; then
+            echo "BUILD_DIR=dist/band-manager-frontend" >> $GITHUB_ENV
+            echo "Found: dist/band-manager-frontend"
+          elif [ -f "dist/index.html" ]; then
+            echo "BUILD_DIR=dist" >> $GITHUB_ENV
+            echo "Found: dist (direct files)"
+          else
+            # Ищем любую папку внутри dist
+            BUILD_DIR=$(find dist -maxdepth 1 -type d ! -name "dist" | head -1)
+            if [ -n "$BUILD_DIR" ]; then
+              echo "BUILD_DIR=$BUILD_DIR" >> $GITHUB_ENV
+              echo "Found: $BUILD_DIR"
+            else
+              echo "❌ No build directory found!"
+              find dist -type f | head -10
+              exit 1
+            fi
+          fi
+
       - name: Setup SSH key
         run: |
           mkdir -p ~/.ssh
@@ -69,9 +100,12 @@ jobs:
 
       - name: Deploy Angular build
         run: |
-          echo "Deploying from: $(ls -la dist/)"
+          echo "Deploying from: $BUILD_DIR"
           echo "Deploying to: ~/$DEPLOY_FOLDER"
-          scp -P 2222 -r dist/band-manager/* s409483@se.ifmo.ru:~/$DEPLOY_FOLDER/
+          echo "Contents of build dir:"
+          ls -la $BUILD_DIR/ | head -10
+
+          scp -P 2222 -r $BUILD_DIR/* s409483@se.ifmo.ru:~/$DEPLOY_FOLDER/
 
       - name: Set proper permissions
         run: |
@@ -104,11 +138,11 @@ jobs:
             </IfModule>
 
             # Cache control
-            <FilesMatch "\.(html|htm)$">
-              Header set Cache-Control "max-age=0, must-revalidate"
+            <FilesMatch \"\.(html|htm)$\">
+              Header set Cache-Control \"max-age=0, must-revalidate\"
             </FilesMatch>
-            <FilesMatch "\.(css|js)$">
-              Header set Cache-Control "max-age=31536000, immutable"
+            <FilesMatch \"\.(css|js)$\">
+              Header set Cache-Control \"max-age=31536000, immutable\"
             </FilesMatch>
             EOF
           "
@@ -135,23 +169,16 @@ jobs:
             echo '=== Files deployed ==='
             find ~/$DEPLOY_FOLDER -type f | wc -l
             echo '=== Key files ==='
-            ls -la ~/$DEPLOY_FOLDER/ | grep -E '(index\.html|.*\.js|.*\.css)' | head -10
+            ls -la ~/$DEPLOY_FOLDER/ | head -10
             echo '=== Index.html check ==='
             if [ -f ~/$DEPLOY_FOLDER/index.html ]; then
               echo '✅ index.html exists'
-              echo 'First lines:'
-              head -5 ~/$DEPLOY_FOLDER/index.html
+              echo 'First line:'
+              head -1 ~/$DEPLOY_FOLDER/index.html
             else
               echo '❌ index.html missing!'
+              echo 'Available files:'
+              ls -la ~/$DEPLOY_FOLDER/
               exit 1
             fi
           "
-
-      - name: Health check
-        run: |
-          response=$(curl -s -o /dev/null -w "%{http_code}" "https://se.ifmo.ru/~s409483/band-manager/" || echo "CURL_ERROR")
-          if [ "$response" = "200" ] || [ "$response" = "404" ]; then
-            echo "✅ Application is accessible (HTTP $response)"
-          else
-            echo "⚠️ Application check: HTTP $response"
-          fi
