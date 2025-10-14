@@ -1,0 +1,70 @@
+<div class="music-band-list">
+  <h2>🎵 Музыкальные группы</h2>
+
+  <!-- Фильтры -->
+  <div class="filters">
+    <input
+      type="text"
+      placeholder="Название группы"
+      [(ngModel)]="filter.name"
+      (ngModelChange)="onFilterChange()">
+
+    <select
+      [(ngModel)]="filter.genre"
+      (ngModelChange)="onFilterChange()">
+      <option value="">Все жанры</option>
+      <option *ngFor="let genre of genres" [value]="genre">
+        {{ genre }}
+      </option>
+    </select>
+
+    <input
+      type="number"
+      placeholder="Мин. участников"
+      [(ngModel)]="filter.minParticipants"
+      (ngModelChange)="onFilterChange()">
+  </div>
+
+  <!-- Состояние загрузки -->
+  @if (loading) {
+    <div class="loading">Загрузка...</div>
+  }
+
+  <!-- Сообщение об ошибке -->
+  @if (error) {
+    <div class="error">{{ error }}</div>
+  }
+
+  <!-- Список групп -->
+  <div class="bands-grid">
+    @for (band of bands; track band.id) {
+      <div class="band-card">
+        <h3>{{ band.name }}</h3>
+        <div class="band-info">
+          <p><strong>Жанр:</strong> {{ band.genre }}</p>
+          <p><strong>Участников:</strong> {{ band.numberOfParticipants }}</p>
+          <p><strong>Синглов:</strong> {{ band.singlesCount }}</p>
+          <p><strong>Альбомов:</strong> {{ band.albumsCount }}</p>
+          <p><strong>Основана:</strong> {{ band.establishmentDate | date }}</p>
+        </div>
+        <p class="description">{{ band.description }}</p>
+
+        <div class="band-actions">
+          <button (click)="removeParticipant(band.id)" class="btn btn-warning">
+            ➖ Удалить участника
+          </button>
+          <button (click)="deleteBand(band.id)" class="btn btn-danger">
+            🗑️ Удалить
+          </button>
+        </div>
+      </div>
+    }
+  </div>
+
+  <!-- Пустой список -->
+  @if (!loading && bands.length === 0) {
+    <div class="empty-state">
+      Группы не найдены
+    </div>
+  }
+</div>
