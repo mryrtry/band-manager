@@ -39,6 +39,10 @@ public class MusicBandServiceImpl implements MusicBandService {
                 .orElseThrow(() -> new ServiceException(SOURCE_NOT_FOUND, "MusicBand", id));
     }
 
+    private void checkDependencies(MusicBand musicBand) {
+        bestBandAwardService.deleteAllByBandId(musicBand.getId());
+    }
+
     private void handleDependencies(MusicBand musicBand) {
         Long coordinatesId = musicBand.getCoordinates().getId();
         if (musicBandRepository.countByCoordinatesId(coordinatesId) <= 1) {
@@ -54,8 +58,6 @@ public class MusicBandServiceImpl implements MusicBandService {
         if (musicBandRepository.countByBestAlbumId(bestAlbumId) <= 1) {
             albumService.delete(bestAlbumId);
         }
-
-        bestBandAwardService.deleteAllByBandId(musicBand.getId());
     }
 
     @Override
@@ -124,6 +126,7 @@ public class MusicBandServiceImpl implements MusicBandService {
     @Transactional
     public MusicBandDto delete(Integer id) {
         MusicBand musicBand = findById(id);
+        checkDependencies(musicBand);
         musicBandRepository.delete(musicBand);
         handleDependencies(musicBand);
         return mapper.toDto(musicBand);
