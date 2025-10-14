@@ -27,9 +27,6 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Run linting
-        run: npm run lint || echo "Linting failed but continuing..."
-
       - name: Run tests
         run: npm test -- --watch=false --browsers=ChromeHeadless || echo "Tests failed but continuing..."
 

@@ -3,7 +3,7 @@
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
-    "BandManagerFrontend": {
+    "band-manager": {
       "projectType": "application",
       "schematics": {},
       "root": "",
