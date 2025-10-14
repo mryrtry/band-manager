@@ -8,6 +8,8 @@ import org.is.bandmanager.dto.request.MusicBandRequest;
 import org.is.bandmanager.exception.ServiceException;
 import org.is.bandmanager.model.MusicBand;
 import org.is.bandmanager.repository.MusicBandRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 
@@ -63,8 +65,23 @@ public class MusicBandServiceImpl implements MusicBandService {
     }
 
     @Override
-    public List<MusicBandDto> getAll() {
-        return musicBandRepository.findAll().stream().map(mapper::toDto).toList();
+    public Page<MusicBandDto> getAll(String name, String description, String genre,
+                                     String frontManName, String bestAlbumName,
+                                     Long minParticipants, Long maxParticipants,
+                                     Long minSingles, Long maxSingles,
+                                     Long minAlbumsCount, Long maxAlbumsCount,
+                                     Integer minCoordinateX, Integer maxCoordinateX,
+                                     Float minCoordinateY, Float maxCoordinateY,
+                                     Pageable pageable) {
+
+        Page<MusicBand> bands = musicBandRepository.findAllWithFilters(
+                name, description, genre, frontManName, bestAlbumName,
+                minParticipants, maxParticipants, minSingles, maxSingles,
+                minAlbumsCount, maxAlbumsCount, minCoordinateX, maxCoordinateX,
+                minCoordinateY, maxCoordinateY, pageable
+        );
+
+        return bands.map(mapper::toDto);
     }
 
     @Override
