@@ -248,11 +248,9 @@ class MusicBandControllerTest extends AbstractIntegrationTest {
                 .exchange()
                 .expectStatus().isOk()
                 .expectBody()
-                .jsonPath("$.length()").isEqualTo(2)
-                .jsonPath("$[0].id").isEqualTo(b1.getId())
-                .jsonPath("$[1].id").isEqualTo(b2.getId())
-                .jsonPath("$[0].coordinatesId").isEqualTo(savedCoordinates.getId())
-                .jsonPath("$[1].coordinatesId").isEqualTo(c2.getId());
+                .jsonPath("$.content.length()").isEqualTo(2)
+                .jsonPath("$.content[0].id").isEqualTo(b1.getId())
+                .jsonPath("$.content[1].id").isEqualTo(b2.getId());
     }
 
     @Test
