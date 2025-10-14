@@ -18,7 +18,7 @@ public class MusicBandDto {
 
     private String name;
 
-    private Long coordinatesId;
+    private CoordinatesDto coordinates;
 
     private MusicGenre genre;
 
@@ -28,13 +28,13 @@ public class MusicBandDto {
 
     private String description;
 
-    private Long bestAlbumId;
+    private AlbumDto bestAlbum;
 
     private Long albumsCount;
 
     private Date establishmentDate;
 
-    private Long frontManId;
+    private PersonDto frontMan;
 
     private Date creationDate;
 
