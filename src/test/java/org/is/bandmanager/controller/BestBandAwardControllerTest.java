@@ -226,7 +226,7 @@ class BestBandAwardControllerTest extends AbstractIntegrationTest {
                 .exchange()
                 .expectStatus().isOk()
                 .expectBody()
-                .jsonPath("$.length()").isEqualTo(2);
+                .jsonPath("$.content.length()").isEqualTo(2);
     }
 
     @Test
