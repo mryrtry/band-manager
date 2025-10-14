@@ -29,10 +29,10 @@ public class BestBandAwardServiceImpl implements BestBandAwardService {
 
     private BestBandAward findById(Long id) {
         if (id == null) {
-            throw new ServiceException(MUST_BE_NOT_NULL, "Coordinates.id");
+            throw new ServiceException(MUST_BE_NOT_NULL, "BestBandAward.id");
         }
         return bestBandAwardRepository.findById(id)
-                .orElseThrow(() -> new ServiceException(SOURCE_NOT_FOUND, "Coordinates", id));
+                .orElseThrow(() -> new ServiceException(SOURCE_NOT_FOUND, "BestBandAward", id));
     }
 
     private MusicBand fetchMusicBandById(Integer id) {
@@ -64,11 +64,14 @@ public class BestBandAwardServiceImpl implements BestBandAwardService {
     @Override
     @Transactional
     public BestBandAwardDto update(Long id, BestBandAwardRequest request) {
-        findById(id);
-        BestBandAward updatedBestBandAward = mapper.toEntity(request);
-        updatedBestBandAward.setBand(fetchMusicBandById(request.getMusicBandId()));
-        updatedBestBandAward.setId(id);
-        return mapper.toDto(bestBandAwardRepository.save(updatedBestBandAward));
+        BestBandAward existingAward = findById(id);
+        if (request.getMusicBandId() != null &&
+                !request.getMusicBandId().equals(existingAward.getBand().getId())) {
+            MusicBand newBand = fetchMusicBandById(request.getMusicBandId());
+            existingAward.setBand(newBand);
+        }
+        existingAward.setGenre(request.getGenre());
+        return mapper.toDto(bestBandAwardRepository.save(existingAward));
     }
 
     @Override
