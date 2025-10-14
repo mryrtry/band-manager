@@ -3,14 +3,16 @@ package org.is.bandmanager.service;
 import jakarta.validation.Valid;
 import org.is.bandmanager.dto.BestBandAwardDto;
 import org.is.bandmanager.dto.request.BestBandAwardRequest;
-
-import java.util.List;
+import org.is.bandmanager.model.MusicGenre;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 public interface BestBandAwardService {
 
     BestBandAwardDto create(@Valid BestBandAwardRequest request);
 
-    List<BestBandAwardDto> getAll();
+    Page<BestBandAwardDto> getAll(MusicGenre genre, String bandName,
+                                  Integer bandId, Pageable pageable);
 
     BestBandAwardDto get(Long id);
 
