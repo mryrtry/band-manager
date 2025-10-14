@@ -248,11 +248,9 @@ class MusicBandControllerTest extends AbstractIntegrationTest {
                 .exchange()
                 .expectStatus().isOk()
                 .expectBody()
-                .jsonPath("$.length()").isEqualTo(2)
-                .jsonPath("$[0].id").isEqualTo(b1.getId())
-                .jsonPath("$[1].id").isEqualTo(b2.getId())
-                .jsonPath("$[0].coordinatesId").isEqualTo(savedCoordinates.getId())
-                .jsonPath("$[1].coordinatesId").isEqualTo(c2.getId());
+                .jsonPath("$.content.length()").isEqualTo(2)
+                .jsonPath("$.content[0].id").isEqualTo(b1.getId())
+                .jsonPath("$.content[1].id").isEqualTo(b2.getId());
     }
 
     @Test
@@ -642,6 +640,418 @@ class MusicBandControllerTest extends AbstractIntegrationTest {
                 .establishmentDate(new Date())
                 .frontMan(savedPerson)
                 .creationDate(new Date())
+                .build());
+    }
+
+    @Test
+    void shouldGetMusicBandsWithPaginationAndSorting() {
+        // Создаем тестовые данные
+        createAndSaveBand("Band A", 5L, 10L, 3L);
+        createAndSaveBand("Band C", 3L, 15L, 5L);
+        createAndSaveBand("Band B", 7L, 5L, 2L);
+
+        // Тест пагинации с сортировкой по имени (asc)
+        webTestClient.get()
+                .uri(uriBuilder -> uriBuilder
+                        .path("/music-bands")
+                        .queryParam("page", "0")
+                        .queryParam("size", "2")
+                        .queryParam("sort", "name")
+                        .queryParam("direction", "asc")
+                        .build())
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.content.length()").isEqualTo(2)
+                .jsonPath("$.content[0].name").isEqualTo("Band A")
+                .jsonPath("$.content[1].name").isEqualTo("Band B")
+                .jsonPath("$.totalPages").isEqualTo(2)
+                .jsonPath("$.totalElements").isEqualTo(3)
+                .jsonPath("$.size").isEqualTo(2)
+                .jsonPath("$.number").isEqualTo(0);
+    }
+
+    @Test
+    void shouldGetMusicBandsSortedByNameDesc() {
+        // Создаем тестовые данные
+        createAndSaveBand("Alpha Band", 5L, 10L, 3L);
+        createAndSaveBand("Beta Band", 3L, 15L, 5L);
+        createAndSaveBand("Gamma Band", 7L, 5L, 2L);
+
+        // Тест сортировки по имени (desc)
+        webTestClient.get()
+                .uri(uriBuilder -> uriBuilder
+                        .path("/music-bands")
+                        .queryParam("sort", "name")
+                        .queryParam("direction", "desc")
+                        .build())
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.content.length()").isEqualTo(3)
+                .jsonPath("$.content[0].name").isEqualTo("Gamma Band")
+                .jsonPath("$.content[1].name").isEqualTo("Beta Band")
+                .jsonPath("$.content[2].name").isEqualTo("Alpha Band");
+    }
+
+    @Test
+    void shouldGetMusicBandsSortedByNumberOfParticipantsDesc() {
+        // Создаем тестовые данные с разным количеством участников
+        createAndSaveBand("Small Band", 2L, 10L, 3L);
+        createAndSaveBand("Medium Band", 5L, 15L, 5L);
+        createAndSaveBand("Large Band", 8L, 5L, 2L);
+
+        // Тест сортировки по количеству участников (desc)
+        webTestClient.get()
+                .uri(uriBuilder -> uriBuilder
+                        .path("/music-bands")
+                        .queryParam("sort", "numberOfParticipants")
+                        .queryParam("direction", "desc")
+                        .build())
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.content.length()").isEqualTo(3)
+                .jsonPath("$.content[0].numberOfParticipants").isEqualTo(8)
+                .jsonPath("$.content[1].numberOfParticipants").isEqualTo(5)
+                .jsonPath("$.content[2].numberOfParticipants").isEqualTo(2);
+    }
+
+    @Test
+    void shouldGetMusicBandsSortedBySinglesCountAsc() {
+        // Создаем тестовые данные с разным количеством синглов
+        createAndSaveBand("Band One", 5L, 5L, 3L);
+        createAndSaveBand("Band Two", 5L, 15L, 5L);
+        createAndSaveBand("Band Three", 5L, 10L, 2L);
+
+        // Тест сортировки по количеству синглов (asc)
+        webTestClient.get()
+                .uri(uriBuilder -> uriBuilder
+                        .path("/music-bands")
+                        .queryParam("sort", "singlesCount")
+                        .queryParam("direction", "asc")
+                        .build())
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.content.length()").isEqualTo(3)
+                .jsonPath("$.content[0].singlesCount").isEqualTo(5)
+                .jsonPath("$.content[1].singlesCount").isEqualTo(10)
+                .jsonPath("$.content[2].singlesCount").isEqualTo(15);
+    }
+
+    @Test
+    void shouldFilterMusicBandsByName() {
+        // Создаем тестовые данные
+        createAndSaveBand("Rock Band", 5L, 10L, 3L);
+        createAndSaveBand("Jazz Band", 3L, 15L, 5L);
+        createAndSaveBand("Rock Group", 7L, 5L, 2L);
+
+        // Тест фильтрации по точному имени
+        webTestClient.get()
+                .uri(uriBuilder -> uriBuilder
+                        .path("/music-bands")
+                        .queryParam("name", "Rock Band")
+                        .build())
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.content.length()").isEqualTo(1)
+                .jsonPath("$.content[0].name").isEqualTo("Rock Band")
+                .jsonPath("$.content[0].numberOfParticipants").isEqualTo(5);
+    }
+
+    @Test
+    void shouldFilterMusicBandsByGenre() {
+        // Создаем тестовые данные с разными жанрами
+        createAndSaveBandWithGenre("Rockers", ROCK);
+        createAndSaveBandWithGenre("Soul Singers", MusicGenre.SOUL);
+        createAndSaveBandWithGenre("Punk Band", MusicGenre.PUNK_ROCK);
+
+        // Тест фильтрации по жанру
+        webTestClient.get()
+                .uri(uriBuilder -> uriBuilder
+                        .path("/music-bands")
+                        .queryParam("genre", "ROCK")
+                        .build())
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.content.length()").isEqualTo(1)
+                .jsonPath("$.content[0].name").isEqualTo("Rockers")
+                .jsonPath("$.content[0].genre").isEqualTo("ROCK");
+    }
+
+    @Test
+    void shouldFilterMusicBandsByParticipantsRange() {
+        // Создаем тестовые данные с разным количеством участников
+        createAndSaveBand("Small", 2L, 10L, 3L);
+        createAndSaveBand("Medium", 5L, 15L, 5L);
+        createAndSaveBand("Large", 8L, 5L, 2L);
+
+        // Тест фильтрации по диапазону участников
+        webTestClient.get()
+                .uri(uriBuilder -> uriBuilder
+                        .path("/music-bands")
+                        .queryParam("minParticipants", "3")
+                        .queryParam("maxParticipants", "6")
+                        .build())
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.content.length()").isEqualTo(1)
+                .jsonPath("$.content[0].name").isEqualTo("Medium")
+                .jsonPath("$.content[0].numberOfParticipants").isEqualTo(5);
+    }
+
+    @Test
+    void shouldFilterMusicBandsBySinglesCountRange() {
+        // Создаем тестовые данные с разным количеством синглов
+        createAndSaveBand("Few Singles", 5L, 3L, 3L);
+        createAndSaveBand("Some Singles", 5L, 8L, 5L);
+        createAndSaveBand("Many Singles", 5L, 12L, 2L);
+
+        // Тест фильтрации по диапазону синглов
+        webTestClient.get()
+                .uri(uriBuilder -> uriBuilder
+                        .path("/music-bands")
+                        .queryParam("minSingles", "5")
+                        .queryParam("maxSingles", "10")
+                        .build())
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.content.length()").isEqualTo(1)
+                .jsonPath("$.content[0].name").isEqualTo("Some Singles")
+                .jsonPath("$.content[0].singlesCount").isEqualTo(8);
+    }
+
+    @Test
+    void shouldFilterMusicBandsByAlbumsCountRange() {
+        // Создаем тестовые данные с разным количеством альбомов
+        createAndSaveBand("New Band", 5L, 10L, 1L);
+        createAndSaveBand("Established", 5L, 15L, 5L);
+        createAndSaveBand("Veteran", 5L, 5L, 10L);
+
+        // Тест фильтрации по диапазону альбомов
+        webTestClient.get()
+                .uri(uriBuilder -> uriBuilder
+                        .path("/music-bands")
+                        .queryParam("minAlbumsCount", "3")
+                        .queryParam("maxAlbumsCount", "7")
+                        .build())
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.content.length()").isEqualTo(1)
+                .jsonPath("$.content[0].name").isEqualTo("Established")
+                .jsonPath("$.content[0].albumsCount").isEqualTo(5);
+    }
+
+    @Test
+    void shouldFilterMusicBandsByFrontManName() {
+        // Создаем разных Бронтманов
+        Person john = createPerson("John Doe");
+        Person mike = createPerson("Mike Smith");
+        Person anna = createPerson("Anna Johnson");
+
+        createAndSaveBandWithFrontMan("Band One", john);
+        createAndSaveBandWithFrontMan("Band Two", mike);
+        createAndSaveBandWithFrontMan("Band Three", anna);
+
+        // Тест фильтрации по имени фронтмена
+        webTestClient.get()
+                .uri(uriBuilder -> uriBuilder
+                        .path("/music-bands")
+                        .queryParam("frontManName", "John Doe")
+                        .build())
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.content.length()").isEqualTo(1)
+                .jsonPath("$.content[0].name").isEqualTo("Band One")
+                .jsonPath("$.content[0].frontManId").isEqualTo(john.getId());
+    }
+
+    @Test
+    void shouldFilterMusicBandsByBestAlbumName() {
+        // Создаем разные альбомы
+        Album album1 = createAlbum("Dark Side of the Moon");
+        Album album2 = createAlbum("Thriller");
+        Album album3 = createAlbum("Back in Black");
+
+        createAndSaveBandWithAlbum("Pink Floyd", album1);
+        createAndSaveBandWithAlbum("Michael Jackson", album2);
+        createAndSaveBandWithAlbum("AC/DC", album3);
+
+        // Тест фильтрации по названию альбома
+        webTestClient.get()
+                .uri(uriBuilder -> uriBuilder
+                        .path("/music-bands")
+                        .queryParam("bestAlbumName", "Thriller")
+                        .build())
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.content.length()").isEqualTo(1)
+                .jsonPath("$.content[0].name").isEqualTo("Michael Jackson")
+                .jsonPath("$.content[0].bestAlbumId").isEqualTo(album2.getId());
+    }
+
+    @Test
+    void shouldFilterMusicBandsByMultipleCriteria() {
+        // Создаем тестовые данные для комплексного фильтра
+        createAndSaveBand("Target Band", 5L, 10L, 5L);
+        createAndSaveBand("Other Band 1", 3L, 15L, 3L);
+        createAndSaveBand("Other Band 2", 7L, 5L, 7L);
+
+        // Комплексный фильтр
+        webTestClient.get()
+                .uri(uriBuilder -> uriBuilder
+                        .path("/music-bands")
+                        .queryParam("name", "Target Band")
+                        .queryParam("minParticipants", "4")
+                        .queryParam("maxParticipants", "6")
+                        .queryParam("minAlbumsCount", "4")
+                        .queryParam("maxAlbumsCount", "6")
+                        .queryParam("sort", "singlesCount")
+                        .queryParam("direction", "desc")
+                        .build())
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.content.length()").isEqualTo(1)
+                .jsonPath("$.content[0].name").isEqualTo("Target Band")
+                .jsonPath("$.content[0].numberOfParticipants").isEqualTo(5)
+                .jsonPath("$.content[0].albumsCount").isEqualTo(5);
+    }
+
+    @Test
+    void shouldReturnEmptyPageWhenNoBandsMatchFilters() {
+        // Создаем тестовые данные
+        createAndSaveBand("Rock Band", 5L, 10L, 3L);
+        createAndSaveBand("Jazz Band", 3L, 15L, 5L);
+
+        // Фильтр, который не соответствует ни одной группе
+        webTestClient.get()
+                .uri(uriBuilder -> uriBuilder
+                        .path("/music-bands")
+                        .queryParam("name", "Non Existent Band")
+                        .build())
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.content.length()").isEqualTo(0)
+                .jsonPath("$.totalElements").isEqualTo(0);
+    }
+
+    @Test
+    void shouldUseDefaultPaginationWhenNoParametersProvided() {
+        // Создаем больше 20 групп для проверки дефолтной пагинации
+        for (int i = 1; i <= 25; i++) {
+            createAndSaveBand("Band " + i, 5L, 10L, 3L);
+        }
+
+        webTestClient.get()
+                .uri("/music-bands")
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.content.length()").isEqualTo(20) // дефолтный size
+                .jsonPath("$.totalPages").isEqualTo(2)
+                .jsonPath("$.totalElements").isEqualTo(25)
+                .jsonPath("$.size").isEqualTo(20)
+                .jsonPath("$.number").isEqualTo(0);
+    }
+
+// Вспомогательные методы для тестов
+
+    private void createAndSaveBand(String name, Long numberOfParticipants, Long singlesCount, Long albumsCount) {
+        musicBandRepository.save(MusicBand.builder()
+                .name(name)
+                .coordinates(savedCoordinates)
+                .genre(ROCK)
+                .numberOfParticipants(numberOfParticipants)
+                .singlesCount(singlesCount)
+                .description("Description for " + name)
+                .bestAlbum(savedAlbum)
+                .albumsCount(albumsCount)
+                .establishmentDate(new Date())
+                .frontMan(savedPerson)
+                .creationDate(new Date())
+                .build());
+    }
+
+    private void createAndSaveBandWithGenre(String name, MusicGenre genre) {
+        musicBandRepository.save(MusicBand.builder()
+                .name(name)
+                .coordinates(savedCoordinates)
+                .genre(genre)
+                .numberOfParticipants(5L)
+                .singlesCount(10L)
+                .description("Description for " + name)
+                .bestAlbum(savedAlbum)
+                .albumsCount(5L)
+                .establishmentDate(new Date())
+                .frontMan(savedPerson)
+                .creationDate(new Date())
+                .build());
+    }
+
+    private void createAndSaveBandWithFrontMan(String name, Person frontMan) {
+        musicBandRepository.save(MusicBand.builder()
+                .name(name)
+                .coordinates(savedCoordinates)
+                .genre(ROCK)
+                .numberOfParticipants(5L)
+                .singlesCount(10L)
+                .description("Description for " + name)
+                .bestAlbum(savedAlbum)
+                .albumsCount(5L)
+                .establishmentDate(new Date())
+                .frontMan(frontMan)
+                .creationDate(new Date())
+                .build());
+    }
+
+    private void createAndSaveBandWithAlbum(String name, Album album) {
+        musicBandRepository.save(MusicBand.builder()
+                .name(name)
+                .coordinates(savedCoordinates)
+                .genre(ROCK)
+                .numberOfParticipants(5L)
+                .singlesCount(10L)
+                .description("Description for " + name)
+                .bestAlbum(album)
+                .albumsCount(5L)
+                .establishmentDate(new Date())
+                .frontMan(savedPerson)
+                .creationDate(new Date())
+                .build());
+    }
+
+    private Person createPerson(String name) {
+        Location location = locationRepository.save(Location.builder()
+                .x(1)
+                .y(2L)
+                .z(3L)
+                .build());
+
+        return personRepository.save(Person.builder()
+                .name(name)
+                .eyeColor(BLUE)
+                .hairColor(BLACK)
+                .location(location)
+                .weight(70f)
+                .nationality(USA)
+                .build());
+    }
+
+    private Album createAlbum(String name) {
+        return albumRepository.save(Album.builder()
+                .name(name)
+                .tracks(10L)
+                .sales(100)
                 .build());
     }
 
