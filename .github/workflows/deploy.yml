@@ -26,7 +26,7 @@ jobs:
         run: npm ci
 
       - name: Build Angular application
-        run: npm run build -- --configuration=production
+        run: npm run build -- --configuration=production --base-href="/~s409483/band-manager/"
 
       - name: Upload browser folder only
         uses: actions/upload-artifact@v4
