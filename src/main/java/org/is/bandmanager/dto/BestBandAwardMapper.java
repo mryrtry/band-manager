@@ -8,12 +8,16 @@ import org.mapstruct.Mapping;
 @Mapper(componentModel = "spring")
 public abstract class BestBandAwardMapper {
 
-    @Mapping(target = "band", source = "band")
+    @Mapping(target = "bandId", source = "band.id")
+    @Mapping(target = "bandName", source = "band.name")
     public abstract BestBandAwardDto toDto(BestBandAward award);
 
-    @Mapping(target = "band", source = "band")
+    @Mapping(target = "band", ignore = true)
     public abstract BestBandAward toEntity(BestBandAwardDto awardDto);
 
+    @Mapping(target = "band", ignore = true)
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "createdAt", ignore = true)
     public BestBandAward toEntity(BestBandAwardRequest request) {
         return BestBandAward.builder()
                 .genre(request.getGenre())

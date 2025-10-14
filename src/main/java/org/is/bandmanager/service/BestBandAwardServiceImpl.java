@@ -8,8 +8,11 @@ import org.is.bandmanager.dto.request.BestBandAwardRequest;
 import org.is.bandmanager.exception.ServiceException;
 import org.is.bandmanager.model.BestBandAward;
 import org.is.bandmanager.model.MusicBand;
+import org.is.bandmanager.model.MusicGenre;
 import org.is.bandmanager.repository.BestBandAwardRepository;
 import org.is.bandmanager.repository.MusicBandRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 
@@ -29,10 +32,10 @@ public class BestBandAwardServiceImpl implements BestBandAwardService {
 
     private BestBandAward findById(Long id) {
         if (id == null) {
-            throw new ServiceException(MUST_BE_NOT_NULL, "Coordinates.id");
+            throw new ServiceException(MUST_BE_NOT_NULL, "BestBandAward.id");
         }
         return bestBandAwardRepository.findById(id)
-                .orElseThrow(() -> new ServiceException(SOURCE_NOT_FOUND, "Coordinates", id));
+                .orElseThrow(() -> new ServiceException(SOURCE_NOT_FOUND, "BestBandAward", id));
     }
 
     private MusicBand fetchMusicBandById(Integer id) {
@@ -52,8 +55,12 @@ public class BestBandAwardServiceImpl implements BestBandAwardService {
     }
 
     @Override
-    public List<BestBandAwardDto> getAll() {
-        return bestBandAwardRepository.findAll().stream().map(mapper::toDto).toList();
+    public Page<BestBandAwardDto> getAll(MusicGenre genre, String bandName,
+                                         Integer bandId, Pageable pageable) {
+        Page<BestBandAward> awards = bestBandAwardRepository.findAllWithFilters(
+                genre, bandName, bandId, pageable
+        );
+        return awards.map(mapper::toDto);
     }
 
     @Override
@@ -64,11 +71,14 @@ public class BestBandAwardServiceImpl implements BestBandAwardService {
     @Override
     @Transactional
     public BestBandAwardDto update(Long id, BestBandAwardRequest request) {
-        findById(id);
-        BestBandAward updatedBestBandAward = mapper.toEntity(request);
-        updatedBestBandAward.setBand(fetchMusicBandById(request.getMusicBandId()));
-        updatedBestBandAward.setId(id);
-        return mapper.toDto(bestBandAwardRepository.save(updatedBestBandAward));
+        BestBandAward existingAward = findById(id);
+        if (request.getMusicBandId() != null &&
+                !request.getMusicBandId().equals(existingAward.getBand().getId())) {
+            MusicBand newBand = fetchMusicBandById(request.getMusicBandId());
+            existingAward.setBand(newBand);
+        }
+        existingAward.setGenre(request.getGenre());
+        return mapper.toDto(bestBandAwardRepository.save(existingAward));
     }
 
     @Override
