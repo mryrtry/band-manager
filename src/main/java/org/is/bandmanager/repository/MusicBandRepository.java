@@ -1,6 +1,7 @@
 package org.is.bandmanager.repository;
 
 import org.is.bandmanager.model.MusicBand;
+import org.is.bandmanager.model.MusicGenre;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -53,7 +54,7 @@ public interface MusicBandRepository extends JpaRepository<MusicBand, Integer> {
     Page<MusicBand> findAllWithFilters(
             @Param("name") String name,
             @Param("description") String description,
-            @Param("genre") String genre,
+            @Param("genre") MusicGenre genre,
             @Param("frontManName") String frontManName,
             @Param("bestAlbumName") String bestAlbumName,
             @Param("minParticipants") Long minParticipants,

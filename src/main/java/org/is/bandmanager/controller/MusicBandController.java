@@ -6,6 +6,7 @@ import jakarta.validation.constraints.PastOrPresent;
 import lombok.RequiredArgsConstructor;
 import org.is.bandmanager.dto.MusicBandDto;
 import org.is.bandmanager.dto.request.MusicBandRequest;
+import org.is.bandmanager.model.MusicGenre;
 import org.is.bandmanager.service.MusicBandService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -30,7 +31,7 @@ public class MusicBandController {
     public ResponseEntity<Page<MusicBandDto>> getAllMusicBands(
             @RequestParam(required = false) String name,
             @RequestParam(required = false) String description,
-            @RequestParam(required = false) String genre,
+            @RequestParam(required = false) MusicGenre genre,
             @RequestParam(required = false) String frontManName,
             @RequestParam(required = false) String bestAlbumName,
 

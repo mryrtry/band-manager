@@ -4,6 +4,7 @@ import jakarta.validation.Valid;
 import org.is.bandmanager.dto.MusicBandDto;
 import org.is.bandmanager.dto.request.MusicBandRequest;
 import org.is.bandmanager.model.MusicBand;
+import org.is.bandmanager.model.MusicGenre;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -14,7 +15,7 @@ public interface MusicBandService {
 
     MusicBandDto create(@Valid MusicBandRequest request);
 
-    Page<MusicBandDto> getAll(String name, String description, String genre,
+    Page<MusicBandDto> getAll(String name, String description, MusicGenre genre,
                               String frontManName, String bestAlbumName,
                               Long minParticipants, Long maxParticipants,
                               Long minSingles, Long maxSingles,

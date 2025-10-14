@@ -7,6 +7,7 @@ import org.is.bandmanager.dto.MusicBandMapper;
 import org.is.bandmanager.dto.request.MusicBandRequest;
 import org.is.bandmanager.exception.ServiceException;
 import org.is.bandmanager.model.MusicBand;
+import org.is.bandmanager.model.MusicGenre;
 import org.is.bandmanager.repository.MusicBandRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -65,7 +66,7 @@ public class MusicBandServiceImpl implements MusicBandService {
     }
 
     @Override
-    public Page<MusicBandDto> getAll(String name, String description, String genre,
+    public Page<MusicBandDto> getAll(String name, String description, MusicGenre genre,
                                      String frontManName, String bestAlbumName,
                                      Long minParticipants, Long maxParticipants,
                                      Long minSingles, Long maxSingles,
