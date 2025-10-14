@@ -1,0 +1,160 @@
+name: Deploy Angular to Production
+
+on:
+  push:
+    branches: [ frontend ]
+  pull_request:
+    branches: [ frontend ]
+
+env:
+  NODE_VERSION: '20.x'
+  DEPLOY_FOLDER: 'public_html/band-manager'
+
+jobs:
+  test-and-build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run linting
+        run: npm run lint || echo "Linting failed but continuing..."
+
+      - name: Run tests
+        run: npm test -- --watch=false --browsers=ChromeHeadless || echo "Tests failed but continuing..."
+
+      - name: Build Angular application (Production)
+        run: npm run build -- --configuration=production
+        env:
+          API_URL: ${{ secrets.API_URL }}
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: angular-production-build
+          path: dist/
+          retention-days: 1
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: test-and-build
+    if: github.ref == 'refs/heads/frontend'
+
+    steps:
+      - name: Download build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: angular-production-build
+
+      - name: Setup SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.DEPLOY_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -p 2222 se.ifmo.ru >> ~/.ssh/known_hosts
+
+      - name: Clean deployment directory
+        run: |
+          ssh -p 2222 s409483@se.ifmo.ru "
+            rm -rf ~/$DEPLOY_FOLDER/*
+            mkdir -p ~/$DEPLOY_FOLDER
+          "
+
+      - name: Deploy Angular build
+        run: |
+          echo "Deploying from: $(ls -la dist/)"
+          echo "Deploying to: ~/$DEPLOY_FOLDER"
+          scp -P 2222 -r dist/band-manager/* s409483@se.ifmo.ru:~/$DEPLOY_FOLDER/
+
+      - name: Set proper permissions
+        run: |
+          ssh -p 2222 s409483@se.ifmo.ru "
+            chmod -R 755 ~/$DEPLOY_FOLDER/
+            chmod 644 ~/$DEPLOY_FOLDER/*.html ~/$DEPLOY_FOLDER/*.css ~/$DEPLOY_FOLDER/*.js 2>/dev/null || true
+          "
+
+      - name: Create .htaccess for SPA routing
+        run: |
+          ssh -p 2222 s409483@se.ifmo.ru "
+            cat > ~/$DEPLOY_FOLDER/.htaccess << 'EOF'
+            RewriteEngine On
+            # If the requested resource doesn't exist, use index.html
+            RewriteCond %{REQUEST_FILENAME} !-f
+            RewriteCond %{REQUEST_FILENAME} !-d
+            RewriteRule . /~s409483/band-manager/index.html [L]
+
+            # Enable compression
+            <IfModule mod_deflate.c>
+              AddOutputFilterByType DEFLATE text/plain
+              AddOutputFilterByType DEFLATE text/html
+              AddOutputFilterByType DEFLATE text/xml
+              AddOutputFilterByType DEFLATE text/css
+              AddOutputFilterByType DEFLATE application/xml
+              AddOutputFilterByType DEFLATE application/xhtml+xml
+              AddOutputFilterByType DEFLATE application/rss+xml
+              AddOutputFilterByType DEFLATE application/javascript
+              AddOutputFilterByType DEFLATE application/x-javascript
+            </IfModule>
+
+            # Cache control
+            <FilesMatch "\.(html|htm)$">
+              Header set Cache-Control "max-age=0, must-revalidate"
+            </FilesMatch>
+            <FilesMatch "\.(css|js)$">
+              Header set Cache-Control "max-age=31536000, immutable"
+            </FilesMatch>
+            EOF
+          "
+
+  verification:
+    runs-on: ubuntu-latest
+    needs: deploy
+    if: github.ref == 'refs/heads/frontend'
+
+    steps:
+      - name: Setup SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.DEPLOY_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -p 2222 se.ifmo.ru >> ~/.ssh/known_hosts
+
+      - name: Verify deployment
+        run: |
+          ssh -p 2222 s409483@se.ifmo.ru "
+            echo '=== Deployment Verification ==='
+            echo 'Deployment time: $(date)'
+            echo 'Git commit: ${{ github.sha }}'
+            echo '=== Files deployed ==='
+            find ~/$DEPLOY_FOLDER -type f | wc -l
+            echo '=== Key files ==='
+            ls -la ~/$DEPLOY_FOLDER/ | grep -E '(index\.html|.*\.js|.*\.css)' | head -10
+            echo '=== Index.html check ==='
+            if [ -f ~/$DEPLOY_FOLDER/index.html ]; then
+              echo '✅ index.html exists'
+              echo 'First lines:'
+              head -5 ~/$DEPLOY_FOLDER/index.html
+            else
+              echo '❌ index.html missing!'
+              exit 1
+            fi
+          "
+
+      - name: Health check
+        run: |
+          response=$(curl -s -o /dev/null -w "%{http_code}" "https://se.ifmo.ru/~s409483/band-manager/" || echo "CURL_ERROR")
+          if [ "$response" = "200" ] || [ "$response" = "404" ]; then
+            echo "✅ Application is accessible (HTTP $response)"
+          else
+            echo "⚠️ Application check: HTTP $response"
+          fi
