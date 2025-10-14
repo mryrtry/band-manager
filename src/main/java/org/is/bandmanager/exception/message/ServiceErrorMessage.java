@@ -8,7 +8,8 @@ public enum ServiceErrorMessage implements ErrorMessage {
 
     MUST_BE_NOT_NULL(HttpStatus.BAD_REQUEST, "Ресурс '%s' не может быть пустым"),
     SOURCE_NOT_FOUND(HttpStatus.NOT_FOUND, "Ресурс '%s' с ID: '%d' не был найден"),
-    CANNOT_REMOVE_LAST_PARTICIPANT(HttpStatus.BAD_REQUEST, "Невозможно удалить участника - в группе должен остаться хотя бы 1 участник");
+    CANNOT_REMOVE_LAST_PARTICIPANT(HttpStatus.BAD_REQUEST, "Невозможно удалить участника - в группе должен остаться хотя бы 1 участник"),
+    ENTITY_IN_USE(HttpStatus.BAD_REQUEST, "Невозможно удалить ресурс '%s' с ID: '%d', так как он связан с другим ресурсом '%s'");
 
 
     private final HttpStatus httpStatus;

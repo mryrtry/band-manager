@@ -18,4 +18,6 @@ public interface BestBandAwardService {
 
     BestBandAwardDto delete(Long id);
 
+    void deleteAllByBandId(Integer bandId);
+
 }

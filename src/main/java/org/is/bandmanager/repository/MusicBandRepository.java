@@ -25,4 +25,16 @@ public interface MusicBandRepository extends JpaRepository<MusicBand, Integer> {
     @Query("SELECT DISTINCT m.albumsCount FROM MusicBand m ORDER BY m.albumsCount")
     List<Long> findDistinctAlbumsCount();
 
+    boolean existsByCoordinatesId(Long coordinatesId);
+
+    boolean existsByBestAlbumId(Long bestAlbumId);
+
+    boolean existsByFrontManId(Long frontManId);
+
+    Long countByCoordinatesId(Long coordinatesId);
+
+    Long countByFrontManId(Long frontManId);
+
+    Long countByBestAlbumId(Long albumId);
+
 }

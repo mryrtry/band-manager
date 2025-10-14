@@ -8,13 +8,13 @@ import org.is.bandmanager.dto.request.CoordinatesRequest;
 import org.is.bandmanager.exception.ServiceException;
 import org.is.bandmanager.model.Coordinates;
 import org.is.bandmanager.repository.CoordinatesRepository;
+import org.is.bandmanager.repository.MusicBandRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 
 import java.util.List;
 
-import static org.is.bandmanager.exception.message.ServiceErrorMessage.MUST_BE_NOT_NULL;
-import static org.is.bandmanager.exception.message.ServiceErrorMessage.SOURCE_NOT_FOUND;
+import static org.is.bandmanager.exception.message.ServiceErrorMessage.*;
 
 @Service
 @Validated
@@ -22,6 +22,7 @@ import static org.is.bandmanager.exception.message.ServiceErrorMessage.SOURCE_NO
 public class CoordinatesServiceImpl implements CoordinatesService {
 
     private final CoordinatesRepository coordinatesRepository;
+    private final MusicBandRepository musicBandRepository;
     private final CoordinatesMapper mapper;
 
     private Coordinates findById(Long id) {
@@ -30,6 +31,12 @@ public class CoordinatesServiceImpl implements CoordinatesService {
         }
         return coordinatesRepository.findById(id)
                 .orElseThrow(() -> new ServiceException(SOURCE_NOT_FOUND, "Coordinates", id));
+    }
+
+    private void checkDependencies(Coordinates coordinates) {
+        Long coordinatesId = coordinates.getId();
+        if (musicBandRepository.existsByCoordinatesId(coordinatesId))
+            throw new ServiceException(ENTITY_IN_USE, "Coordinates", coordinatesId, "MusicBand");
     }
 
     @Override
@@ -51,7 +58,7 @@ public class CoordinatesServiceImpl implements CoordinatesService {
 
     @Override
     public Coordinates getEntity(Long id) {
-        return  findById(id);
+        return findById(id);
     }
 
     @Override
@@ -67,6 +74,7 @@ public class CoordinatesServiceImpl implements CoordinatesService {
     @Transactional
     public CoordinatesDto delete(Long id) {
         Coordinates coordinates = findById(id);
+        checkDependencies(coordinates);
         coordinatesRepository.delete(coordinates);
         return mapper.toDto(coordinates);
     }

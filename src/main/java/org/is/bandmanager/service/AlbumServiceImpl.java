@@ -8,13 +8,13 @@ import org.is.bandmanager.dto.request.AlbumRequest;
 import org.is.bandmanager.exception.ServiceException;
 import org.is.bandmanager.model.Album;
 import org.is.bandmanager.repository.AlbumRepository;
+import org.is.bandmanager.repository.MusicBandRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 
 import java.util.List;
 
-import static org.is.bandmanager.exception.message.ServiceErrorMessage.MUST_BE_NOT_NULL;
-import static org.is.bandmanager.exception.message.ServiceErrorMessage.SOURCE_NOT_FOUND;
+import static org.is.bandmanager.exception.message.ServiceErrorMessage.*;
 
 @Service
 @Validated
@@ -22,6 +22,7 @@ import static org.is.bandmanager.exception.message.ServiceErrorMessage.SOURCE_NO
 public class AlbumServiceImpl implements AlbumService {
 
     private final AlbumRepository albumRepository;
+    private final MusicBandRepository musicBandRepository;
     private final AlbumMapper mapper;
 
     private Album findById(Long id) {
@@ -30,6 +31,12 @@ public class AlbumServiceImpl implements AlbumService {
         }
         return albumRepository.findById(id)
                 .orElseThrow(() -> new ServiceException(SOURCE_NOT_FOUND, "Album", id));
+    }
+
+    private void checkDependencies(Album album) {
+        Long albumId = album.getId();
+        if (musicBandRepository.existsByBestAlbumId(albumId))
+            throw new ServiceException(ENTITY_IN_USE, "Album", albumId, "MusicBand");
     }
 
     @Override
@@ -67,6 +74,7 @@ public class AlbumServiceImpl implements AlbumService {
     @Transactional
     public AlbumDto delete(Long id) {
         Album album = findById(id);
+        checkDependencies(album);
         albumRepository.delete(album);
         return mapper.toDto(album);
     }

@@ -6,4 +6,9 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface PersonRepository extends JpaRepository<Person, Long> {
+
+    Long countByLocationId(Long albumId);
+
+    boolean existsByLocationId(Long locationId);
+
 }

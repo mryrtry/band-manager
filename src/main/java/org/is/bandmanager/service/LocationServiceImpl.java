@@ -8,13 +8,13 @@ import org.is.bandmanager.dto.request.LocationRequest;
 import org.is.bandmanager.exception.ServiceException;
 import org.is.bandmanager.model.Location;
 import org.is.bandmanager.repository.LocationRepository;
+import org.is.bandmanager.repository.PersonRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 
 import java.util.List;
 
-import static org.is.bandmanager.exception.message.ServiceErrorMessage.MUST_BE_NOT_NULL;
-import static org.is.bandmanager.exception.message.ServiceErrorMessage.SOURCE_NOT_FOUND;
+import static org.is.bandmanager.exception.message.ServiceErrorMessage.*;
 
 @Service
 @Validated
@@ -22,6 +22,7 @@ import static org.is.bandmanager.exception.message.ServiceErrorMessage.SOURCE_NO
 public class LocationServiceImpl implements LocationService {
 
     private final LocationRepository locationRepository;
+    private final PersonRepository personRepository;
     private final LocationMapper mapper;
 
     private Location findById(Long id) {
@@ -30,6 +31,12 @@ public class LocationServiceImpl implements LocationService {
         }
         return locationRepository.findById(id)
                 .orElseThrow(() -> new ServiceException(SOURCE_NOT_FOUND, "Location", id));
+    }
+
+    private void checkDependencies(Location location) {
+        Long locationId = location.getId();
+        if (personRepository.existsByLocationId(locationId))
+            throw new ServiceException(ENTITY_IN_USE, "Location", locationId, "Person");
     }
 
     @Override
@@ -67,6 +74,7 @@ public class LocationServiceImpl implements LocationService {
     @Transactional
     public LocationDto delete(Long id) {
         Location location = findById(id);
+        checkDependencies(location);
         locationRepository.delete(location);
         return mapper.toDto(location);
     }
