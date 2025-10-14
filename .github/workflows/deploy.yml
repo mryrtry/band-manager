@@ -3,15 +3,13 @@ name: Deploy Angular to Production
 on:
   push:
     branches: [ frontend ]
-  pull_request:
-    branches: [ frontend ]
 
 env:
   NODE_VERSION: '20.x'
   DEPLOY_FOLDER: 'public_html/band-manager'
 
 jobs:
-  test-and-build:
+  build:
     runs-on: ubuntu-latest
 
     steps:
@@ -27,62 +25,26 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Build Angular application (Production)
-        run: |
-          npm run build -- --configuration=production
-          echo "=== Build structure ==="
-          ls -la dist/
-          echo "=== Checking what was built ==="
-          find dist/ -name "index.html" || echo "No index.html found"
+      - name: Build Angular application
+        run: npm run build -- --configuration=production
 
-      - name: Upload build artifact
+      - name: Upload browser folder only
         uses: actions/upload-artifact@v4
         with:
-          name: angular-production-build
-          path: dist/
+          name: angular-app
+          path: dist/band-manager/browser
           retention-days: 1
 
   deploy:
     runs-on: ubuntu-latest
-    needs: test-and-build
+    needs: build
     if: github.ref == 'refs/heads/frontend'
 
     steps:
-      - name: Download build artifact
+      - name: Download browser files
         uses: actions/download-artifact@v4
         with:
-          name: angular-production-build
-
-      - name: Find build directory
-        id: find-build
-        run: |
-          echo "=== Current directory structure ==="
-          ls -la
-          echo "=== dist contents ==="
-          ls -la dist/ || echo "No dist folder"
-
-          # Ищем папку с билдом
-          if [ -d "dist/band-manager" ]; then
-            echo "BUILD_DIR=dist/band-manager" >> $GITHUB_ENV
-            echo "Found: dist/band-manager"
-          elif [ -d "dist/band-manager-frontend" ]; then
-            echo "BUILD_DIR=dist/band-manager-frontend" >> $GITHUB_ENV
-            echo "Found: dist/band-manager-frontend"
-          elif [ -f "dist/index.html" ]; then
-            echo "BUILD_DIR=dist" >> $GITHUB_ENV
-            echo "Found: dist (direct files)"
-          else
-            # Ищем любую папку внутри dist
-            BUILD_DIR=$(find dist -maxdepth 1 -type d ! -name "dist" | head -1)
-            if [ -n "$BUILD_DIR" ]; then
-              echo "BUILD_DIR=$BUILD_DIR" >> $GITHUB_ENV
-              echo "Found: $BUILD_DIR"
-            else
-              echo "❌ No build directory found!"
-              find dist -type f | head -10
-              exit 1
-            fi
-          fi
+          name: angular-app
 
       - name: Setup SSH key
         run: |
@@ -91,94 +53,7 @@ jobs:
           chmod 600 ~/.ssh/id_rsa
           ssh-keyscan -p 2222 se.ifmo.ru >> ~/.ssh/known_hosts
 
-      - name: Clean deployment directory
+      - name: Clean and deploy
         run: |
-          ssh -p 2222 s409483@se.ifmo.ru "
-            rm -rf ~/$DEPLOY_FOLDER/*
-            mkdir -p ~/$DEPLOY_FOLDER
-          "
-
-      - name: Deploy Angular build
-        run: |
-          echo "Deploying from: $BUILD_DIR"
-          echo "Deploying to: ~/$DEPLOY_FOLDER"
-          echo "Contents of build dir:"
-          ls -la $BUILD_DIR/ | head -10
-
-          scp -P 2222 -r $BUILD_DIR/* s409483@se.ifmo.ru:~/$DEPLOY_FOLDER/
-
-      - name: Set proper permissions
-        run: |
-          ssh -p 2222 s409483@se.ifmo.ru "
-            chmod -R 755 ~/$DEPLOY_FOLDER/
-            chmod 644 ~/$DEPLOY_FOLDER/*.html ~/$DEPLOY_FOLDER/*.css ~/$DEPLOY_FOLDER/*.js 2>/dev/null || true
-          "
-
-      - name: Create .htaccess for SPA routing
-        run: |
-          ssh -p 2222 s409483@se.ifmo.ru "
-            cat > ~/$DEPLOY_FOLDER/.htaccess << 'EOF'
-            RewriteEngine On
-            # If the requested resource doesn't exist, use index.html
-            RewriteCond %{REQUEST_FILENAME} !-f
-            RewriteCond %{REQUEST_FILENAME} !-d
-            RewriteRule . /~s409483/band-manager/index.html [L]
-
-            # Enable compression
-            <IfModule mod_deflate.c>
-              AddOutputFilterByType DEFLATE text/plain
-              AddOutputFilterByType DEFLATE text/html
-              AddOutputFilterByType DEFLATE text/xml
-              AddOutputFilterByType DEFLATE text/css
-              AddOutputFilterByType DEFLATE application/xml
-              AddOutputFilterByType DEFLATE application/xhtml+xml
-              AddOutputFilterByType DEFLATE application/rss+xml
-              AddOutputFilterByType DEFLATE application/javascript
-              AddOutputFilterByType DEFLATE application/x-javascript
-            </IfModule>
-
-            # Cache control
-            <FilesMatch \"\.(html|htm)$\">
-              Header set Cache-Control \"max-age=0, must-revalidate\"
-            </FilesMatch>
-            <FilesMatch \"\.(css|js)$\">
-              Header set Cache-Control \"max-age=31536000, immutable\"
-            </FilesMatch>
-            EOF
-          "
-
-  verification:
-    runs-on: ubuntu-latest
-    needs: deploy
-    if: github.ref == 'refs/heads/frontend'
-
-    steps:
-      - name: Setup SSH key
-        run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.DEPLOY_KEY }}" > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
-          ssh-keyscan -p 2222 se.ifmo.ru >> ~/.ssh/known_hosts
-
-      - name: Verify deployment
-        run: |
-          ssh -p 2222 s409483@se.ifmo.ru "
-            echo '=== Deployment Verification ==='
-            echo 'Deployment time: $(date)'
-            echo 'Git commit: ${{ github.sha }}'
-            echo '=== Files deployed ==='
-            find ~/$DEPLOY_FOLDER -type f | wc -l
-            echo '=== Key files ==='
-            ls -la ~/$DEPLOY_FOLDER/ | head -10
-            echo '=== Index.html check ==='
-            if [ -f ~/$DEPLOY_FOLDER/index.html ]; then
-              echo '✅ index.html exists'
-              echo 'First line:'
-              head -1 ~/$DEPLOY_FOLDER/index.html
-            else
-              echo '❌ index.html missing!'
-              echo 'Available files:'
-              ls -la ~/$DEPLOY_FOLDER/
-              exit 1
-            fi
-          "
+          ssh -p 2222 s409483@se.ifmo.ru "rm -rf ~/$DEPLOY_FOLDER/* && mkdir -p ~/$DEPLOY_FOLDER"
+          scp -P 2222 -r ./* s409483@se.ifmo.ru:~/$DEPLOY_FOLDER/
