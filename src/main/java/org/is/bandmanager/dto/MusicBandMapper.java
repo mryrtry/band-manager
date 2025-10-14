@@ -11,7 +11,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.Date;
 
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring",
+uses = { AlbumMapper.class, PersonMapper.class, CoordinatesMapper.class })
 public abstract class MusicBandMapper {
 
     @Autowired
@@ -23,14 +24,8 @@ public abstract class MusicBandMapper {
     @Autowired
     PersonService personService;
 
-    @Mapping(target = "coordinatesId", source = "coordinates.id")
-    @Mapping(target = "bestAlbumId", source = "bestAlbum.id")
-    @Mapping(target = "frontManId", source = "frontMan.id")
     public abstract MusicBandDto toDto(MusicBand musicBand);
 
-    @Mapping(target = "coordinates", ignore = true)
-    @Mapping(target = "bestAlbum", ignore = true)
-    @Mapping(target = "frontMan", ignore = true)
     public abstract MusicBand toEntity(MusicBandDto musicBandDto);
 
     public MusicBand toEntity(MusicBandRequest request) {
