@@ -124,4 +124,10 @@ public class MusicBandController {
         return ResponseEntity.ok(deletedMusicBand);
     }
 
+    @DeleteMapping()
+    public ResponseEntity<List<MusicBandDto>> deleteMusicBands(@RequestBody List<Integer> ids) {
+        List<MusicBandDto> deletedMusicBands = musicBandService.delete(ids);
+        return ResponseEntity.ok(deletedMusicBands);
+    }
+
 }

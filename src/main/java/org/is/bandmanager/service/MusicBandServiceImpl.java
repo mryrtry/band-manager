@@ -25,9 +25,6 @@ import static org.is.bandmanager.exception.message.ServiceErrorMessage.*;
 public class MusicBandServiceImpl implements MusicBandService {
 
     private final MusicBandRepository musicBandRepository;
-    private final AlbumService albumService;
-    private final CoordinatesService coordinatesService;
-    private final PersonService personService;
     private final BestBandAwardService bestBandAwardService;
     private final MusicBandMapper mapper;
 
@@ -39,25 +36,9 @@ public class MusicBandServiceImpl implements MusicBandService {
                 .orElseThrow(() -> new ServiceException(SOURCE_NOT_FOUND, "MusicBand", id));
     }
 
-    private void checkDependencies(MusicBand musicBand) {
+    @Transactional
+    protected void checkDependencies(MusicBand musicBand) {
         bestBandAwardService.deleteAllByBandId(musicBand.getId());
-    }
-
-    private void handleDependencies(MusicBand musicBand) {
-        Long coordinatesId = musicBand.getCoordinates().getId();
-        if (musicBandRepository.countByCoordinatesId(coordinatesId) <= 1) {
-            coordinatesService.delete(coordinatesId);
-        }
-
-        Long frontManId = musicBand.getFrontMan().getId();
-        if (musicBandRepository.countByFrontManId(frontManId) <= 1) {
-            personService.delete(frontManId);
-        }
-
-        Long bestAlbumId = musicBand.getBestAlbum().getId();
-        if (musicBandRepository.countByBestAlbumId(bestAlbumId) <= 1) {
-            albumService.delete(bestAlbumId);
-        }
     }
 
     @Override
@@ -128,8 +109,17 @@ public class MusicBandServiceImpl implements MusicBandService {
         MusicBand musicBand = findById(id);
         checkDependencies(musicBand);
         musicBandRepository.delete(musicBand);
-        handleDependencies(musicBand);
         return mapper.toDto(musicBand);
+    }
+
+    @Override
+    @Transactional
+    public List<MusicBandDto> delete(List<Integer> ids) {
+        if (ids == null || ids.isEmpty()) return null;
+        List<MusicBand> bands = musicBandRepository.findAllById(ids);
+        bands.forEach(this::checkDependencies);
+        musicBandRepository.deleteAll(bands);
+        return bands.stream().map(mapper::toDto).toList();
     }
 
     @Override

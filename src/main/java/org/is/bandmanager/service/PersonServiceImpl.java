@@ -7,14 +7,16 @@ import org.is.bandmanager.dto.PersonMapper;
 import org.is.bandmanager.dto.request.PersonRequest;
 import org.is.bandmanager.exception.ServiceException;
 import org.is.bandmanager.model.Person;
-import org.is.bandmanager.repository.MusicBandRepository;
 import org.is.bandmanager.repository.PersonRepository;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 
 import java.util.List;
 
-import static org.is.bandmanager.exception.message.ServiceErrorMessage.*;
+import static org.is.bandmanager.exception.message.ServiceErrorMessage.MUST_BE_NOT_NULL;
+import static org.is.bandmanager.exception.message.ServiceErrorMessage.SOURCE_NOT_FOUND;
 
 @Service
 @Validated
@@ -22,8 +24,6 @@ import static org.is.bandmanager.exception.message.ServiceErrorMessage.*;
 public class PersonServiceImpl implements PersonService {
 
     private final PersonRepository personRepository;
-    private final MusicBandRepository musicBandRepository;
-    private final LocationService locationService;
     private final PersonMapper mapper;
 
     private Person findById(Long id) {
@@ -32,19 +32,6 @@ public class PersonServiceImpl implements PersonService {
         }
         return personRepository.findById(id)
                 .orElseThrow(() -> new ServiceException(SOURCE_NOT_FOUND, "Person", id));
-    }
-
-    private void checkDependencies(Person person) {
-        Long personId = person.getId();
-        if (musicBandRepository.existsByFrontManId(personId))
-            throw new ServiceException(ENTITY_IN_USE, "Person", personId, "MusicBand");
-    }
-
-    private void handleDependencies(Person person) {
-        Long locationId = person.getLocation().getId();
-        if (personRepository.countByLocationId(locationId) <= 1) {
-            locationService.delete(locationId);
-        }
     }
 
     @Override
@@ -82,10 +69,18 @@ public class PersonServiceImpl implements PersonService {
     @Transactional
     public PersonDto delete(Long id) {
         Person person = findById(id);
-        checkDependencies(person);
         personRepository.delete(person);
-        handleDependencies(person);
         return mapper.toDto(person);
+    }
+
+    @Async("cleanupTaskExecutor")
+    @Scheduled(fixedDelay = 300000)
+    @Transactional
+    public void cleanupUnusedPersons() {
+        List<Person> unusedFrontMen = personRepository.findUnusedPersons();
+        if (!unusedFrontMen.isEmpty()) {
+            personRepository.deleteAll(unusedFrontMen);
+        }
     }
 
 }

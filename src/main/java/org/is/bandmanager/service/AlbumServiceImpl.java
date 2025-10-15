@@ -9,6 +9,8 @@ import org.is.bandmanager.exception.ServiceException;
 import org.is.bandmanager.model.Album;
 import org.is.bandmanager.repository.AlbumRepository;
 import org.is.bandmanager.repository.MusicBandRepository;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 
@@ -77,6 +79,16 @@ public class AlbumServiceImpl implements AlbumService {
         checkDependencies(album);
         albumRepository.delete(album);
         return mapper.toDto(album);
+    }
+
+    @Async("cleanupTaskExecutor")
+    @Scheduled(fixedDelay = 300000)
+    @Transactional
+    public void cleanupUnusedAlbums() {
+        List<Album> unusedAlbums = albumRepository.findUnusedAlbum();
+        if (!unusedAlbums.isEmpty()) {
+            albumRepository.deleteAll(unusedAlbums);
+        }
     }
 
 }
