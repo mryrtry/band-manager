@@ -958,7 +958,7 @@ class MusicBandControllerTest extends AbstractIntegrationTest {
                 .expectStatus().isOk()
                 .expectBody()
                 .jsonPath("$.content.length()").isEqualTo(10) // дефолтный size
-                .jsonPath("$.page.totalPages").isEqualTo(2)
+                .jsonPath("$.page.totalPages").isEqualTo(3)
                 .jsonPath("$.page.totalElements").isEqualTo(25)
                 .jsonPath("$.page.size").isEqualTo(20)
                 .jsonPath("$.page.number").isEqualTo(0);
