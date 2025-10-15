@@ -129,9 +129,9 @@ class MusicBandControllerTest extends AbstractIntegrationTest {
                 .jsonPath("$.name").isEqualTo("Radiohead")
                 .jsonPath("$.genre").isEqualTo("ROCK")
                 .jsonPath("$.numberOfParticipants").isEqualTo(5)
-                .jsonPath("$.coordinatesId").isEqualTo(savedCoordinates.getId())
-                .jsonPath("$.bestAlbumId").isEqualTo(savedAlbum.getId())
-                .jsonPath("$.frontManId").isEqualTo(savedPerson.getId());
+                .jsonPath("$.coordinates.id").isEqualTo(savedCoordinates.getId())
+                .jsonPath("$.bestAlbum.id").isEqualTo(savedAlbum.getId())
+                .jsonPath("$.frontMan.id").isEqualTo(savedPerson.getId());
 
         List<MusicBand> bands = musicBandRepository.findAll();
         assertThat(bands).hasSize(1);
@@ -276,9 +276,9 @@ class MusicBandControllerTest extends AbstractIntegrationTest {
                 .expectBody()
                 .jsonPath("$.id").isEqualTo(saved.getId())
                 .jsonPath("$.name").isEqualTo("Test Band")
-                .jsonPath("$.coordinatesId").isEqualTo(savedCoordinates.getId())
-                .jsonPath("$.bestAlbumId").isEqualTo(savedAlbum.getId())
-                .jsonPath("$.frontManId").isEqualTo(savedPerson.getId());
+                .jsonPath("$.coordinates.id").isEqualTo(savedCoordinates.getId())
+                .jsonPath("$.bestAlbum.id").isEqualTo(savedAlbum.getId())
+                .jsonPath("$.frontMan.id").isEqualTo(savedPerson.getId());
     }
 
     @Test
@@ -346,9 +346,9 @@ class MusicBandControllerTest extends AbstractIntegrationTest {
                 .expectStatus().isOk()
                 .expectBody()
                 .jsonPath("$.name").isEqualTo("Updated Band")
-                .jsonPath("$.coordinatesId").isEqualTo(newCoordinates.getId())
-                .jsonPath("$.bestAlbumId").isEqualTo(newAlbum.getId())
-                .jsonPath("$.frontManId").isEqualTo(newPerson.getId());
+                .jsonPath("$.coordinates.id").isEqualTo(newCoordinates.getId())
+                .jsonPath("$.bestAlbum.id").isEqualTo(newAlbum.getId())
+                .jsonPath("$.frontMan.id").isEqualTo(newPerson.getId());
 
         MusicBand updated = musicBandRepository.findById(saved.getId()).orElseThrow();
         assertThat(updated.getName()).isEqualTo("Updated Band");
@@ -430,7 +430,7 @@ class MusicBandControllerTest extends AbstractIntegrationTest {
                 .expectBody()
                 .jsonPath("$.id").isEqualTo(b1.getId())
                 .jsonPath("$.name").isEqualTo("Band 1")
-                .jsonPath("$.coordinatesId").isEqualTo(c1.getId());
+                .jsonPath("$.coordinates.id").isEqualTo(c1.getId());
     }
 
     @Test
@@ -665,10 +665,10 @@ class MusicBandControllerTest extends AbstractIntegrationTest {
                 .jsonPath("$.content.length()").isEqualTo(2)
                 .jsonPath("$.content[0].name").isEqualTo("Band A")
                 .jsonPath("$.content[1].name").isEqualTo("Band B")
-                .jsonPath("$.totalPages").isEqualTo(2)
-                .jsonPath("$.totalElements").isEqualTo(3)
-                .jsonPath("$.size").isEqualTo(2)
-                .jsonPath("$.number").isEqualTo(0);
+                .jsonPath("$.page.totalPages").isEqualTo(2)
+                .jsonPath("$.page.totalElements").isEqualTo(3)
+                .jsonPath("$.page.size").isEqualTo(2)
+                .jsonPath("$.page.number").isEqualTo(0);
     }
 
     @Test
@@ -870,7 +870,7 @@ class MusicBandControllerTest extends AbstractIntegrationTest {
                 .expectBody()
                 .jsonPath("$.content.length()").isEqualTo(1)
                 .jsonPath("$.content[0].name").isEqualTo("Band One")
-                .jsonPath("$.content[0].frontManId").isEqualTo(john.getId());
+                .jsonPath("$.content[0].frontMan.id").isEqualTo(john.getId());
     }
 
     @Test
@@ -895,7 +895,7 @@ class MusicBandControllerTest extends AbstractIntegrationTest {
                 .expectBody()
                 .jsonPath("$.content.length()").isEqualTo(1)
                 .jsonPath("$.content[0].name").isEqualTo("Michael Jackson")
-                .jsonPath("$.content[0].bestAlbumId").isEqualTo(album2.getId());
+                .jsonPath("$.content[0].bestAlbum.id").isEqualTo(album2.getId());
     }
 
     @Test
@@ -942,7 +942,7 @@ class MusicBandControllerTest extends AbstractIntegrationTest {
                 .expectStatus().isOk()
                 .expectBody()
                 .jsonPath("$.content.length()").isEqualTo(0)
-                .jsonPath("$.totalElements").isEqualTo(0);
+                .jsonPath("$.page.totalElements").isEqualTo(0);
     }
 
     @Test
@@ -957,11 +957,11 @@ class MusicBandControllerTest extends AbstractIntegrationTest {
                 .exchange()
                 .expectStatus().isOk()
                 .expectBody()
-                .jsonPath("$.content.length()").isEqualTo(20) // дефолтный size
-                .jsonPath("$.totalPages").isEqualTo(2)
-                .jsonPath("$.totalElements").isEqualTo(25)
-                .jsonPath("$.size").isEqualTo(20)
-                .jsonPath("$.number").isEqualTo(0);
+                .jsonPath("$.content.length()").isEqualTo(10) // дефолтный size
+                .jsonPath("$.page.totalPages").isEqualTo(2)
+                .jsonPath("$.page.totalElements").isEqualTo(25)
+                .jsonPath("$.page.size").isEqualTo(20)
+                .jsonPath("$.page.number").isEqualTo(0);
     }
 
 // Вспомогательные методы для тестов
