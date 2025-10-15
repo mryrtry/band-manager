@@ -24,7 +24,7 @@ export interface MusicBandFilter {
   maxCoordinateY?: number;
   page: number;
   size?: number;
-  sort?: string;
+  sort: string[];
   direction?: 'asc' | 'desc';
 }
 
@@ -52,9 +52,16 @@ export class MusicBandService {
     Object.keys(filter).forEach(key => {
       const value = filter[key as keyof MusicBandFilter];
       if (value !== undefined && value !== null && value !== '') {
-        params = params.set(key, value.toString());
+        if (key === 'sort' && Array.isArray(value)) {
+          (value as string[]).forEach(sortField => {
+            params = params.append('sort', sortField);
+          });
+        } else {
+          params = params.set(key, value.toString());
+        }
       }
     });
+
     return this.http.get<PaginatedResponse<MusicBand>>(this.apiUrl, {params}).pipe(delay(0));
   }
 
@@ -94,5 +101,4 @@ export class MusicBandService {
   deleteMusicBands(ids: number[]): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}`, {body: ids});
   }
-
 }
