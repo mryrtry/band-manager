@@ -39,23 +39,22 @@ public class MusicBandServiceImpl implements MusicBandService {
                 .orElseThrow(() -> new ServiceException(SOURCE_NOT_FOUND, "MusicBand", id));
     }
 
-    private void checkDependencies(MusicBand musicBand) {
+    @Transactional
+    protected void checkDependencies(MusicBand musicBand) {
         bestBandAwardService.deleteAllByBandId(musicBand.getId());
     }
 
-    private void handleDependencies(MusicBand musicBand) {
-        Long coordinatesId = musicBand.getCoordinates().getId();
-        if (musicBandRepository.countByCoordinatesId(coordinatesId) <= 1) {
+    @Transactional
+    protected void handleDependencies(Long coordinatesId, Long frontManId, Long bestAlbumId) {
+        if (musicBandRepository.countByCoordinatesId(coordinatesId) == 0) {
             coordinatesService.delete(coordinatesId);
         }
 
-        Long frontManId = musicBand.getFrontMan().getId();
-        if (musicBandRepository.countByFrontManId(frontManId) <= 1) {
+        if (musicBandRepository.countByFrontManId(frontManId) == 0) {
             personService.delete(frontManId);
         }
 
-        Long bestAlbumId = musicBand.getBestAlbum().getId();
-        if (musicBandRepository.countByBestAlbumId(bestAlbumId) <= 1) {
+        if (musicBandRepository.countByBestAlbumId(bestAlbumId) == 0) {
             albumService.delete(bestAlbumId);
         }
     }
@@ -126,9 +125,12 @@ public class MusicBandServiceImpl implements MusicBandService {
     @Transactional
     public MusicBandDto delete(Integer id) {
         MusicBand musicBand = findById(id);
+        Long coordinatesId = musicBand.getCoordinates().getId();
+        Long frontManId = musicBand.getFrontMan().getId();
+        Long bestAlbumId = musicBand.getBestAlbum().getId();
         checkDependencies(musicBand);
         musicBandRepository.delete(musicBand);
-        handleDependencies(musicBand);
+        handleDependencies(coordinatesId, frontManId, bestAlbumId);
         return mapper.toDto(musicBand);
     }
 

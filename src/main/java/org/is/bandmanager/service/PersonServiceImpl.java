@@ -40,9 +40,8 @@ public class PersonServiceImpl implements PersonService {
             throw new ServiceException(ENTITY_IN_USE, "Person", personId, "MusicBand");
     }
 
-    private void handleDependencies(Person person) {
-        Long locationId = person.getLocation().getId();
-        if (personRepository.countByLocationId(locationId) <= 1) {
+    private void handleDependencies(Long locationId) {
+        if (personRepository.countByLocationId(locationId) == 0) {
             locationService.delete(locationId);
         }
     }
@@ -83,8 +82,9 @@ public class PersonServiceImpl implements PersonService {
     public PersonDto delete(Long id) {
         Person person = findById(id);
         checkDependencies(person);
+        Long locationId = person.getLocation().getId();
         personRepository.delete(person);
-        handleDependencies(person);
+        handleDependencies(locationId);
         return mapper.toDto(person);
     }
 
