@@ -12,6 +12,6 @@ import {CommonModule} from '@angular/common';
 export class NavigationComponent {
   navItems = [
     {path: '/', label: 'Основная страница', icon: 'home.svg'},
-    {path: '/special', label: 'Специальные операции', icon: 'build.svg'}
+    {path: '/special', label: 'Специальные операции', icon: 'bolt.svg'}
   ];
 }

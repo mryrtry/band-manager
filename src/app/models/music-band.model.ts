@@ -1,16 +1,19 @@
 import {MusicGenre} from './enums/music-genre.model';
+import {Album} from './album.model';
+import {Coordinates} from './coordinates.model';
+import {Person} from './person.model';
 
 export interface MusicBand {
   id: number;
   name: string;
-  coordinatesId: number;
+  coordinates: Coordinates;
   genre: MusicGenre;
   numberOfParticipants: number;
   singlesCount: number;
   description: string;
-  bestAlbumId: number;
+  bestAlbum: Album;
   albumsCount: number;
   establishmentDate: string;
-  frontManId: number;
+  frontMan: Person;
   creationDate: string;
 }

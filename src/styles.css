@@ -29,7 +29,8 @@ aside {
 
 html,
 body {
-  padding: 5px 15px;
+  font-family: arial, sans-serif;
+  padding: 5px 5px;
   height: 100%;
   width: 100%;
   line-height: 1;
@@ -98,6 +99,6 @@ button {
 }
 
 .container {
-  max-width: 1200px;
+  max-width: 1500px;
   margin: 0 auto;
 }

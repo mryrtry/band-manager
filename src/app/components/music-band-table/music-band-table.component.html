@@ -1,0 +1,124 @@
+<button
+  class="bulk-delete-btn"
+  (click)="deleteSelectedBands()"
+  [disabled]="getSelectedCount() === 0">
+  Удалить выбранные ({{ getSelectedCount() }})
+</button>
+
+@if (loading) {
+  <div class="loading">Загрузка...</div>
+} @else if (error) {
+  <div class="error">{{ error }}</div>
+} @else {
+  <div class="table_container">
+    <table class="table">
+      <thead>
+      <tr>
+        <td class="checkbox-column">
+          <label class="checkbox-label">
+            <input
+              type="checkbox"
+              [checked]="isAllSelected"
+              (change)="toggleSelectAll()">
+            <span class="checkmark"></span>
+          </label>
+        </td>
+        <td>Действия</td>
+        <td>ID</td>
+        <td>Название</td>
+        <td>Лидер</td>
+        <td>Жанр</td>
+        <td>Лучший альбом</td>
+        <td>Кол-во альбомов</td>
+        <td>Кол-во синглов</td>
+        <td>Кол-во участников</td>
+        <td>Дата основания</td>
+        <td>Координаты</td>
+      </tr>
+      </thead>
+      <tbody>
+        @for (band of bands; track band.id) {
+          <tr [class.selected]="isBandSelected(band.id)">
+            <td class="checkbox-column">
+              <label class="checkbox-label">
+                <input
+                  type="checkbox"
+                  [checked]="isBandSelected(band.id)"
+                  (change)="toggleBandSelection(band.id)">
+                <span class="checkmark"></span>
+              </label>
+            </td>
+            <td>
+              <div class="buttons_container">
+                <button class="edit-btn">
+                  <img src="/edit.svg" alt="Изменить">
+                </button>
+                <button
+                  class="delete-btn"
+                  (click)="deleteBand(band.id, $event)">
+                  <img src="/delete.svg" alt="Удалить">
+                </button>
+              </div>
+            </td>
+            <td>{{ band.id }}</td>
+            <td>{{ band.name }}</td>
+            <td>{{ band.frontMan.name }}</td>
+            <td>{{ parseMusicGenre(band.genre) }}</td>
+            <td>{{ band.bestAlbum.name }}</td>
+            <td>{{ band.albumsCount }}</td>
+            <td>{{ band.singlesCount }}</td>
+            <td>{{ band.numberOfParticipants }}</td>
+            <td>{{ band.establishmentDate | date: 'dd.MM.yyyy' }}</td>
+            <td>{{ band.coordinates.x }} : {{ band.coordinates.y }}</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+
+  <div class="pagination-controls">
+    <div class="page-size-selector">
+      <select id="pageSize" [(ngModel)]="filter.size" (change)="onPageSizeChange()">
+        @for (size of pageSizeOptions; track size) {
+          <option [value]="size">{{ size }}</option>
+        }
+      </select>
+    </div>
+
+    <button
+      class="pagination-btn"
+      (click)="goToPage(0)"
+      [disabled]="filter.page === 0">
+      <<
+    </button>
+
+    <button
+      class="pagination-btn"
+      (click)="goToPage(filter.page - 1)"
+      [disabled]="filter.page === 0">
+      <
+    </button>
+
+    @for (page of getPageNumbers(); track page) {
+      <button
+        class="pagination-btn {{ page === filter.page ? 'active' : '' }}"
+        (click)="goToPage(page)">
+        {{ page + 1 }}
+      </button>
+    }
+
+    <button
+      class="pagination-btn"
+      (click)="goToPage(filter.page + 1)"
+      [disabled]="filter.page >= totalPages - 1">
+      >
+    </button>
+
+    <button
+      class="pagination-btn"
+      (click)="goToPage(totalPages-1)"
+      [disabled]="filter.page >= totalPages - 1">
+      >>
+    </button>
+  </div>
+}

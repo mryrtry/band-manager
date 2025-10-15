@@ -1,34 +1,58 @@
 .container {
   border-radius: 5px;
   text-transform: uppercase;
-  font-family: arial, serif;
   display: flex;
+  margin-bottom: 10px;
 }
 
 .nav-item {
-  padding: 10px 20px;
+  --nav-padding-x: 20px;
+  --nav-padding-y: 10px;
+  --nav-bg-color: #f4f4f4;
+  --nav-active-bg-color: #ececec;
+  --nav-border-color: #dadada;
+
+  padding: var(--nav-padding-y) var(--nav-padding-x);
   display: flex;
   align-items: center;
-  background-color: #f4f4f4;
-  margin-right: 10px;
+  text-align: center;
+  background-color: var(--nav-bg-color);
   border-radius: 5px;
   color: black;
-  border: 1px solid rgb(0,0,0,0);
+  border: 1px solid transparent;
+  margin-left: 10px;
+
+
+  &:first-child {
+    margin-left: 0;
+  }
+
+
+  .nav-icon {
+    width: 20px;
+    margin-right: 10px;
+  }
+
+
+  &:hover,
+  &.nav-item--active {
+    background-color: var(--nav-active-bg-color);
+  }
+
+  &:active {
+    border-color: var(--nav-border-color);
+  }
 }
 
-.nav-item .nav-icon {
-  width: 20px;
-  margin-right: 10px;
+
+@media screen and (max-width: 600px) {
+  .nav-item .nav-icon {
+    display: none;
+  }
 }
 
-.nav-item--active {
-  background-color: #ececec;
-}
-
-.nav-item:hover {
-  background-color: #ececec;
-}
-
-.nav-item:active {
-  border: 1px solid #dadada;
+@media screen and (max-width: 450px) {
+  .nav-item {
+    --nav-padding-x: 5px;
+  }
 }

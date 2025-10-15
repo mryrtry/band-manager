@@ -1,11 +1,11 @@
 import {Component} from '@angular/core';
 import {CommonModule} from '@angular/common';
-import {MusicBandListComponent} from '../../components/music-band-list/music-band-list.component';
+import {MusicBandTableComponent} from '../../components/music-band-table/music-band-table.component';
 
 @Component({
   selector: 'home',
   standalone: true,
-  imports: [CommonModule, MusicBandListComponent],
+  imports: [CommonModule, MusicBandTableComponent],
   templateUrl: './home.page.html',
   styleUrls: ['./home.page.css']
 })
