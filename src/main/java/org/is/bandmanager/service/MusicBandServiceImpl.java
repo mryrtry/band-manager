@@ -25,9 +25,6 @@ import static org.is.bandmanager.exception.message.ServiceErrorMessage.*;
 public class MusicBandServiceImpl implements MusicBandService {
 
     private final MusicBandRepository musicBandRepository;
-    private final AlbumService albumService;
-    private final CoordinatesService coordinatesService;
-    private final PersonService personService;
     private final BestBandAwardService bestBandAwardService;
     private final MusicBandMapper mapper;
 
@@ -42,21 +39,6 @@ public class MusicBandServiceImpl implements MusicBandService {
     @Transactional
     protected void checkDependencies(MusicBand musicBand) {
         bestBandAwardService.deleteAllByBandId(musicBand.getId());
-    }
-
-    @Transactional
-    protected void handleDependencies(Long coordinatesId, Long frontManId, Long bestAlbumId) {
-        if (musicBandRepository.countByCoordinatesId(coordinatesId) == 0) {
-            coordinatesService.delete(coordinatesId);
-        }
-
-        if (musicBandRepository.countByFrontManId(frontManId) == 0) {
-            personService.delete(frontManId);
-        }
-
-        if (musicBandRepository.countByBestAlbumId(bestAlbumId) == 0) {
-            albumService.delete(bestAlbumId);
-        }
     }
 
     @Override
@@ -125,12 +107,8 @@ public class MusicBandServiceImpl implements MusicBandService {
     @Transactional
     public MusicBandDto delete(Integer id) {
         MusicBand musicBand = findById(id);
-        Long coordinatesId = musicBand.getCoordinates().getId();
-        Long frontManId = musicBand.getFrontMan().getId();
-        Long bestAlbumId = musicBand.getBestAlbum().getId();
         checkDependencies(musicBand);
         musicBandRepository.delete(musicBand);
-        handleDependencies(coordinatesId, frontManId, bestAlbumId);
         return mapper.toDto(musicBand);
     }
 

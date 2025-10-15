@@ -9,6 +9,8 @@ import org.is.bandmanager.exception.ServiceException;
 import org.is.bandmanager.model.Coordinates;
 import org.is.bandmanager.repository.CoordinatesRepository;
 import org.is.bandmanager.repository.MusicBandRepository;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 
@@ -77,6 +79,16 @@ public class CoordinatesServiceImpl implements CoordinatesService {
         checkDependencies(coordinates);
         coordinatesRepository.delete(coordinates);
         return mapper.toDto(coordinates);
+    }
+
+    @Async("cleanupTaskExecutor")
+    @Scheduled(fixedDelay = 300000)
+    @Transactional
+    public void cleanupUnusedCoordinates() {
+        List<Coordinates> unusedCoordinates = coordinatesRepository.findUnusedCoordinates();
+        if (!unusedCoordinates.isEmpty()) {
+            coordinatesRepository.deleteAll(unusedCoordinates);
+        }
     }
 
 }
