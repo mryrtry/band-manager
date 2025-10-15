@@ -113,6 +113,16 @@ public class MusicBandServiceImpl implements MusicBandService {
     }
 
     @Override
+    @Transactional
+    public List<MusicBandDto> delete(List<Integer> ids) {
+        if (ids == null || ids.isEmpty()) return null;
+        List<MusicBand> bands = musicBandRepository.findAllById(ids);
+        bands.forEach(this::checkDependencies);
+        musicBandRepository.deleteAll(bands);
+        return bands.stream().map(mapper::toDto).toList();
+    }
+
+    @Override
     public MusicBandDto removeParticipant(Integer id) {
         MusicBand musicBand = findById(id);
         if (musicBand.getNumberOfParticipants() <= 1) {
