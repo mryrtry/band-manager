@@ -28,7 +28,7 @@ public class BestBandAwardController {
             @RequestParam(required = false) Integer bandId,
 
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "createdAt") String sort,
             @RequestParam(defaultValue = "desc") String direction) {
 
