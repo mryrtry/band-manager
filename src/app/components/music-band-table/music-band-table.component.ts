@@ -32,6 +32,20 @@ export class MusicBandTableComponent {
   protected selectedBands = new Set<number>();
   protected isAllSelected: boolean = false;
 
+  protected sortableFields = [
+    {key: 'id', label: 'ID'},
+    {key: 'name', label: 'Название'},
+    {key: 'genre', label: 'Жанр'},
+    {key: 'numberOfParticipants', label: 'Участники'},
+    {key: 'singlesCount', label: 'Синглы'},
+    {key: 'albumsCount', label: 'Альбомы'},
+    {key: 'establishmentDate', label: 'Дата основания'},
+    {key: 'coordinates.x', label: 'Координата X'},
+    {key: 'coordinates.y', label: 'Координата Y'},
+    {key: 'frontMan.name', label: 'Имя лидера'},
+    {key: 'bestAlbum.name', label: 'Название альбома'}
+  ];
+
   protected filter: MusicBandFilter = {
     name: undefined,
     description: undefined,
@@ -49,9 +63,9 @@ export class MusicBandTableComponent {
     minCoordinateY: undefined,
     maxCoordinateY: undefined,
     page: 0,
-    size: 5,
-    sort: undefined,
-    direction: 'asc'
+    size: 10,
+    sort: ['id'],
+    direction: 'asc',
   }
 
   private getMusicBands() {
@@ -97,6 +111,13 @@ export class MusicBandTableComponent {
     this.filter.page = 0;
     this.getMusicBands();
   }
+
+  protected setSorting(field: string): void {
+    this.filter.sort = [field];
+    this.filter.page = 0;
+    this.getMusicBands();
+  }
+
 
   protected toggleBandSelection(bandId: number): void {
     if (this.selectedBands.has(bandId)) {
