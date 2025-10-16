@@ -1,16 +1,32 @@
-<button
-  class="bulk-delete-btn"
-  (click)="deleteSelectedBands()"
-  [disabled]="getSelectedCount() === 0">
-  Удалить выбранные ({{ getSelectedCount() }})
-</button>
+<div class="bulk-btn-container">
+  <button
+    class="bulk-btn refresh-button"
+    (click)="getMusicBands(true)"
+    [disabled]="loading">
+    <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="24px" fill="#000000">
+      <path
+        d="M483.08-200q-117.25 0-198.63-81.34-81.37-81.34-81.37-198.54 0-117.2 81.37-198.66Q365.83-760 483.08-760q71.3 0 133.54 33.88 62.23 33.89 100.3 94.58V-760h40v209.23H547.69v-40h148q-31.23-59.85-87.88-94.54Q551.15-720 483.08-720q-100 0-170 70t-70 170q0 100 70 170t170 70q77 0 139-44t87-116h42.46Q725.08-310.15 651-255.08 576.92-200 483.08-200Z"/>
+    </svg>
+  </button>
+  <app-custom-select
+    [options]="pageSizeSelectOptions"
+    [(selected)]="filter.size"
+    (selectedChange)="onPageSizeChange()"
+  ></app-custom-select>
+  <button
+    class="bulk-btn delete-button"
+    (click)="deleteSelectedBands()"
+    [disabled]="getSelectedCount() === 0">
+    Удалить выбранные ({{ getSelectedCount() }})
+  </button>
+</div>
 
 @if (loading) {
   <div class="loading">Загрузка...</div>
 } @else if (error) {
   <div class="error">{{ error }}</div>
 } @else {
-  <div class="table_container">
+  <div class="table_container" [class.loading]="loading">
     <table class="table">
       <thead>
       <tr>
@@ -23,17 +39,10 @@
             <span class="checkmark"></span>
           </label>
         </td>
+        @for (header of sortableFields; track header.key) {
+          <td class="sort_header" (click)="setSorting(header.key)">{{ header.label }}</td>
+        }
         <td>Действия</td>
-        <td>ID</td>
-        <td>Название</td>
-        <td>Лидер</td>
-        <td>Жанр</td>
-        <td>Лучший альбом</td>
-        <td>Кол-во альбомов</td>
-        <td>Кол-во синглов</td>
-        <td>Кол-во участников</td>
-        <td>Дата основания</td>
-        <td>Координаты</td>
       </tr>
       </thead>
       <tbody>
@@ -48,18 +57,6 @@
                 <span class="checkmark"></span>
               </label>
             </td>
-            <td>
-              <div class="buttons_container">
-                <button class="edit-btn">
-                  <img src="/edit.svg" alt="Изменить">
-                </button>
-                <button
-                  class="delete-btn"
-                  (click)="deleteBand(band.id, $event)">
-                  <img src="/delete.svg" alt="Удалить">
-                </button>
-              </div>
-            </td>
             <td>{{ band.id }}</td>
             <td>{{ band.name }}</td>
             <td>{{ band.frontMan.name }}</td>
@@ -70,6 +67,18 @@
             <td>{{ band.numberOfParticipants }}</td>
             <td>{{ band.establishmentDate | date: 'dd.MM.yyyy' }}</td>
             <td>{{ band.coordinates.x }} : {{ band.coordinates.y }}</td>
+            <td>
+              <div class="buttons_container">
+                <button class="edit-btn">
+                  <img src="/edit.svg" alt="Изменить">
+                </button>
+                <button
+                  class="delete-button"
+                  (click)="deleteBand(band.id, $event)">
+                  <img src="/delete.svg" alt="Удалить">
+                </button>
+              </div>
+            </td>
           </tr>
         }
       </tbody>
@@ -77,13 +86,6 @@
   </div>
 
   <div class="pagination-controls">
-    <div class="page-size-selector">
-      <select id="pageSize" [(ngModel)]="filter.size" (change)="onPageSizeChange()">
-        @for (size of pageSizeOptions; track size) {
-          <option [value]="size">{{ size }}</option>
-        }
-      </select>
-    </div>
 
     <button
       class="pagination-btn"
@@ -121,4 +123,5 @@
       >>
     </button>
   </div>
+  <p class="table_info">Найдено: {{ totalElements }}, страниц: {{ totalPages }}</p>
 }

@@ -5,11 +5,12 @@ import {MusicBand} from '../../models/music-band.model';
 import {PaginatedResponse, MusicBandFilter} from '../../services/music-band.service';
 import {parseMusicGenre} from '../../models/enums/music-genre.model';
 import {FormsModule} from '@angular/forms';
+import {SelectComponent} from '../select/select.component';
 
 @Component({
   selector: 'app-music-table',
   standalone: true,
-  imports: [CommonModule, DatePipe, FormsModule],
+  imports: [CommonModule, DatePipe, FormsModule, SelectComponent],
   templateUrl: './music-band-table.component.html',
   styleUrls: ['./music-band-table.component.css']
 })
@@ -35,15 +36,14 @@ export class MusicBandTableComponent {
   protected sortableFields = [
     {key: 'id', label: 'ID'},
     {key: 'name', label: 'Название'},
+    {key: 'frontMan.name', label: 'Лидер'},
     {key: 'genre', label: 'Жанр'},
-    {key: 'numberOfParticipants', label: 'Участники'},
-    {key: 'singlesCount', label: 'Синглы'},
+    {key: 'bestAlbum.name', label: 'Лучший альбом'},
     {key: 'albumsCount', label: 'Альбомы'},
+    {key: 'singlesCount', label: 'Синглы'},
+    {key: 'numberOfParticipants', label: 'Участники'},
     {key: 'establishmentDate', label: 'Дата основания'},
-    {key: 'coordinates.x', label: 'Координата X'},
-    {key: 'coordinates.y', label: 'Координата Y'},
-    {key: 'frontMan.name', label: 'Имя лидера'},
-    {key: 'bestAlbum.name', label: 'Название альбома'}
+    {key: 'coordinates.x', label: 'Координаты'}
   ];
 
   protected filter: MusicBandFilter = {
@@ -63,13 +63,18 @@ export class MusicBandTableComponent {
     minCoordinateY: undefined,
     maxCoordinateY: undefined,
     page: 0,
-    size: 10,
+    size: 5,
     sort: ['id'],
     direction: 'asc',
   }
 
-  private getMusicBands() {
-    this.loading = true;
+  protected getMusicBands(refresh?: boolean) {
+    if (this.bands.length <= 0) {
+      this.loading = true;
+    }
+    if (refresh) {
+      this.loading = true;
+    }
     this.error = null;
     this.musicBandService.getMusicBands(this.filter).subscribe({
       next: (response: PaginatedResponse<MusicBand>) => {
@@ -113,9 +118,17 @@ export class MusicBandTableComponent {
   }
 
   protected setSorting(field: string): void {
+    if (this.filter.sort[0] == field)  this.toggleSorting();
+    else this.filter.direction = 'asc';
     this.filter.sort = [field];
     this.filter.page = 0;
     this.getMusicBands();
+  }
+
+  private toggleSorting(): void {
+    if (this.filter.direction == 'asc') {
+      this.filter.direction = 'desc';
+    } else this.filter.direction = 'asc';
   }
 
 
@@ -178,19 +191,22 @@ export class MusicBandTableComponent {
   protected deleteBand(bandId: number, event: Event): void {
     event.stopPropagation();
     if (confirm('Вы уверены, что хотите удалить эту группу?')) {
-      this.loading = true;
       this.musicBandService.deleteMusicBand(bandId).subscribe({
         next: () => {
           this.getMusicBands();
         },
         error: (error) => {
           this.error = 'Ошибка при удалении группы';
-          this.loading = false;
           console.error('Error deleting music band:', error);
         }
       });
     }
   }
+
+  protected pageSizeSelectOptions = this.pageSizeOptions.map(size => ({
+    label: `${size} / стр.`,
+    value: size,
+  }));
 
   protected readonly parseMusicGenre = parseMusicGenre;
 }
