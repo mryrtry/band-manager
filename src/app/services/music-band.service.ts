@@ -1,6 +1,6 @@
 import {Injectable, inject} from '@angular/core';
 import {HttpClient, HttpParams} from '@angular/common/http';
-import {Observable} from 'rxjs';
+import {delay, Observable} from 'rxjs';
 import {environment} from '../../environments/environment';
 import {MusicBand} from '../models/music-band.model';
 import {MusicBandRequest} from '../models/requests/music-band-request.model';
@@ -22,20 +22,22 @@ export interface MusicBandFilter {
   maxCoordinateX?: number;
   minCoordinateY?: number;
   maxCoordinateY?: number;
-  page?: number;
+  page: number;
   size?: number;
-  sort?: string;
+  sort: string[];
   direction?: 'asc' | 'desc';
+}
+
+export interface Page {
+  page: number;
+  size: number;
+  totalElements: number;
+  totalPages: number;
 }
 
 export interface PaginatedResponse<T> {
   content: T[];
-  totalElements: number;
-  totalPages: number;
-  size: number;
-  number: number;
-  first: boolean;
-  last: boolean;
+  page: Page
 }
 
 @Injectable({
@@ -45,15 +47,22 @@ export class MusicBandService {
   private http = inject(HttpClient);
   private apiUrl = `${environment.apiUrl}/music-bands`;
 
-  getMusicBands(filter: MusicBandFilter = {}): Observable<PaginatedResponse<MusicBand>> {
+  getMusicBands(filter: MusicBandFilter): Observable<PaginatedResponse<MusicBand>> {
     let params = new HttpParams();
     Object.keys(filter).forEach(key => {
       const value = filter[key as keyof MusicBandFilter];
       if (value !== undefined && value !== null && value !== '') {
-        params = params.set(key, value.toString());
+        if (key === 'sort' && Array.isArray(value)) {
+          (value as string[]).forEach(sortField => {
+            params = params.append('sort', sortField);
+          });
+        } else {
+          params = params.set(key, value.toString());
+        }
       }
     });
-    return this.http.get<PaginatedResponse<MusicBand>>(this.apiUrl, {params});
+
+    return this.http.get<PaginatedResponse<MusicBand>>(this.apiUrl, {params}).pipe(delay(0));
   }
 
   getMusicBandById(id: number): Observable<MusicBand> {
@@ -89,4 +98,7 @@ export class MusicBandService {
     return this.http.delete<MusicBand>(`${this.apiUrl}/${id}`);
   }
 
+  deleteMusicBands(ids: number[]): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}`, {body: ids});
+  }
 }

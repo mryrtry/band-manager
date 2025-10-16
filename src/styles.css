@@ -29,7 +29,8 @@ aside {
 
 html,
 body {
-  padding: 5px 15px;
+  font-family: arial, sans-serif;
+  padding: 5px 5px;
   height: 100%;
   width: 100%;
   line-height: 1;
@@ -91,6 +92,13 @@ button {
   padding: 0;
   margin: 0;
   text-align: left;
+
+  &:disabled {
+    background: none;
+    border: none;
+    box-shadow: none;
+    color: inherit;
+  }
 }
 
 .hidden_img {
@@ -98,6 +106,6 @@ button {
 }
 
 .container {
-  max-width: 1200px;
+  max-width: 1400px;
   margin: 0 auto;
 }

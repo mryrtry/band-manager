@@ -1,14 +1,27 @@
 <nav class="navigation">
   <div class="container">
-    @for (item of navItems; track item.path) {
-      <a
-        [routerLink]="item.path"
-        routerLinkActive="nav-item--active"
-        [routerLinkActiveOptions]="{ exact: true }"
-        class="nav-item">
-        <img [src]="item.icon" [alt]="item.label" class="nav-icon">
-        <span class="nav-label">{{ item.label }}</span>
-      </a>
-    }
+    <a
+      routerLink="/"
+      routerLinkActive="nav-item--active"
+      [routerLinkActiveOptions]="{ exact: true }"
+      class="nav-item">
+      <svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="24px"
+           fill="#000000">
+        <path
+          d="M240-200h147.69v-235.38h184.62V-200H720v-360L480-741.54 240-560v360Zm-40 40v-420l280-211.54L760-580v420H532.31v-235.38H427.69V-160H200Zm280-310.77Z"/>
+      </svg>
+      <span class="nav-label">Главная</span>
+    </a>
+    <a
+      routerLink="/special"
+      routerLinkActive="nav-item--active"
+      [routerLinkActiveOptions]="{ exact: true }"
+      class="nav-item">
+      <svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="24px" fill="#000000">
+        <path
+          d="m422-232 207-248H469l29-227-185 267h139l-30 208Zm-55.85 107.38 40-275.38h-170l299.23-431.54h18.47L514.62-520h200l-330 395.38h-18.47ZM471-470Z"/>
+      </svg>
+      <span class="nav-label">Специальные операции</span>
+    </a>
   </div>
 </nav>

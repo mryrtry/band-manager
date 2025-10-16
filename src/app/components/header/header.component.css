@@ -1,10 +1,13 @@
 .container {
   padding: 20px 20px;
   border-radius: 5px;
-  background-color: #ececec;
   text-transform: uppercase;
-  font-family: arial, serif;
+  border: 1px solid #ececec;
   margin-bottom: 10px;
+  transition: .3s ease-in-out;
+  &:hover {
+    background-color: #f6f6f6;
+  }
 }
 
 .container h1 {
@@ -14,6 +17,6 @@
 }
 
 .container h2 {
-  opacity: 0.5;
+  color: gray;
   font-size: 12px;
 }
