@@ -28,11 +28,11 @@ jobs:
       - name: Build Angular application
         run: npm run build -- --configuration=production --base-href="/~s409483/band-manager/"
 
-      - name: Upload browser folder only
+      - name: Upload entire dist folder
         uses: actions/upload-artifact@v4
         with:
           name: angular-app
-          path: dist/BandManagerFrontend/browser
+          path: dist/BandManagerFrontend/
           retention-days: 1
 
   deploy:
@@ -41,7 +41,7 @@ jobs:
     if: github.ref == 'refs/heads/frontend'
 
     steps:
-      - name: Download browser files
+      - name: Download dist files
         uses: actions/download-artifact@v4
         with:
           name: angular-app
@@ -56,4 +56,4 @@ jobs:
       - name: Clean and deploy
         run: |
           ssh -p 2222 s409483@se.ifmo.ru "rm -rf ~/$DEPLOY_FOLDER/* && mkdir -p ~/$DEPLOY_FOLDER"
-          scp -P 2222 -r ./* s409483@se.ifmo.ru:~/$DEPLOY_FOLDER/
+          scp -P 2222 -r ./browser/* s409483@se.ifmo.ru:~/$DEPLOY_FOLDER/
