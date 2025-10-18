@@ -1,31 +1,33 @@
-.container {
+nav {
   text-align: center;
   text-transform: uppercase;
   display: flex;
+  flex-wrap: wrap;
   margin-bottom: calc(2 * var(--component-margin));
   gap: 10px;
 }
 
-.nav-item {
+a {
   padding: 10px 20px;
   display: flex;
   align-items: center;
+  justify-content: center;
   color: black;
   border-radius: var(--border-radius);
   border: var(--border);
   transition: var(--transition);
 
-  .nav-icon {
+  svg {
     height: var(--icon-height);
     margin-right: var(--component-margin);
     transition: var(--transition);
   }
 
-  &.nav-item--active {
+  &.active {
     border-color: var(--active-color);
     color: var(--active-color);
 
-    & .nav-icon {
+    & svg {
       fill: var(--active-color);
     }
   }
@@ -36,20 +38,18 @@
     border-color: var(--active-color);
     color: var(--active-color);
 
-    & .nav-icon {
+    & svg {
       fill: var(--active-color);
     }
   }
 }
 
-@media screen and (max-width: 600px) {
-  .nav-item .nav-icon {
-    display: none;
-  }
-}
+@media screen and (max-width: 1024px) {
+  a {
+    flex: 1;
 
-@media screen and (max-width: 450px) {
-  .nav-item {
-    padding: 10px 5px;
+    svg {
+      display: none;
+    }
   }
 }
