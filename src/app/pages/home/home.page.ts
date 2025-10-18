@@ -9,5 +9,5 @@ import {MusicBandTableComponent} from '../../components/music-band-table/music-b
   templateUrl: './home.page.html',
   styleUrls: ['./home.page.css']
 })
-export class MainPageComponent {
+export class MainPage {
 }

@@ -9,6 +9,5 @@ import {FormsModule} from '@angular/forms';
   templateUrl: './special.page.html',
   styleUrls: ['./special.page.css']
 })
-export class SpecialOperationsComponent {
-
+export class SpecialOperationsPage {
 }
