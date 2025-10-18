@@ -154,4 +154,13 @@ export class InputComponent implements OnChanges {
     if (this.validateOn === 'realtime') await this.validate();
     this.updateValue();
   }
+
+  @HostListener('keydown', ['$event'])
+  onKeyDown(event: KeyboardEvent) {
+    if (this.type === 'number') {
+      if (event.key === '.') {
+        event.preventDefault();
+      }
+    }
+  }
 }
