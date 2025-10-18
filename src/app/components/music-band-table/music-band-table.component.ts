@@ -1,24 +1,28 @@
-import {Component, inject} from '@angular/core';
+import {Component, inject, HostListener, OnInit} from '@angular/core';
 import {CommonModule, DatePipe} from '@angular/common';
-import {MusicBandService} from '../../services/music-band.service';
+import {
+  MusicBandGetConfig,
+  MusicBandPagination,
+  MusicBandService,
+  MusicBandSorting,
+  MusicBandFilter,
+  PaginatedResponse
+} from '../../services/music-band.service';
 import {MusicBand} from '../../models/music-band.model';
-import {PaginatedResponse, MusicBandFilter} from '../../services/music-band.service';
 import {parseMusicGenre} from '../../models/enums/music-genre.model';
 import {FormsModule} from '@angular/forms';
-import {SelectComponent} from '../select/select.component';
+import {CustomSelectComponent} from '../select/select.component';
+import {CustomButtonComponent} from '../button/button.component';
+import {InputComponent, Validator} from '../input/input.component';
 
 @Component({
   selector: 'app-music-table',
   standalone: true,
-  imports: [CommonModule, DatePipe, FormsModule, SelectComponent],
+  imports: [CommonModule, DatePipe, FormsModule, CustomSelectComponent, InputComponent, CustomButtonComponent],
   templateUrl: './music-band-table.component.html',
-  styleUrls: ['./music-band-table.component.css']
+  styleUrls: ['./music-band-table.component.scss']
 })
-export class MusicBandTableComponent {
-
-  constructor() {
-    this.getMusicBands();
-  }
+export class MusicBandTableComponent implements OnInit {
 
   private musicBandService: MusicBandService = inject(MusicBandService);
 
@@ -28,10 +32,11 @@ export class MusicBandTableComponent {
 
   protected totalElements: number = 0;
   protected totalPages: number = 0;
-  protected pageSizeOptions: number[] = [5, 10, 20, 50];
+  protected pageSizeOptions: number[] = [5, 10, 20, 50, 100];
 
   protected selectedBands = new Set<number>();
   protected isAllSelected: boolean = false;
+  readonly numberPattern: RegExp = /^-?[0-9]*$/;
 
   protected sortableFields = [
     {key: 'id', label: 'ID'},
@@ -46,37 +51,59 @@ export class MusicBandTableComponent {
     {key: 'coordinates.x', label: 'Координаты'}
   ];
 
-  protected filter: MusicBandFilter = {
-    name: undefined,
-    description: undefined,
-    genre: undefined,
-    frontManName: undefined,
-    bestAlbumName: undefined,
-    minParticipants: undefined,
-    maxParticipants: undefined,
-    minSingles: undefined,
-    maxSingles: undefined,
-    minAlbumsCount: undefined,
-    maxAlbumsCount: undefined,
-    minCoordinateX: undefined,
-    maxCoordinateX: undefined,
-    minCoordinateY: undefined,
-    maxCoordinateY: undefined,
-    page: 0,
-    size: 5,
-    sort: ['id'],
-    direction: 'asc',
+  protected clearFilterOptions: MusicBandFilter = {
+    name: null, description: null, genre: null,
+    frontManName: null, bestAlbumName: null,
+    minParticipants: null, maxParticipants: null,
+    minSingles: null, maxSingles: null,
+    minAlbumsCount: null, maxAlbumsCount: null,
+    minCoordinateX: null, maxCoordinateX: null,
+    minCoordinateY: null, maxCoordinateY: null
+  };
+
+  protected paginationOption: MusicBandPagination = {page: 0, size: 5};
+  protected filterOptions: MusicBandFilter = {...this.clearFilterOptions};
+  protected sortOptions: MusicBandSorting = {sort: ['id'], direction: 'asc'};
+
+  protected pageSizeSelectOptions = this.pageSizeOptions.map(size => ({label: `${size} / стр.`, value: size}));
+
+  ngOnInit() {
+    this.restoreStateFromLocalStorage();
+    this.getMusicBands();
   }
 
-  protected getMusicBands(refresh?: boolean) {
-    if (this.bands.length <= 0) {
-      this.loading = true;
-    }
-    if (refresh) {
-      this.loading = true;
-    }
+  private restoreStateFromLocalStorage(): void {
+    const pagination = localStorage.getItem('musicBandsPagination');
+    const sorting = localStorage.getItem('musicBandsSorting');
+    const filters = localStorage.getItem('musicBandsFilters');
+
+    if (pagination) this.paginationOption = JSON.parse(pagination);
+    if (sorting) this.sortOptions = JSON.parse(sorting);
+    if (filters) this.filterOptions = JSON.parse(filters);
+  }
+
+  private saveStateToLocalStorage(): void {
+    localStorage.setItem('musicBandsPagination', JSON.stringify(this.paginationOption));
+    localStorage.setItem('musicBandsSorting', JSON.stringify(this.sortOptions));
+    localStorage.setItem('musicBandsFilters', JSON.stringify(this.filterOptions));
+  }
+
+  protected getConfig(): MusicBandGetConfig {
+    return {
+      filter: this.filterOptions,
+      sorting: this.sortOptions,
+      pagination: this.paginationOption
+    };
+  }
+
+  protected getMusicBands(): void {
+    this.loading = true;
     this.error = null;
-    this.musicBandService.getMusicBands(this.filter).subscribe({
+
+    // Сохраняем состояние перед запросом
+    this.saveStateToLocalStorage();
+
+    this.musicBandService.getMusicBands(this.getConfig()).subscribe({
       next: (response: PaginatedResponse<MusicBand>) => {
         this.bands = response.content;
         this.totalElements = response.page.totalElements;
@@ -92,45 +119,38 @@ export class MusicBandTableComponent {
     });
   }
 
-  protected goToPage(page: number) {
-    this.filter.page = page;
+  protected onPageSizeChange(): void {
+    this.paginationOption.page = 0;
     this.getMusicBands();
   }
 
-  protected getPageNumbers(): number[] {
-    const pages: number[] = [];
-    const maxVisiblePages = 5;
-    if (this.totalPages <= 1) return [0];
-    let startPage = Math.max(0, this.filter.page - Math.floor(maxVisiblePages / 2));
-    let endPage = Math.min(this.totalPages - 1, startPage + maxVisiblePages - 1);
-    if (endPage - startPage + 1 < maxVisiblePages) {
-      startPage = Math.max(0, endPage - maxVisiblePages + 1);
-    }
-    for (let i = startPage; i <= endPage; i++) {
-      pages.push(i);
-    }
-    return pages;
+  protected applyFilters(): void {
+    this.paginationOption.page = 0;
+    this.getMusicBands();
   }
 
-  protected onPageSizeChange(): void {
-    this.filter.page = 0;
+  protected resetFilters(): void {
+    this.filterOptions = {...this.clearFilterOptions};
+    this.getMusicBands();
+  }
+
+  protected goToPage(page: number) {
+    this.paginationOption.page = page;
     this.getMusicBands();
   }
 
   protected setSorting(field: string): void {
-    if (this.filter.sort[0] == field)  this.toggleSorting();
-    else this.filter.direction = 'asc';
-    this.filter.sort = [field];
-    this.filter.page = 0;
-    this.getMusicBands();
+    if (this.sortOptions.sort[0] === field) {
+      this.sortOptions.direction = this.sortOptions.direction === 'asc' ? 'desc' : 'asc';
+    } else {
+      this.sortOptions.direction = 'asc';
+    }
+    this.sortOptions.sort = [field];
+    this.paginationOption.page = 0;
+    if (!this.loading) {
+      this.getMusicBands();
+    }
   }
-
-  private toggleSorting(): void {
-    if (this.filter.direction == 'asc') {
-      this.filter.direction = 'desc';
-    } else this.filter.direction = 'asc';
-  }
-
 
   protected toggleBandSelection(bandId: number): void {
     if (this.selectedBands.has(bandId)) {
@@ -167,11 +187,18 @@ export class MusicBandTableComponent {
     return this.selectedBands.size;
   }
 
+  @HostListener('document:keydown', ['$event'])
+  handleKeyboardEvent(event: KeyboardEvent) {
+    if (event.key === 'Escape') {
+      this.clearSelection();
+    }
+  }
+
   protected deleteSelectedBands(): void {
     if (this.selectedBands.size === 0) return;
+
     const selectedIds = Array.from(this.selectedBands);
-    const confirmMessage = `Вы уверены, что хотите удалить выбранные группы (${selectedIds.length})?`;
-    if (confirm(confirmMessage)) {
+    if (confirm(`Вы уверены, что хотите удалить выбранные группы (${selectedIds.length})?`)) {
       this.loading = true;
       this.musicBandService.deleteMusicBands(selectedIds).subscribe({
         next: () => {
@@ -192,9 +219,7 @@ export class MusicBandTableComponent {
     event.stopPropagation();
     if (confirm('Вы уверены, что хотите удалить эту группу?')) {
       this.musicBandService.deleteMusicBand(bandId).subscribe({
-        next: () => {
-          this.getMusicBands();
-        },
+        next: () => this.getMusicBands(),
         error: (error) => {
           this.error = 'Ошибка при удалении группы';
           console.error('Error deleting music band:', error);
@@ -203,10 +228,48 @@ export class MusicBandTableComponent {
     }
   }
 
-  protected pageSizeSelectOptions = this.pageSizeOptions.map(size => ({
-    label: `${size} / стр.`,
-    value: size,
-  }));
+  protected getPageNumbers(): number[] {
+    const pages: number[] = [];
+    const maxVisiblePages = 5;
+    if (this.totalPages <= 1) return [0];
+    let startPage = Math.max(0, this.paginationOption.page - Math.floor(maxVisiblePages / 2));
+    let endPage = Math.min(this.totalPages - 1, startPage + maxVisiblePages - 1);
+    if (endPage - startPage + 1 < maxVisiblePages) {
+      startPage = Math.max(0, endPage - maxVisiblePages + 1);
+    }
+    for (let i = startPage; i <= endPage; i++) {
+      pages.push(i);
+    }
+    return pages;
+  }
+
+  protected isFiltersClear(): boolean {
+    return JSON.stringify(this.clearFilterOptions) == JSON.stringify(this.filterOptions);
+  }
+
+  protected minValid(min: number, field: string): Validator {
+    return {
+      validate: (value) => {
+        if (!value || isNaN(Number(value))) return {isValid: true};
+        if (Number(value) <= min) return {isValid: false, message: `${field} <= ${min}`};
+        return {isValid: true};
+      }
+    };
+  }
+
+  protected genreValid(): Validator {
+    return {
+      validate: (value) => {
+        if (!value) return {isValid: true};
+        if (!parseMusicGenre(value)) return {isValid: false, message: "Жанр не существует"};
+        return {isValid: true};
+      }
+    };
+  }
+
+  protected getSkeletonSizeArray(): number[] {
+    return Array(this.paginationOption.size).fill(0).map((_ignored, i) => i);
+  }
 
   protected readonly parseMusicGenre = parseMusicGenre;
 }

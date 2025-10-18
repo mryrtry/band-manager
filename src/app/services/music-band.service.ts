@@ -1,29 +1,40 @@
-import {Injectable, inject} from '@angular/core';
+import {inject, Injectable} from '@angular/core';
 import {HttpClient, HttpParams} from '@angular/common/http';
 import {delay, Observable} from 'rxjs';
 import {environment} from '../../environments/environment';
 import {MusicBand} from '../models/music-band.model';
 import {MusicBandRequest} from '../models/requests/music-band-request.model';
-import {MusicGenre} from '../models/enums/music-genre.model';
+
+export interface MusicBandGetConfig {
+  filter: MusicBandFilter;
+  sorting: MusicBandSorting;
+  pagination: MusicBandPagination;
+}
 
 export interface MusicBandFilter {
-  name?: string;
-  description?: string;
-  genre?: MusicGenre;
-  frontManName?: string;
-  bestAlbumName?: string;
-  minParticipants?: number;
-  maxParticipants?: number;
-  minSingles?: number;
-  maxSingles?: number;
-  minAlbumsCount?: number;
-  maxAlbumsCount?: number;
-  minCoordinateX?: number;
-  maxCoordinateX?: number;
-  minCoordinateY?: number;
-  maxCoordinateY?: number;
+  name?: string | null;
+  description?: string | null;
+  genre?: string | null;
+  frontManName?: string | null;
+  bestAlbumName?: string | null;
+  minParticipants?: number | null;
+  maxParticipants?: number | null;
+  minSingles?: number | null;
+  maxSingles?: number | null;
+  minAlbumsCount?: number | null;
+  maxAlbumsCount?: number | null;
+  minCoordinateX?: number | null;
+  maxCoordinateX?: number | null;
+  minCoordinateY?: number | null;
+  maxCoordinateY?: number | null;
+}
+
+export interface MusicBandPagination {
   page: number;
   size?: number;
+}
+
+export interface MusicBandSorting {
   sort: string[];
   direction?: 'asc' | 'desc';
 }
@@ -47,22 +58,30 @@ export class MusicBandService {
   private http = inject(HttpClient);
   private apiUrl = `${environment.apiUrl}/music-bands`;
 
-  getMusicBands(filter: MusicBandFilter): Observable<PaginatedResponse<MusicBand>> {
+  getMusicBands(config: MusicBandGetConfig): Observable<PaginatedResponse<MusicBand>> {
     let params = new HttpParams();
+    const { filter } = config;
     Object.keys(filter).forEach(key => {
       const value = filter[key as keyof MusicBandFilter];
       if (value !== undefined && value !== null && value !== '') {
-        if (key === 'sort' && Array.isArray(value)) {
-          (value as string[]).forEach(sortField => {
-            params = params.append('sort', sortField);
-          });
-        } else {
-          params = params.set(key, value.toString());
-        }
+        params = params.set(key, value.toString());
       }
     });
-
-    return this.http.get<PaginatedResponse<MusicBand>>(this.apiUrl, {params}).pipe(delay(0));
+    const { pagination } = config;
+    params = params.set('page', pagination.page.toString());
+    if (pagination.size !== undefined && pagination.size !== null) {
+      params = params.set('size', pagination.size.toString());
+    }
+    const { sorting } = config;
+    if (sorting.sort && sorting.sort.length > 0) {
+      sorting.sort.forEach(sortField => {
+        params = params.append('sort', sortField);
+      });
+    }
+    if (sorting.direction !== undefined && sorting.direction !== null) {
+      params = params.append('direction', sorting.direction.toString());
+    }
+    return this.http.get<PaginatedResponse<MusicBand>>(this.apiUrl, { params }).pipe(delay(0));
   }
 
   getMusicBandById(id: number): Observable<MusicBand> {
