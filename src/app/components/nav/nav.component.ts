@@ -7,11 +7,7 @@ import {CommonModule} from '@angular/common';
   standalone: true,
   imports: [CommonModule, RouterLink, RouterLinkActive],
   templateUrl: './nav.component.html',
-  styleUrls: ['./nav.component.css']
+  styleUrls: ['./nav.component.scss']
 })
 export class NavigationComponent {
-  navItems = [
-    {path: '/', label: 'Основная страница', icon: 'home.svg'},
-    {path: '/special', label: 'Специальные операции', icon: 'bolt.svg'}
-  ];
 }
