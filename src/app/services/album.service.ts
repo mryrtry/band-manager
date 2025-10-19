@@ -3,12 +3,13 @@ import {HttpClient} from '@angular/common/http';
 import {Observable} from 'rxjs';
 import {Album} from '../models/album.model';
 import {AlbumRequest} from '../models/requests/album-request.model';
+import {environment} from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AlbumService {
-  private baseUrl = '/albums';
+  private baseUrl = `${environment.apiUrl}/albums`;
 
   constructor(private http: HttpClient) {
   }

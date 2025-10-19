@@ -3,12 +3,13 @@ import {HttpClient} from '@angular/common/http';
 import {Observable} from 'rxjs';
 import {Coordinates} from '../models/coordinates.model';
 import {CoordinatesRequest} from '../models/requests/coordinates-request.model';
+import {environment} from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class CoordinatesService {
-  private baseUrl = '/coordinates';
+  private baseUrl = `${environment.apiUrl}/coordinates`;
 
   constructor(private http: HttpClient) {
   }

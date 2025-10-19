@@ -95,6 +95,7 @@ export class MusicBandService {
   }
 
   updateMusicBand(id: number, bandRequest: MusicBandRequest): Observable<MusicBand> {
+    console.log(bandRequest)
     return this.http.put<MusicBand>(`${this.apiUrl}/${id}`, bandRequest);
   }
 
