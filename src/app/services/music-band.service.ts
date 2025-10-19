@@ -4,6 +4,7 @@ import {delay, Observable} from 'rxjs';
 import {environment} from '../../environments/environment';
 import {MusicBand} from '../models/music-band.model';
 import {MusicBandRequest} from '../models/requests/music-band-request.model';
+import {PaginatedResponse} from '../models/paginated-response.model';
 
 export interface MusicBandGetConfig {
   filter: MusicBandFilter;
@@ -37,18 +38,6 @@ export interface MusicBandPagination {
 export interface MusicBandSorting {
   sort: string[];
   direction?: 'asc' | 'desc';
-}
-
-export interface Page {
-  page: number;
-  size: number;
-  totalElements: number;
-  totalPages: number;
-}
-
-export interface PaginatedResponse<T> {
-  content: T[];
-  page: Page
 }
 
 @Injectable({

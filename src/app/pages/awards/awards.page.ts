@@ -2,11 +2,11 @@ import {Component} from '@angular/core';
 import {CommonModule} from '@angular/common';
 
 @Component({
-  selector: 'app-header',
+  selector: 'home',
   standalone: true,
   imports: [CommonModule],
-  templateUrl: './header.component.html',
-  styleUrls: ['./header.component.scss']
+  templateUrl: './awards.page.html',
+  styleUrls: ['./awards.page.css']
 })
-export class HeaderComponent {
+export class AwardsPage {
 }
