@@ -1,130 +1,113 @@
 <div class="filters_container">
   <app-input
-    label="Название (Точное совпадние)"
+    label="Название"
     placeholder="Название группы"
     [(value)]="filterOptions.name"
     (onChange)="applyFilters()">
   </app-input>
 
   <app-input
-    label="Лидер (Точное совпадение)"
+    label="Лидер"
     placeholder="Лидер группы"
     [(value)]="filterOptions.frontManName"
     (onChange)="applyFilters()">
   </app-input>
 
   <app-input
-    label="Жанр (Точное совпадние)"
+    label="Жанр"
     placeholder="Жанр"
     [(value)]="filterOptions.genre"
     (onChange)="applyFilters()"
     [validator]="genreValid()"
-    width="160px">
+  >
   </app-input>
 
   <app-input
-    label="Лучший альбом (Точное совпадние)"
+    label="Лучший альбом"
     placeholder="Лучший альбом"
     [(value)]="filterOptions.bestAlbumName"
     (onChange)="applyFilters()"
-    width="220px">
+  >
   </app-input>
 
   <app-input
     label="Кол-во альбомов от"
     placeholder="0"
     type="number"
-    minValue="1"
     [(value)]="filterOptions.minAlbumsCount"
     (onChange)="applyFilters()"
-    [validator]="minValid(0, 'Кол-во альбомов')"
-    validateOn="realtime"
-    [pattern]="numberPattern"
-    width="130px">
+    [validator]="numberValid(0, 'Кол-во альбомов', true)"
+    >
   </app-input>
 
   <app-input
     label="Кол-во альбомов до"
     placeholder="0"
     type="number"
-    minValue="0"
     [(value)]="filterOptions.maxAlbumsCount"
     (onChange)="applyFilters()"
-    [validator]="minValid(0, 'Кол-во альбомов')"
-    [pattern]="numberPattern"
-    width="130px">
+    [validator]="numberValid(0, 'Кол-во альбомов', true)"
+    >
   </app-input>
 
   <app-input
     label="Кол-во cинглов от"
     placeholder="0"
     type="number"
-    minValue="0"
     [(value)]="filterOptions.minSingles"
     (onChange)="applyFilters()"
-    [validator]="minValid(0, 'Кол-во cинглов')"
-    [pattern]="numberPattern"
-    width="130px">
+    [validator]="numberValid(0, 'Кол-во cинглов', true)"
+    >
   </app-input>
 
   <app-input
     label="Кол-во синглов до"
     placeholder="0"
     type="number"
-    minValue="0"
     [(value)]="filterOptions.maxSingles"
     (onChange)="applyFilters()"
-    [validator]="minValid(0, 'Кол-во cинглов')"
-    [pattern]="numberPattern"
-    width="130px">
+    [validator]="numberValid(0, 'Кол-во cинглов', true)"
+    >
   </app-input>
 
   <app-input
     label="Кол-во участников от"
     placeholder="0"
     type="number"
-    minValue="0"
     [(value)]="filterOptions.minParticipants"
     (onChange)="applyFilters()"
-    [validator]="minValid(0, 'Кол-во участников')"
-    [pattern]="numberPattern"
-    width="130px">
+    [validator]="numberValid(0, 'Кол-во участников', true)"
+    >
   </app-input>
 
   <app-input
     label="Кол-во участников до"
     placeholder="0"
     type="number"
-    minValue="0"
     [(value)]="filterOptions.maxParticipants"
     (onChange)="applyFilters()"
-    [validator]="minValid(0, 'Кол-во участников')"
-    [pattern]="numberPattern"
-    width="130px">
+    [validator]="numberValid(0, 'Кол-во участников', true)"
+    >
   </app-input>
 
   <app-input
     label="Координата X от"
     placeholder="0"
     type="number"
-    minValue="-147"
     [(value)]="filterOptions.minCoordinateX"
     (onChange)="applyFilters()"
-    [validator]="minValid(-147, 'Координата X')"
-    [pattern]="numberPattern"
-    width="130px">
+    [validator]="numberValid(-147, 'Координата X', true)"
+    >
   </app-input>
 
   <app-input
     label="Координата X до"
     placeholder="0"
     type="number"
-    minValue="-147"
     [(value)]="filterOptions.maxCoordinateX"
     (onChange)="applyFilters()"
-    [validator]="minValid(-147, 'Координата X')"
-    [pattern]="numberPattern"
-    width="130px">
+    [validator]="numberValid(-147, 'Координата X', true)"
+    >
   </app-input>
 
   <app-input
@@ -133,7 +116,7 @@
     type="number"
     [(value)]="filterOptions.minCoordinateY"
     (onChange)="applyFilters()"
-    width="130px">
+    >
   </app-input>
 
   <app-input
@@ -142,7 +125,7 @@
     type="number"
     [(value)]="filterOptions.maxCoordinateY"
     (onChange)="applyFilters()"
-    width="130px">
+    >
   </app-input>
 </div>
 
@@ -191,16 +174,16 @@
     <table class="table">
       <colgroup>
         <col style="width: 40px">
-        <col style="width: 30px">
-        <col style="width: 130px">
-        <col style="width: 130px">
-        <col style="width: 130px">
-        <col style="width: 200px">
+        <col style="width: 40px">
+        <col style="width: 140px">
+        <col style="width: 140px">
+        <col style="width: 80px">
+        <col style="width: 180px">
         <col style="width: 100px">
-        <col style="width: 90px">
-        <col style="width: 110px">
+        <col style="width: 100px">
+        <col style="width: 120px">
         <col style="width: 160px">
-        <col style="width: 130px">
+        <col style="width: 160px">
       </colgroup>
       <thead>
       <tr>
@@ -317,4 +300,5 @@
     <p>Найдено: {{ totalElements }}, страниц: {{ totalPages }}</p>
     <p>Сортировка: {{ sortOptions.sort }} / {{ sortOptions.direction == 'asc' ? "Возрастание" : "Убывание" }}</p>
   </div>
+
 }

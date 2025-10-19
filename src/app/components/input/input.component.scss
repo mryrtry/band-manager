@@ -1,4 +1,10 @@
+:host {
+  width: 100%;
+}
+
 .wrapper {
+  width: 100%;
+
   &:has(input:disabled) {
     opacity: 0.5;
   }
@@ -19,8 +25,8 @@
 }
 
 .input-wrapper {
-  position: relative;
   width: 100%;
+  position: relative;
   margin-bottom: 3px;
 
   input {
@@ -73,7 +79,6 @@
 .error-message {
   position: absolute;
   font-size: 10px;
-  width: 100%;
   color: var(--error-color);
   text-transform: uppercase;
   height: 10px;

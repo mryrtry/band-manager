@@ -36,7 +36,6 @@ export class MusicBandTableComponent implements OnInit {
 
   protected selectedBands = new Set<number>();
   protected isAllSelected: boolean = false;
-  readonly numberPattern: RegExp = /^-?[0-9]*$/;
 
   protected sortableFields = [
     {key: 'id', label: 'ID'},
@@ -99,10 +98,7 @@ export class MusicBandTableComponent implements OnInit {
   protected getMusicBands(): void {
     this.loading = true;
     this.error = null;
-
-    // Сохраняем состояние перед запросом
     this.saveStateToLocalStorage();
-
     this.musicBandService.getMusicBands(this.getConfig()).subscribe({
       next: (response: PaginatedResponse<MusicBand>) => {
         this.bands = response.content;
@@ -247,10 +243,11 @@ export class MusicBandTableComponent implements OnInit {
     return JSON.stringify(this.clearFilterOptions) == JSON.stringify(this.filterOptions);
   }
 
-  protected minValid(min: number, field: string): Validator {
+  protected numberValid(min: number, field: string, integer?: boolean): Validator {
     return {
       validate: (value) => {
-        if (!value || isNaN(Number(value))) return {isValid: true};
+        if (!value) return {isValid: true};
+        if (integer && !(/^-?\d+$/.test(value))) return {isValid: false, message: `${field} целое`}
         if (Number(value) <= min) return {isValid: false, message: `${field} <= ${min}`};
         return {isValid: true};
       }
@@ -269,6 +266,10 @@ export class MusicBandTableComponent implements OnInit {
 
   protected getSkeletonSizeArray(): number[] {
     return Array(this.paginationOption.size).fill(0).map((_ignored, i) => i);
+  }
+
+  protected go(): void {
+    alert("Иди нахуй")
   }
 
   protected readonly parseMusicGenre = parseMusicGenre;

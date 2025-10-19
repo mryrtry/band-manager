@@ -7,13 +7,9 @@
     <input
       [type]="type"
       [(ngModel)]="currentValue"
-      [placeholder]="placeholder"
-      [min]="minValue"
-      [max]="maxValue"
-      [attr.pattern]="pattern ? pattern : null"
-      [disabled]="disabled"
       (input)="onInput()"
-      (blur)="onBlur()"
+      [placeholder]="placeholder"
+      [disabled]="disabled"
       class="input-field"
       [class.error]="errorMessage"
     />
