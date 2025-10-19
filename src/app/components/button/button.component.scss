@@ -2,68 +2,26 @@
   display: inline-block;
 }
 
-.custom-button {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  user-select: none;
+button {
   padding: 10px;
   border: var(--border);
   border-radius: var(--border-radius);
   transition: var(--transition);
-  outline: none;
-  background: white;
-  box-sizing: border-box;
-  font-family: inherit;
-  font-size: 14px;
-  font-weight: 500;
-  color: black;
-  white-space: nowrap;
-  margin: 0;
   min-height: 44px;
+  display: flex;
+  align-items: center;
 
   ::ng-deep {
     svg, .icon {
       transition: var(--transition);
       height: var(--icon-height);
       width: var(--icon-height);
-      fill: currentColor;
-    }
-
-    &:not(:only-child) {
-      svg:first-child, .icon:first-child {
-        margin-right: 8px;
-      }
     }
   }
 
-  &--default {
-  }
-
-  &--primary {
-    color: var(--active-color);
-    background: var(--active-bg);
-    border: var(--active-border);
-  }
-
-  &--danger {
+  &.danger {
     color: var(--error-color);
-    background: var(--error-bg);
     border: var(--error-border);
-  }
-
-  &--icon {
-    min-width: 44px;
-    width: 44px;
-    padding: 10px;
-
-    ::ng-deep {
-      svg, .icon {
-        margin: 0 !important;
-      }
-    }
   }
 
   &:disabled {
@@ -79,30 +37,17 @@
     background-color: var(--active-bg);
 
     ::ng-deep {
-      svg, .icon {
+      svg {
         fill: var(--active-color);
       }
     }
   }
 
-  &--primary:not(:disabled):focus,
-  &--primary:not(:disabled):hover {
-    background-color: var(--active-color);
-    color: white;
-    border-color: var(--active-color);
-
-    ::ng-deep {
-      svg, .icon {
-        fill: white;
-      }
-    }
-  }
-
-  &--danger:not(:disabled):focus,
-  &--danger:not(:disabled):hover {
-    background-color: var(--error-color);
-    color: white;
+  &.danger:not(:disabled):focus,
+  &.danger:not(:disabled):hover {
+    background-color: var(--error-bg);
     border-color: var(--error-color);
+    color: var(--error-color);
 
     ::ng-deep {
       svg, .icon {

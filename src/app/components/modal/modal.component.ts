@@ -59,12 +59,12 @@ export class ModalComponent implements AfterViewInit {
 
       const active = document.activeElement as HTMLElement;
 
-      if (event.shiftKey) { // shift + tab
+      if (event.shiftKey) {
         if (active === this.firstFocusable) {
           event.preventDefault();
           this.lastFocusable.focus();
         }
-      } else { // tab
+      } else {
         if (active === this.lastFocusable) {
           event.preventDefault();
           this.firstFocusable.focus();

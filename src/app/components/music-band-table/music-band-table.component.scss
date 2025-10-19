@@ -4,7 +4,7 @@
   position: relative;
   opacity: 0;
   transition: var(--transition);
-  animation: loading .5s forwards ease-in-out;
+  animation: loading .2s forwards ease-in-out;
   overflow: hidden;
 
   &:after {
@@ -78,11 +78,19 @@
     text-transform: uppercase;
 
     .sort_header {
+      position: relative;
       cursor: pointer;
       transition: var(--transition);
 
       &:hover {
         color: var(--active-color);
+      }
+
+      &::after {
+        content: var(--afterVal);
+        display: inline-block;
+        margin-left: 5px;
+        transform: translateY(-2px);
       }
     }
   }
@@ -119,8 +127,6 @@
 
 .bulk-btn-container {
   display: flex;
-  flex-direction: row;
-  flex-wrap: wrap;
   align-items: stretch;
   gap: var(--component-margin);
   margin-bottom: var(--component-margin);
@@ -299,6 +305,10 @@
   .filters_container {
     grid-template-columns: repeat(3, 1fr);
   }
+  .bulk-btn-container {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 
 @media screen and (max-width: 500px) {
@@ -309,6 +319,13 @@
 
 @media screen and (max-width: 350px) {
   .filters_container {
+    grid-template-columns: repeat(1, 1fr);
+  }
+}
+
+@media screen and (max-width: 300px) {
+  .bulk-btn-container {
+    display: grid;
     grid-template-columns: repeat(1, 1fr);
   }
 }

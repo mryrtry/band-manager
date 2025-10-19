@@ -86,16 +86,9 @@ export class CustomSelectComponent implements ControlValueAccessor {
         break;
 
       case 'Backspace':
-        if (this.searchable && this.isOpen) {
-          this.searchQuery = this.searchQuery.slice(0, -1);
-        }
         break;
 
       default:
-        if (this.searchable && this.isOpen && event.key.length === 1) {
-          this.searchQuery += event.key;
-          this.focusedIndex = 0;
-        }
         break;
     }
   }

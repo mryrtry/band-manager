@@ -1,4 +1,4 @@
-<div class="filters_container">
+<div [style.display]="filtersOpen ? 'grid' : 'none'" class="filters_container">
   <app-input
     label="Название"
     placeholder="Название группы"
@@ -131,7 +131,6 @@
 
 <div class="bulk-btn-container">
   <app-custom-button
-    variant="icon"
     (clicked)="getMusicBands()"
     [disabled]="loading"
     title="Обновить данные"
@@ -151,11 +150,13 @@
     class="page-size-select"
   ></app-custom-select>
 
+  @if (filtersToggle) {
   <app-custom-button
-    (clicked)="resetFilters()"
-    [disabled]="isFiltersClear()">
-    Сбросить фильтры
+    (clicked)="toggleFiltersOpen()"
+    [disabled]="!filtersToggle">
+    {{ filtersOpen ? 'Скрыть фильтры' : 'Показать фильтры' }}
   </app-custom-button>
+  }
 
   <app-custom-button
     variant="danger"
@@ -164,6 +165,12 @@
     [title]="getSelectedCount() === 0 ? 'Нет выбранных групп для удаления' : 'Удалить выбранные группы'"
   >
     Удалить выбранные ({{ getSelectedCount() }})
+  </app-custom-button>
+
+  <app-custom-button
+    (clicked)="resetFilters()"
+    [disabled]="isFiltersClear()">
+    Сбросить фильтры
   </app-custom-button>
 </div>
 
@@ -174,16 +181,16 @@
     <table class="table">
       <colgroup>
         <col style="width: 40px">
-        <col style="width: 40px">
+        <col style="width: 50px">
         <col style="width: 140px">
         <col style="width: 140px">
         <col style="width: 80px">
         <col style="width: 180px">
-        <col style="width: 100px">
+        <col style="width: 110px">
         <col style="width: 100px">
         <col style="width: 120px">
-        <col style="width: 160px">
-        <col style="width: 160px">
+        <col style="width: 170px">
+        <col style="width: 140px">
       </colgroup>
       <thead>
       <tr>
@@ -197,7 +204,7 @@
           </label>
         </td>
         @for (header of sortableFields; track header.key) {
-          <td [id]="header.key" class="sort_header" (click)="setSorting(header.key)">{{ header.label }}</td>
+          <td (click)="setSorting(header.key)" [id]="header.key" [style.--afterVal]="getSortAfter(header.key)" class="sort_header">{{ header.label }}</td>
         }
         <td>Действия</td>
       </tr>

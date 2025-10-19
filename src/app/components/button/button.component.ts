@@ -1,7 +1,7 @@
 import {Component, Input, Output, EventEmitter} from '@angular/core';
 import {CommonModule} from '@angular/common';
 
-export type ButtonVariant = 'primary' | 'danger' | 'icon' | 'default';
+export type ButtonVariant = 'danger' | 'default';
 
 @Component({
   selector: 'app-custom-button',
@@ -26,9 +26,8 @@ export class CustomButtonComponent {
 
   get buttonClasses(): string {
     return [
-      'custom-button',
-      `custom-button--${this.variant}`,
-      this.disabled ? 'custom-button--disabled' : ''
+      `${this.variant}`,
+      this.disabled ? 'disabled' : ''
     ].join(' ').trim();
   }
 }

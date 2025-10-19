@@ -1,19 +1,14 @@
-import {Component, inject, HostListener, OnInit} from '@angular/core';
+import {Component, HostListener, inject, OnInit} from '@angular/core';
 import {CommonModule, DatePipe} from '@angular/common';
-import {
-  MusicBandGetConfig,
-  MusicBandPagination,
-  MusicBandService,
-  MusicBandSorting,
-  MusicBandFilter,
-  PaginatedResponse
-} from '../../services/music-band.service';
+import {MusicBandFilter, MusicBandGetConfig, MusicBandPagination, MusicBandService, MusicBandSorting,} from '../../services/music-band.service';
 import {MusicBand} from '../../models/music-band.model';
 import {parseMusicGenre} from '../../models/enums/music-genre.model';
 import {FormsModule} from '@angular/forms';
 import {CustomSelectComponent} from '../select/select.component';
 import {CustomButtonComponent} from '../button/button.component';
 import {InputComponent, Validator} from '../input/input.component';
+import {PaginatedResponse} from '../../models/paginated-response.model';
+import {ModalService} from '../../services/modal.service';
 
 @Component({
   selector: 'app-music-table',
@@ -66,7 +61,11 @@ export class MusicBandTableComponent implements OnInit {
 
   protected pageSizeSelectOptions = this.pageSizeOptions.map(size => ({label: `${size} / стр.`, value: size}));
 
+  protected filtersToggle: boolean = false;
+  protected filtersOpen: boolean = true;
+
   ngOnInit() {
+    this.checkScreenSize();
     this.restoreStateFromLocalStorage();
     this.getMusicBands();
   }
@@ -93,6 +92,12 @@ export class MusicBandTableComponent implements OnInit {
       sorting: this.sortOptions,
       pagination: this.paginationOption
     };
+  }
+
+  protected modalService: ModalService = inject(ModalService);
+
+  protected getModal(): void {
+    this.modalService.open('<p>alabuga</p>')
   }
 
   protected getMusicBands(): void {
@@ -268,8 +273,24 @@ export class MusicBandTableComponent implements OnInit {
     return Array(this.paginationOption.size).fill(0).map((_ignored, i) => i);
   }
 
-  protected go(): void {
-    alert("Иди нахуй")
+  @HostListener('window:resize')
+  protected checkScreenSize(): void {
+    this.filtersToggle = window.innerWidth < 400;
+    this.filtersOpen = !this.filtersToggle;
+  }
+
+  protected toggleFiltersOpen(): void {
+    if (this.filtersToggle) {
+      this.filtersOpen = !this.filtersOpen;
+    }
+  }
+
+  protected getSortAfter(field: string): string {
+    if (this.sortOptions.sort[0] != field) return '';
+    else {
+      if (this.sortOptions.direction == 'desc') return '"↑"'
+      else return '"↓"'
+    }
   }
 
   protected readonly parseMusicGenre = parseMusicGenre;

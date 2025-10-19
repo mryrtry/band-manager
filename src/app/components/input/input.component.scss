@@ -1,5 +1,6 @@
 :host {
   width: 100%;
+  margin-bottom: 3px;
 }
 
 .wrapper {
@@ -82,7 +83,10 @@
   color: var(--error-color);
   text-transform: uppercase;
   height: 10px;
-  animation: error 1s ease-in-out forwards;
+
+  &.active {
+    animation: error .3s ease-in-out forwards;
+  }
 }
 
 @keyframes error {
