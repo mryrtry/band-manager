@@ -48,13 +48,14 @@ public class MusicBandController {
 
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "id") String sort,
+            @RequestParam(defaultValue = "id") List<String> sort,
             @RequestParam(defaultValue = "asc") String direction) {
 
         Sort.Direction sortDirection = direction.equalsIgnoreCase("desc")
                 ? Sort.Direction.DESC
                 : Sort.Direction.ASC;
-        Sort pageSort = Sort.by(sortDirection, sort);
+
+        Sort pageSort = createSortFromList(sort, sortDirection);
 
         Pageable pageable = PageRequest.of(page, size, pageSort);
 
@@ -66,6 +67,20 @@ public class MusicBandController {
         );
 
         return ResponseEntity.ok(bands);
+    }
+
+    private Sort createSortFromList(List<String> sortFields, Sort.Direction direction) {
+        if (sortFields == null || sortFields.isEmpty()) {
+            return Sort.by(direction, "id");
+        }
+        if (sortFields.size() == 1) {
+            return Sort.by(direction, sortFields.get(0));
+        }
+        Sort sort = Sort.by(direction, sortFields.get(0));
+        for (int i = 1; i < sortFields.size(); i++) {
+            sort = sort.and(Sort.by(direction, sortFields.get(i)));
+        }
+        return sort;
     }
 
     @GetMapping("/{id}")
