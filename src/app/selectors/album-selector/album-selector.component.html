@@ -1,0 +1,144 @@
+<!-- album-selector.component.html -->
+<div class="wrapper">
+  @if (isSelectMode) {
+    <div class="selector-section">
+      <div class="section-header">
+        <h4>Выбор альбома</h4>
+        <div class="header-actions">
+          @if (selectedAlbum()) {
+            <button
+              (click)="switchMode('edit', selectedAlbumId()!)"
+              [disabled]="isLoading()"
+              class="btn btn-primary"
+              type="button">
+              Редактировать
+            </button>
+          }
+          <button
+            (click)="switchMode('create')"
+            [disabled]="isLoading()"
+            class="btn btn-primary"
+            type="button">
+            Создать новый
+          </button>
+        </div>
+      </div>
+
+      @if (selectedAlbum()) {
+        <div class="selected-item">
+          {{ selectedAlbum()!.displayName }}
+          <button
+            (click)="clearSelection()"
+            class="btn-clear"
+            type="button">
+            ✕
+          </button>
+        </div>
+      } @else {
+        <div class="selector-container">
+          @if (isLoading()) {
+            <div class="loading">Загрузка альбомов...</div>
+          } @else if (albumOptions().length === 0) {
+            <div class="empty-state">
+              Нет доступных альбомов
+            </div>
+          } @else {
+            <app-custom-select
+              (selectedChange)="onAlbumSelect($event)"
+              [label]="''"
+              [options]="albumOptions()"
+              [placeholder]="'Выберите альбом'"
+              [searchable]="true">
+            </app-custom-select>
+          }
+        </div>
+      }
+    </div>
+  }
+
+  @if (isCreateMode || isEditMode) {
+    <div class="form-section">
+      <div class="section-header">
+        <h4>{{ formTitle }}</h4>
+        <button
+          (click)="switchMode('select')"
+          [disabled]="isLoading()"
+          class="btn btn-primary"
+          type="button">
+          Назад к выбору
+        </button>
+      </div>
+
+      <form [formGroup]="albumForm" class="creation-form">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="label" for="album-name">Название *</label>
+            <input
+              [class.error]="hasFieldError('name')"
+              class="input"
+              formControlName="name"
+              id="album-name"
+              placeholder="Введите название"
+              type="text">
+            <div [class.show]="hasFieldError('name')" class="error-container">
+              <div class="error-message">{{ getFieldError('name') }}</div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="label" for="album-tracks">Треков *</label>
+            <input
+              [class.error]="hasFieldError('tracks')"
+              class="input"
+              formControlName="tracks"
+              id="album-tracks"
+              placeholder="Количество треков"
+              type="number"
+              min="1">
+            <div [class.show]="hasFieldError('tracks')" class="error-container">
+              <div class="error-message">{{ getFieldError('tracks') }}</div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="label" for="album-sales">Продажи *</label>
+            <input
+              [class.error]="hasFieldError('sales')"
+              class="input"
+              formControlName="sales"
+              id="album-sales"
+              placeholder="Количество продаж"
+              type="number"
+              min="0">
+            <div [class.show]="hasFieldError('sales')" class="error-container">
+              <div class="error-message">{{ getFieldError('sales') }}</div>
+            </div>
+          </div>
+        </div>
+
+        @if (errorMessage()) {
+          <div class="global-error">
+            {{ errorMessage() }}
+          </div>
+        }
+
+        <div class="form-actions">
+          <button
+            (click)="switchMode('select')"
+            [disabled]="isLoading()"
+            class="btn btn-primary"
+            type="button">
+            Отмена
+          </button>
+          <button
+            (click)="isEditMode ? updateAlbum() : createAlbum()"
+            [disabled]="!isFormValid || isLoading()"
+            class="btn btn-primary"
+            type="button">
+            {{ submitButtonText }}
+          </button>
+        </div>
+      </form>
+    </div>
+  }
+</div>

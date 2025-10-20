@@ -1,0 +1,64 @@
+:host {
+  display: inline-block;
+}
+
+button {
+  padding: 10px;
+  border: var(--border);
+  border-radius: var(--border-radius);
+  transition: var(--transition);
+  min-height: 44px;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  ::ng-deep {
+    svg, .icon {
+      transition: var(--transition);
+      height: var(--icon-height);
+      width: var(--icon-height);
+    }
+  }
+
+  &.danger {
+    color: var(--error-color);
+    border: var(--error-border);
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+    user-select: none;
+  }
+
+  &:not(:disabled):focus,
+  &:not(:disabled):hover {
+    color: var(--active-color);
+    border: var(--active-border);
+    background-color: var(--active-bg);
+
+    ::ng-deep {
+      svg {
+        fill: var(--active-color);
+      }
+    }
+  }
+
+  &.danger:not(:disabled):focus,
+  &.danger:not(:disabled):hover {
+    background-color: var(--error-bg);
+    border-color: var(--error-color);
+    color: var(--error-color);
+
+    ::ng-deep {
+      svg, .icon {
+        fill: white;
+      }
+    }
+  }
+
+  &:not(:disabled):active {
+    transform: translateY(1px);
+  }
+}

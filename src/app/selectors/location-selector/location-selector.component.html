@@ -1,0 +1,145 @@
+<div class="wrapper">
+  @if (isSelectMode) {
+    <div class="selector-section">
+      <div class="section-header">
+        <h4>Выбор локации</h4>
+        <div class="header-actions">
+          @if (selectedLocation()) {
+            <button
+              (click)="switchMode('edit', selectedLocationId()!)"
+              [disabled]="isLoading()"
+              class="btn btn-primary"
+              type="button">
+              Редактировать
+            </button>
+          }
+          <button
+            (click)="switchMode('create')"
+            [disabled]="isLoading()"
+            class="btn btn-primary"
+            type="button">
+            Создать новую
+          </button>
+        </div>
+      </div>
+
+      @if (selectedLocation()) {
+        <div class="selected-item">
+          <span class="selected-text">{{ selectedLocation()!.displayName }}</span>
+          <button
+            (click)="clearSelection()"
+            class="btn-clear"
+            type="button"
+            title="Очистить выбор">
+            ✕
+          </button>
+        </div>
+      } @else {
+        <div class="selector-container">
+          @if (isLoading()) {
+            <div class="loading">Загрузка локаций...</div>
+          } @else if (locationOptions().length === 0) {
+            <div class="empty-state">
+              Нет доступных локаций
+            </div>
+          } @else {
+            <app-custom-select
+              (selectedChange)="onLocationSelect($event)"
+              [label]="''"
+              [options]="locationOptions()"
+              [placeholder]="'Выберите локацию'"
+              [searchable]="true">
+            </app-custom-select>
+          }
+        </div>
+      }
+    </div>
+  }
+
+  @if (isCreateMode || isEditMode) {
+    <div class="form-section">
+      <div class="section-header">
+        <h4>{{ formTitle }}</h4>
+        <button
+          (click)="switchMode('select')"
+          [disabled]="isLoading()"
+          class="btn btn-primary"
+          type="button">
+          Выбор
+        </button>
+      </div>
+
+      <form [formGroup]="locationForm" class="creation-form">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="label" for="location-x">Координата X</label>
+            <input
+              [class.error]="hasFieldError('x')"
+              class="input"
+              formControlName="x"
+              id="location-x"
+              placeholder="Введите X"
+              step="any"
+              type="number">
+            <div [class.show]="hasFieldError('x')" class="error-container">
+              <div class="error-message">{{ getFieldError('x') }}</div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="label" for="location-y">Координата Y *</label>
+            <input
+              [class.error]="hasFieldError('y')"
+              class="input"
+              formControlName="y"
+              id="location-y"
+              placeholder="Введите Y"
+              required
+              type="number">
+            <div [class.show]="hasFieldError('y')" class="error-container">
+              <div class="error-message">{{ getFieldError('y') }}</div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="label" for="location-z">Координата Z *</label>
+            <input
+              [class.error]="hasFieldError('z')"
+              class="input"
+              formControlName="z"
+              id="location-z"
+              placeholder="Введите Z"
+              required
+              type="number">
+            <div [class.show]="hasFieldError('z')" class="error-container">
+              <div class="error-message">{{ getFieldError('z') }}</div>
+            </div>
+          </div>
+        </div>
+
+        @if (errorMessage()) {
+          <div class="global-error">
+            {{ errorMessage() }}
+          </div>
+        }
+
+        <div class="form-actions">
+          <button
+            (click)="switchMode('select')"
+            [disabled]="isLoading()"
+            class="btn btn-secondary"
+            type="button">
+            Отмена
+          </button>
+          <button
+            (click)="isEditMode ? updateLocation() : createLocation()"
+            [disabled]="!isFormValid || isLoading()"
+            class="btn btn-primary"
+            type="button">
+            {{ submitButtonText }}
+          </button>
+        </div>
+      </form>
+    </div>
+  }
+</div>

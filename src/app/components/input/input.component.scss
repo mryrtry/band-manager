@@ -1,0 +1,99 @@
+:host {
+  width: 100%;
+  margin-bottom: 3px;
+}
+
+.wrapper {
+  width: 100%;
+
+  &:has(input:disabled) {
+    opacity: 0.5;
+  }
+
+  label {
+    display: block;
+    text-transform: uppercase;
+    font-size: 10px;
+    color: var(--disabled-color);
+    margin-bottom: 3px;
+  }
+
+  &:has(input.error), {
+    .clear-button svg {
+      fill: var(--error-color);
+    }
+  }
+}
+
+.input-wrapper {
+  width: 100%;
+  position: relative;
+  margin-bottom: 3px;
+
+  input {
+    width: 100%;
+    padding: 10px 30px 10px 10px;
+    border: var(--border);
+    border-radius: var(--border-radius);
+    transition: var(--transition);
+
+    &:disabled {
+      cursor: not-allowed;
+    }
+
+    &:hover:not(:disabled),
+    &:focus:not(:disabled) {
+      color: black;
+      background-color: var(--active-bg);
+      border-color: var(--active-color);
+    }
+
+    &.error, {
+      color: var(--error-color) !important;
+      background-color: var(--error-bg) !important;
+      border-color: var(--error-color) !important;
+    }
+  }
+}
+
+.clear-button {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  top: 0;
+  right: 0;
+  height: 100%;
+  padding: 8px;
+
+  svg {
+    fill: var(--disabled-color);
+    transition: var(--transition);
+  }
+
+  input.error + & svg,
+  &:hover svg,
+  &:focus svg {
+    fill: var(--error-color);
+  }
+}
+
+.error-message {
+  position: absolute;
+  font-size: 10px;
+  color: var(--error-color);
+  text-transform: uppercase;
+  height: 10px;
+
+  &.active {
+    animation: error .3s ease-in-out forwards;
+  }
+}
+
+@keyframes error {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}

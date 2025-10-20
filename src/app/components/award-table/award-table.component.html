@@ -1,0 +1,133 @@
+<div [style.display]="filtersOpen ? 'grid' : 'none'" class="filters_container">
+  <app-input
+    label="Жанр"
+    placeholder="Жанр"
+    [(value)]="filterOptions.genre"
+    (onChange)="applyFilters()"
+    [validator]="genreValid()"
+  >
+  </app-input>
+</div>
+
+<div class="bulk-btn-container">
+  <app-custom-button
+    (clicked)="getBestBandAwards()"
+    [disabled]="loading"
+    title="Обновить данные"
+    class="refresh-button"
+  >
+    <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+      <path
+        d="M483.08-200q-117.25 0-198.63-81.34-81.37-81.34-81.37-198.54 0-117.2 81.37-198.66Q365.83-760 483.08-760q71.3 0 133.54 33.88 62.23 33.89 100.3 94.58V-760h40v209.23H547.69v-40h148q-31.23-59.85-87.88-94.54Q551.15-720 483.08-720q-100 0-170 70t-70 170q0 100 70 170t170 70q77 0 139-44t87-116h42.46Q725.08-310.15 651-255.08 576.92-200 483.08-200Z"/>
+    </svg>
+  </app-custom-button>
+
+  <app-custom-select
+    [options]="pageSizeSelectOptions"
+    [(ngModel)]="paginationOption.size"
+    (ngModelChange)="onPageSizeChange()"
+    placeholder="Размер страницы"
+    class="page-size-select"
+  ></app-custom-select>
+
+  @if (filtersToggle) {
+    <app-custom-button
+      (clicked)="toggleFiltersOpen()"
+      [disabled]="!filtersToggle">
+      {{ filtersOpen ? 'Скрыть фильтры' : 'Показать фильтры' }}
+    </app-custom-button>
+  }
+
+  <app-custom-button
+    (clicked)="resetFilters()"
+    [disabled]="isFiltersClear()">
+    Сбросить фильтры
+  </app-custom-button>
+</div>
+
+@if (error) {
+  <div class="error">{{ error }}</div>
+} @else {
+  <div class="table_container" [class.loading]="loading">
+    <table class="table">
+      <colgroup>
+        <col style="width: 40px">
+        <col style="width: 100px">
+        <col style="width: 200px">
+        <col style="width: 120px">
+        <col style="width: 150px">
+      </colgroup>
+      <thead>
+      <tr>
+        @for (header of sortableFields; track header.key) {
+          <td (click)="setSorting(header.key)" [id]="header.key" [style.--afterVal]="getSortAfter(header.key)" class="sort_header">{{ header.label }}</td>
+        }
+      </tr>
+      </thead>
+      <tbody>
+        @if (loading) {
+          @for (_ignored of getSkeletonSizeArray(); track i; let i = $index) {
+            <tr class="skeleton-row" [style.--delay]="i">
+              @for (_ignored of [].constructor(6); track i; let i = $index) {
+                <td></td>
+              }
+            </tr>
+          }
+        } @else {
+          @for (award of awards; track award.id) {
+            <tr [class.selected]="isAwardSelected(award.id)">
+              <td>{{ award.id }}</td>
+              <td>{{ award.bandName }}</td>
+              <td>{{ parseMusicGenre(award.genre) }}</td>
+              <td>{{ award.createdAt | date: 'dd.MM.yyyy HH:mm' }}</td>
+            </tr>
+          }
+        }
+      </tbody>
+    </table>
+  </div>
+
+  <div class="pagination-controls">
+
+    <button
+      class="pagination-btn"
+      (click)="goToPage(0)"
+      [disabled]="paginationOption.page === 0">
+      <<
+    </button>
+
+    <button
+      class="pagination-btn"
+      (click)="goToPage(paginationOption.page - 1)"
+      [disabled]="paginationOption.page === 0">
+      <
+    </button>
+
+    @for (page of getPageNumbers(); track page) {
+      <button
+        class="pagination-btn {{ page === paginationOption.page ? 'active' : '' }}"
+        (click)="goToPage(page)">
+        {{ page + 1 }}
+      </button>
+    }
+
+    <button
+      class="pagination-btn"
+      (click)="goToPage(paginationOption.page + 1)"
+      [disabled]="paginationOption.page >= totalPages - 1">
+      >
+    </button>
+
+    <button
+      class="pagination-btn"
+      (click)="goToPage(totalPages-1)"
+      [disabled]="paginationOption.page >= totalPages - 1">
+      >>
+    </button>
+  </div>
+  <div class="table_info_container">
+    <p>Найдено: {{ totalElements }}, страниц: {{ totalPages }}</p>
+    <p>Сортировка: {{ sortOptions.sort }} / {{ sortOptions.direction == 'asc' ? "Возрастание" : "Убывание" }}</p>
+  </div>
+
+}
