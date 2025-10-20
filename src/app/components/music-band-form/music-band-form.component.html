@@ -1,10 +1,12 @@
+<!-- music-band-form.component.html -->
 <div class="wrapper">
   <div class="creation-section">
     <div class="section-header">
-      <h4>{{ isEditMode ? 'Редактирование' : 'Создание' }} музыкальной группы</h4>
+      <h4>{{ formTitle }}</h4>
     </div>
 
     <form [formGroup]="musicBandForm" class="creation-form">
+      <!-- Основные поля -->
       <div class="form-row">
         <div class="form-group">
           <label class="label" for="band-name">Название *</label>
@@ -111,42 +113,48 @@
         </div>
       </div>
 
-            <div class="nested-section">
+      <!-- Вложенные селекторы -->
+      <div class="nested-section">
         <label class="label">Координаты *</label>
         <app-coordinates-selector
+          #coordinatesSelector
           (coordinatesSelected)="onCoordinatesSelected($event)">
         </app-coordinates-selector>
-              <div class="error-container" [class.show]="!coordinatesId() && (musicBandForm.touched || musicBandForm.dirty)">
-                <div class="error-message">Необходимо выбрать координаты</div>
-              </div>
+        <div class="error-container" [class.show]="hasSelectorError(coordinatesId())">
+          <div class="error-message">Необходимо выбрать координаты</div>
+        </div>
       </div>
 
       <div class="nested-section">
         <label class="label">Лучший альбом *</label>
         <app-album-selector
+          #albumSelector
           (albumSelected)="onAlbumSelected($event)">
         </app-album-selector>
-          <div class="error-container" [class.show]="!bestAlbumId() && (musicBandForm.touched || musicBandForm.dirty)">
-            <div class="error-message">Необходимо выбрать альбом</div>
-          </div>
+        <div class="error-container" [class.show]="hasSelectorError(bestAlbumId())">
+          <div class="error-message">Необходимо выбрать альбом</div>
+        </div>
       </div>
 
       <div class="nested-section">
         <label class="label">Лидер *</label>
         <app-person-selector
+          #personSelector
           (personSelected)="onPersonSelected($event)">
         </app-person-selector>
-          <div class="error-container" [class.show]="!frontManId() && (musicBandForm.touched || musicBandForm.dirty)">
-            <div class="error-message">Необходимо выбрать лидера</div>
-          </div>
+        <div class="error-container" [class.show]="hasSelectorError(frontManId())">
+          <div class="error-message">Необходимо выбрать лидера</div>
+        </div>
       </div>
 
+      <!-- Глобальная ошибка -->
       @if (errorMessage()) {
         <div class="global-error">
           {{ errorMessage() }}
         </div>
       }
 
+      <!-- Действия формы -->
       <div class="form-actions">
         <button
           (click)="onCancel()"
@@ -159,11 +167,7 @@
           [disabled]="!isFormValid || isLoading()"
           class="btn btn-primary"
           type="button">
-          @if (isLoading()) {
-            {{ isEditMode ? 'Сохранение...' : 'Создание...' }}
-          } @else {
-            {{ isEditMode ? 'Сохранить' : 'Создать группу' }}
-          }
+          {{ submitButtonText }}
         </button>
       </div>
     </form>

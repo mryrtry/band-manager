@@ -5,33 +5,32 @@ import {BestBandAward} from '../models/best-band-award.model';
 import {BestBandAwardRequest} from '../models/requests/best-band-award-request.model';
 import {MusicGenre} from '../models/enums/music-genre.model';
 import {PaginatedResponse} from '../models/paginated-response.model';
+import {environment} from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class BestBandAwardService {
-  private baseUrl = '/best-band-awards';
+  private baseUrl = `${environment.apiUrl}/best-band-awards`;
 
   constructor(private http: HttpClient) {
   }
 
   getAll(
     genre?: MusicGenre,
-    bandName?: string,
-    bandId?: number,
+    bandId?: number | null,
     page: number = 0,
     size: number = 10,
-    sort: string = 'createdAt',
+    sort: string = 'id',
     direction: 'asc' | 'desc' = 'desc'
   ): Observable<PaginatedResponse<BestBandAward>> {
     let params = new HttpParams()
       .set('page', page.toString())
       .set('size', size.toString())
-      .set('sort', sort)
+      .set('sort', sort == 'bandName' ? 'id' : sort)
       .set('direction', direction);
 
     if (genre) params = params.set('genre', genre);
-    if (bandName) params = params.set('bandName', bandName);
     if (bandId != null) params = params.set('bandId', bandId.toString());
 
     return this.http.get<PaginatedResponse<BestBandAward>>(this.baseUrl, {params});

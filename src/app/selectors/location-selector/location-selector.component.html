@@ -3,22 +3,34 @@
     <div class="selector-section">
       <div class="section-header">
         <h4>Выбор локации</h4>
-        <button
-          (click)="switchMode('create')"
-          [disabled]="isLoading()"
-          class="btn btn-primary"
-          type="button">
-          Создать новую
-        </button>
+        <div class="header-actions">
+          @if (selectedLocation()) {
+            <button
+              (click)="switchMode('edit', selectedLocationId()!)"
+              [disabled]="isLoading()"
+              class="btn btn-primary"
+              type="button">
+              Редактировать
+            </button>
+          }
+          <button
+            (click)="switchMode('create')"
+            [disabled]="isLoading()"
+            class="btn btn-primary"
+            type="button">
+            Создать новую
+          </button>
+        </div>
       </div>
 
       @if (selectedLocation()) {
         <div class="selected-item">
-          {{ selectedLocation()!.displayName }}
+          <span class="selected-text">{{ selectedLocation()!.displayName }}</span>
           <button
             (click)="clearSelection()"
             class="btn-clear"
-            type="button">
+            type="button"
+            title="Очистить выбор">
             ✕
           </button>
         </div>
@@ -44,16 +56,16 @@
     </div>
   }
 
-  @if (isCreateMode) {
-    <div>
+  @if (isCreateMode || isEditMode) {
+    <div class="form-section">
       <div class="section-header">
-        <h4>Создание локации</h4>
+        <h4>{{ formTitle }}</h4>
         <button
           (click)="switchMode('select')"
           [disabled]="isLoading()"
           class="btn btn-primary"
           type="button">
-          выбор
+          Выбор
         </button>
       </div>
 
@@ -120,15 +132,11 @@
             Отмена
           </button>
           <button
-            (click)="createLocation()"
+            (click)="isEditMode ? updateLocation() : createLocation()"
             [disabled]="!isFormValid || isLoading()"
             class="btn btn-primary"
             type="button">
-            @if (isLoading()) {
-              Создание...
-            } @else {
-              Создать локацию
-            }
+            {{ submitButtonText }}
           </button>
         </div>
       </form>

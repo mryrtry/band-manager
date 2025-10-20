@@ -4,13 +4,24 @@
     <div class="selector-section">
       <div class="section-header">
         <h4>Выбор координат</h4>
-        <button
-          (click)="switchMode('create')"
-          [disabled]="isLoading()"
-          class="btn btn-primary"
-          type="button">
-          Создать новые
-        </button>
+        <div class="header-actions">
+          @if (selectedCoordinates()) {
+            <button
+              (click)="switchMode('edit', selectedCoordinatesId()!)"
+              [disabled]="isLoading()"
+              class="btn btn-primary"
+              type="button">
+              Редактировать
+            </button>
+          }
+          <button
+            (click)="switchMode('create')"
+            [disabled]="isLoading()"
+            class="btn btn-primary"
+            type="button">
+            Создать новые
+          </button>
+        </div>
       </div>
 
       @if (selectedCoordinates()) {
@@ -45,16 +56,16 @@
     </div>
   }
 
-  @if (isCreateMode) {
-    <div>
+  @if (isCreateMode || isEditMode) {
+    <div class="form-section">
       <div class="section-header">
-        <h4>Создание координат</h4>
+        <h4>{{ formTitle }}</h4>
         <button
           (click)="switchMode('select')"
           [disabled]="isLoading()"
           class="btn btn-primary"
           type="button">
-          выбор
+          Назад к выбору
         </button>
       </div>
 
@@ -101,20 +112,16 @@
           <button
             (click)="switchMode('select')"
             [disabled]="isLoading()"
-            class="btn btn-secondary"
+            class="btn btn-primary"
             type="button">
             Отмена
           </button>
           <button
-            (click)="createCoordinates()"
+            (click)="isEditMode ? updateCoordinates() : createCoordinates()"
             [disabled]="!isFormValid || isLoading()"
             class="btn btn-primary"
             type="button">
-            @if (isLoading()) {
-              Создание...
-            } @else {
-              Создать координаты
-            }
+            {{ submitButtonText }}
           </button>
         </div>
       </form>

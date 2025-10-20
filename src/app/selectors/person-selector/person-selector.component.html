@@ -1,15 +1,27 @@
+<!-- person-selector.component.html -->
 <div class="wrapper">
   @if (isSelectMode) {
     <div class="selector-section">
       <div class="section-header">
         <h4>Выбор персоны</h4>
-        <button
-          type="button"
-          class="btn btn-primary"
-          (click)="switchMode('create')"
-          [disabled]="isLoading()">
-          Создать новую
-        </button>
+        <div class="header-actions">
+          @if (selectedPerson()) {
+            <button
+              type="button"
+              class="btn btn-primary"
+              (click)="switchMode('edit', selectedPersonId()!)"
+              [disabled]="isLoading()">
+              Редактировать
+            </button>
+          }
+          <button
+            type="button"
+            class="btn btn-primary"
+            (click)="switchMode('create')"
+            [disabled]="isLoading()">
+            Создать новую
+          </button>
+        </div>
       </div>
 
       @if (selectedPerson()) {
@@ -46,17 +58,16 @@
     </div>
   }
 
-  <!-- Режим создания -->
-  @if (isCreateMode) {
+  @if (isCreateMode || isEditMode) {
     <div class="creation-section">
       <div class="section-header">
-        <h4>Создание персоны</h4>
+        <h4>{{ formTitle }}</h4>
         <button
           type="button"
           class="btn btn-primary"
           (click)="switchMode('select')"
           [disabled]="isLoading()">
-          выбор
+          Назад к выбору
         </button>
       </div>
 
@@ -140,11 +151,12 @@
         <div class="nested-section">
           <label class="label">Локация *</label>
           <app-location-selector
+            #locationSelector
             (locationSelected)="onLocationSelected($event)">
           </app-location-selector>
-            <div class="error-container" [class.show]="!locationId() && (personForm.touched || personForm.dirty)">
-              <div class="error-message">Необходимо выбрать локацию</div>
-            </div>
+          <div class="error-container" [class.show]="!locationId() && (personForm.touched || personForm.dirty)">
+            <div class="error-message">Необходимо выбрать локацию</div>
+          </div>
         </div>
 
         @if (errorMessage()) {
@@ -156,7 +168,7 @@
         <div class="form-actions">
           <button
             type="button"
-            class="btn btn-secondary"
+            class="btn btn-primary"
             (click)="switchMode('select')"
             [disabled]="isLoading()">
             Отмена
@@ -164,13 +176,9 @@
           <button
             type="button"
             class="btn btn-primary"
-            (click)="createPerson()"
+            (click)="isEditMode ? updatePerson() : createPerson()"
             [disabled]="!isFormValid || isLoading()">
-            @if (isLoading()) {
-              Создание...
-            } @else {
-              Создать персону
-            }
+            {{ submitButtonText }}
           </button>
         </div>
       </form>
