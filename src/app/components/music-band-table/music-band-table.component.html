@@ -1,33 +1,197 @@
+<div [style.display]="filtersOpen ? 'grid' : 'none'" class="filters_container">
+  <app-input
+    label="Название"
+    placeholder="Название группы"
+    [(value)]="filterOptions.name"
+    (onChange)="applyFilters()">
+  </app-input>
+
+  <app-input
+    label="Лидер"
+    placeholder="Лидер группы"
+    [(value)]="filterOptions.frontManName"
+    (onChange)="applyFilters()">
+  </app-input>
+
+  <app-input
+    label="Жанр"
+    placeholder="Жанр"
+    [(value)]="filterOptions.genre"
+    (onChange)="applyFilters()"
+    [validator]="genreValid()"
+  >
+  </app-input>
+
+  <app-input
+    label="Лучший альбом"
+    placeholder="Лучший альбом"
+    [(value)]="filterOptions.bestAlbumName"
+    (onChange)="applyFilters()"
+  >
+  </app-input>
+
+  <app-input
+    label="Кол-во альбомов от"
+    placeholder="0"
+    type="number"
+    [(value)]="filterOptions.minAlbumsCount"
+    (onChange)="applyFilters()"
+    [validator]="numberValid(0, 'Кол-во альбомов', true)"
+    >
+  </app-input>
+
+  <app-input
+    label="Кол-во альбомов до"
+    placeholder="0"
+    type="number"
+    [(value)]="filterOptions.maxAlbumsCount"
+    (onChange)="applyFilters()"
+    [validator]="numberValid(0, 'Кол-во альбомов', true)"
+    >
+  </app-input>
+
+  <app-input
+    label="Кол-во cинглов от"
+    placeholder="0"
+    type="number"
+    [(value)]="filterOptions.minSingles"
+    (onChange)="applyFilters()"
+    [validator]="numberValid(0, 'Кол-во cинглов', true)"
+    >
+  </app-input>
+
+  <app-input
+    label="Кол-во синглов до"
+    placeholder="0"
+    type="number"
+    [(value)]="filterOptions.maxSingles"
+    (onChange)="applyFilters()"
+    [validator]="numberValid(0, 'Кол-во cинглов', true)"
+    >
+  </app-input>
+
+  <app-input
+    label="Кол-во участников от"
+    placeholder="0"
+    type="number"
+    [(value)]="filterOptions.minParticipants"
+    (onChange)="applyFilters()"
+    [validator]="numberValid(0, 'Кол-во участников', true)"
+    >
+  </app-input>
+
+  <app-input
+    label="Кол-во участников до"
+    placeholder="0"
+    type="number"
+    [(value)]="filterOptions.maxParticipants"
+    (onChange)="applyFilters()"
+    [validator]="numberValid(0, 'Кол-во участников', true)"
+    >
+  </app-input>
+
+  <app-input
+    label="Координата X от"
+    placeholder="0"
+    type="number"
+    [(value)]="filterOptions.minCoordinateX"
+    (onChange)="applyFilters()"
+    [validator]="numberValid(-147, 'Координата X', true)"
+    >
+  </app-input>
+
+  <app-input
+    label="Координата X до"
+    placeholder="0"
+    type="number"
+    [(value)]="filterOptions.maxCoordinateX"
+    (onChange)="applyFilters()"
+    [validator]="numberValid(-147, 'Координата X', true)"
+    >
+  </app-input>
+
+  <app-input
+    label="Координата Y от"
+    placeholder="0"
+    type="number"
+    [(value)]="filterOptions.minCoordinateY"
+    (onChange)="applyFilters()"
+    >
+  </app-input>
+
+  <app-input
+    label="Координата Y до"
+    placeholder="0"
+    type="number"
+    [(value)]="filterOptions.maxCoordinateY"
+    (onChange)="applyFilters()"
+    >
+  </app-input>
+</div>
+
 <div class="bulk-btn-container">
-  <button
-    class="bulk-btn refresh-button"
-    (click)="getMusicBands(true)"
-    [disabled]="loading">
-    <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="24px" fill="#000000">
+  <app-custom-button
+    (clicked)="getMusicBands()"
+    [disabled]="loading"
+    title="Обновить данные"
+    class="refresh-button"
+  >
+    <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
       <path
         d="M483.08-200q-117.25 0-198.63-81.34-81.37-81.34-81.37-198.54 0-117.2 81.37-198.66Q365.83-760 483.08-760q71.3 0 133.54 33.88 62.23 33.89 100.3 94.58V-760h40v209.23H547.69v-40h148q-31.23-59.85-87.88-94.54Q551.15-720 483.08-720q-100 0-170 70t-70 170q0 100 70 170t170 70q77 0 139-44t87-116h42.46Q725.08-310.15 651-255.08 576.92-200 483.08-200Z"/>
     </svg>
-  </button>
+  </app-custom-button>
+
   <app-custom-select
     [options]="pageSizeSelectOptions"
-    [(selected)]="filter.size"
-    (selectedChange)="onPageSizeChange()"
+    [(ngModel)]="paginationOption.size"
+    (ngModelChange)="onPageSizeChange()"
+    placeholder="Размер страницы"
+    class="page-size-select"
   ></app-custom-select>
-  <button
-    class="bulk-btn delete-button"
-    (click)="deleteSelectedBands()"
-    [disabled]="getSelectedCount() === 0">
+
+  @if (filtersToggle) {
+  <app-custom-button
+    (clicked)="toggleFiltersOpen()"
+    [disabled]="!filtersToggle">
+    {{ filtersOpen ? 'Скрыть фильтры' : 'Показать фильтры' }}
+  </app-custom-button>
+  }
+
+  <app-custom-button
+    variant="danger"
+    (clicked)="deleteSelectedBands()"
+    [disabled]="getSelectedCount() === 0"
+    [title]="getSelectedCount() === 0 ? 'Нет выбранных групп для удаления' : 'Удалить выбранные группы'"
+  >
     Удалить выбранные ({{ getSelectedCount() }})
-  </button>
+  </app-custom-button>
+
+  <app-custom-button
+    (clicked)="resetFilters()"
+    [disabled]="isFiltersClear()">
+    Сбросить фильтры
+  </app-custom-button>
 </div>
 
-@if (loading) {
-  <div class="loading">Загрузка...</div>
-} @else if (error) {
+@if (error) {
   <div class="error">{{ error }}</div>
 } @else {
   <div class="table_container" [class.loading]="loading">
     <table class="table">
+      <colgroup>
+        <col style="width: 40px">
+        <col style="width: 50px">
+        <col style="width: 140px">
+        <col style="width: 140px">
+        <col style="width: 80px">
+        <col style="width: 180px">
+        <col style="width: 110px">
+        <col style="width: 100px">
+        <col style="width: 120px">
+        <col style="width: 170px">
+        <col style="width: 140px">
+      </colgroup>
       <thead>
       <tr>
         <td class="checkbox-column">
@@ -40,46 +204,62 @@
           </label>
         </td>
         @for (header of sortableFields; track header.key) {
-          <td class="sort_header" (click)="setSorting(header.key)">{{ header.label }}</td>
+          <td (click)="setSorting(header.key)" [id]="header.key" [style.--afterVal]="getSortAfter(header.key)" class="sort_header">{{ header.label }}</td>
         }
         <td>Действия</td>
       </tr>
       </thead>
       <tbody>
-        @for (band of bands; track band.id) {
-          <tr [class.selected]="isBandSelected(band.id)">
-            <td class="checkbox-column">
-              <label class="checkbox-label">
-                <input
-                  type="checkbox"
-                  [checked]="isBandSelected(band.id)"
-                  (change)="toggleBandSelection(band.id)">
-                <span class="checkmark"></span>
-              </label>
-            </td>
-            <td>{{ band.id }}</td>
-            <td>{{ band.name }}</td>
-            <td>{{ band.frontMan.name }}</td>
-            <td>{{ parseMusicGenre(band.genre) }}</td>
-            <td>{{ band.bestAlbum.name }}</td>
-            <td>{{ band.albumsCount }}</td>
-            <td>{{ band.singlesCount }}</td>
-            <td>{{ band.numberOfParticipants }}</td>
-            <td>{{ band.establishmentDate | date: 'dd.MM.yyyy' }}</td>
-            <td>{{ band.coordinates.x }} : {{ band.coordinates.y }}</td>
-            <td>
-              <div class="buttons_container">
-                <button class="edit-btn">
-                  <img src="/edit.svg" alt="Изменить">
-                </button>
-                <button
-                  class="delete-button"
-                  (click)="deleteBand(band.id, $event)">
-                  <img src="/delete.svg" alt="Удалить">
-                </button>
-              </div>
-            </td>
-          </tr>
+        @if (loading) {
+          @for (_ignored of getSkeletonSizeArray(); track i; let i = $index) {
+            <tr class="skeleton-row" [style.--delay]="i">
+              @for (_ignored of [].constructor(13); track i; let i = $index) {
+                <td></td>
+              }
+            </tr>
+          }
+        } @else {
+          @for (band of bands; track band.id) {
+            <tr [class.selected]="isBandSelected(band.id)">
+              <td class="checkbox-column">
+                <label class="checkbox-label">
+                  <input
+                    type="checkbox"
+                    [checked]="isBandSelected(band.id)"
+                    (change)="toggleBandSelection(band.id)">
+                  <span class="checkmark"></span>
+                </label>
+              </td>
+              <td>{{ band.id }}</td>
+              <td>{{ band.name }}</td>
+              <td>{{ band.frontMan.name }}</td>
+              <td>{{ parseMusicGenre(band.genre) }}</td>
+              <td>{{ band.bestAlbum.name }}</td>
+              <td>{{ band.albumsCount }}</td>
+              <td>{{ band.singlesCount }}</td>
+              <td>{{ band.numberOfParticipants }}</td>
+              <td>{{ band.establishmentDate | date: 'dd.MM.yyyy' }}</td>
+              <td>{{ band.coordinates.x }} : {{ band.coordinates.y }}</td>
+              <td>
+                <div class="buttons_container">
+                  <button class="edit-btn">
+                    <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px">
+                      <path
+                        d="M200-200h43.92l427.93-427.92-43.93-43.93L200-243.92V-200Zm-40 40v-100.77l527.23-527.77q6.15-5.48 13.57-8.47 7.43-2.99 15.49-2.99t15.62 2.54q7.55 2.54 13.94 9.15l42.69 42.93q6.61 6.38 9.04 14 2.42 7.63 2.42 15.25 0 8.13-2.74 15.56-2.74 7.42-8.72 13.57L260.77-160H160Zm600.77-556.31-44.46-44.46 44.46 44.46ZM649.5-649.5l-21.58-22.35 43.93 43.93-22.35-21.58Z"/>
+                    </svg>
+                  </button>
+                  <button
+                    class="delete-button"
+                    (click)="deleteBand(band.id, $event)">
+                    <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px">
+                      <path
+                        d="M304.62-160q-26.85 0-45.74-18.88Q240-197.77 240-224.62V-720h-40v-40h160v-30.77h240V-760h160v40h-40v495.38q0 27.62-18.5 46.12Q683-160 655.38-160H304.62ZM680-720H280v495.38q0 10.77 6.92 17.7 6.93 6.92 17.7 6.92h350.76q9.24 0 16.93-7.69 7.69-7.69 7.69-16.93V-720ZM392.31-280h40v-360h-40v360Zm135.38 0h40v-360h-40v360ZM280-720v520-520Z"/>
+                    </svg>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          }
         }
       </tbody>
     </table>
@@ -90,20 +270,20 @@
     <button
       class="pagination-btn"
       (click)="goToPage(0)"
-      [disabled]="filter.page === 0">
+      [disabled]="paginationOption.page === 0">
       <<
     </button>
 
     <button
       class="pagination-btn"
-      (click)="goToPage(filter.page - 1)"
-      [disabled]="filter.page === 0">
+      (click)="goToPage(paginationOption.page - 1)"
+      [disabled]="paginationOption.page === 0">
       <
     </button>
 
     @for (page of getPageNumbers(); track page) {
       <button
-        class="pagination-btn {{ page === filter.page ? 'active' : '' }}"
+        class="pagination-btn {{ page === paginationOption.page ? 'active' : '' }}"
         (click)="goToPage(page)">
         {{ page + 1 }}
       </button>
@@ -111,17 +291,21 @@
 
     <button
       class="pagination-btn"
-      (click)="goToPage(filter.page + 1)"
-      [disabled]="filter.page >= totalPages - 1">
+      (click)="goToPage(paginationOption.page + 1)"
+      [disabled]="paginationOption.page >= totalPages - 1">
       >
     </button>
 
     <button
       class="pagination-btn"
       (click)="goToPage(totalPages-1)"
-      [disabled]="filter.page >= totalPages - 1">
+      [disabled]="paginationOption.page >= totalPages - 1">
       >>
     </button>
   </div>
-  <p class="table_info">Найдено: {{ totalElements }}, страниц: {{ totalPages }}</p>
+  <div class="table_info_container">
+    <p>Найдено: {{ totalElements }}, страниц: {{ totalPages }}</p>
+    <p>Сортировка: {{ sortOptions.sort }} / {{ sortOptions.direction == 'asc' ? "Возрастание" : "Убывание" }}</p>
+  </div>
+
 }

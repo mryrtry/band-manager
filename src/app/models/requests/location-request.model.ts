@@ -1,5 +1,5 @@
 export interface LocationRequest {
-  x: number;
+  x: number | null;
   y: number;
   z: number;
 }

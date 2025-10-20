@@ -1,0 +1,123 @@
+<!-- coordinates-selector.component.html -->
+<div class="wrapper">
+  @if (isSelectMode) {
+    <div class="selector-section">
+      <div class="section-header">
+        <h4>Выбор координат</h4>
+        <button
+          (click)="switchMode('create')"
+          [disabled]="isLoading()"
+          class="btn btn-primary"
+          type="button">
+          Создать новые
+        </button>
+      </div>
+
+      @if (selectedCoordinates()) {
+        <div class="selected-item">
+          {{ selectedCoordinates()!.displayName }}
+          <button
+            (click)="clearSelection()"
+            class="btn-clear"
+            type="button">
+            ✕
+          </button>
+        </div>
+      } @else {
+        <div class="selector-container">
+          @if (isLoading()) {
+            <div class="loading">Загрузка координат...</div>
+          } @else if (coordinatesOptions().length === 0) {
+            <div class="empty-state">
+              Нет доступных координат
+            </div>
+          } @else {
+            <app-custom-select
+              (selectedChange)="onCoordinatesSelect($event)"
+              [label]="''"
+              [options]="coordinatesOptions()"
+              [placeholder]="'Выберите координаты'"
+              [searchable]="true">
+            </app-custom-select>
+          }
+        </div>
+      }
+    </div>
+  }
+
+  @if (isCreateMode) {
+    <div>
+      <div class="section-header">
+        <h4>Создание координат</h4>
+        <button
+          (click)="switchMode('select')"
+          [disabled]="isLoading()"
+          class="btn btn-primary"
+          type="button">
+          выбор
+        </button>
+      </div>
+
+      <form [formGroup]="coordinatesForm" class="creation-form">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="label" for="coordinates-x">Координата X *</label>
+            <input
+              [class.error]="hasFieldError('x')"
+              class="input"
+              formControlName="x"
+              id="coordinates-x"
+              placeholder="Введите X"
+              type="number"
+              min="-146">
+            <div [class.show]="hasFieldError('x')" class="error-container">
+              <div class="error-message">{{ getFieldError('x') }}</div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="label" for="coordinates-y">Координата Y</label>
+            <input
+              [class.error]="hasFieldError('y')"
+              class="input"
+              formControlName="y"
+              id="coordinates-y"
+              placeholder="Введите Y"
+              type="number"
+              step="any">
+            <div [class.show]="hasFieldError('y')" class="error-container">
+              <div class="error-message">{{ getFieldError('y') }}</div>
+            </div>
+          </div>
+        </div>
+
+        @if (errorMessage()) {
+          <div class="global-error">
+            {{ errorMessage() }}
+          </div>
+        }
+
+        <div class="form-actions">
+          <button
+            (click)="switchMode('select')"
+            [disabled]="isLoading()"
+            class="btn btn-secondary"
+            type="button">
+            Отмена
+          </button>
+          <button
+            (click)="createCoordinates()"
+            [disabled]="!isFormValid || isLoading()"
+            class="btn btn-primary"
+            type="button">
+            @if (isLoading()) {
+              Создание...
+            } @else {
+              Создать координаты
+            }
+          </button>
+        </div>
+      </form>
+    </div>
+  }
+</div>

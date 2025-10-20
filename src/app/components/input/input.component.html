@@ -1,0 +1,34 @@
+<div class="wrapper">
+  @if (label) {
+    <label>{{ label }}</label>
+  }
+
+  <div class="input-wrapper">
+    <input
+      [type]="type"
+      [(ngModel)]="currentValue"
+      (input)="onInput()"
+      [placeholder]="placeholder"
+      [disabled]="disabled"
+      class="input-field"
+      [class.error]="errorMessage"
+    />
+
+    @if (clearable && currentValue && !disabled) {
+      <button
+        type="button"
+        class="clear-button"
+        (click)="onClear()"
+        (keydown.enter)="onClear()"
+        (mousedown)="$event.preventDefault()"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px">
+          <path
+            d="M291-253.85 253.85-291l189-189-189-189L291-706.15l189 189 189-189L706.15-669l-189 189 189 189L669-253.85l-189-189-189 189Z"
+          />
+        </svg>
+      </button>
+    }
+  </div>
+  <p class="error-message" [class.active]="errorMessage">{{ errorMessage }}</p>
+</div>
