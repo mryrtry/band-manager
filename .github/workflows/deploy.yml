@@ -23,12 +23,17 @@ jobs:
           cache: 'npm'
 
       - name: Install dependencies
-        run: npm ci
+        run: |
+          # Установка зависимостей
+          npm ci
+          # Обновление транзитивных зависимостей rimraf и glob при необходимости
+          npm install rimraf@^4.0.0 glob@^9.3.0 --save-dev
 
       - name: Build Angular application
-        run: npm run build -- --configuration=production --base-href="/~s409483/band-manager/"
+        run: |
+          npm run build -- --configuration=production --base-href="/~s409483/band-manager/"
 
-      - name: Upload entire dist folder
+      - name: Upload dist folder
         uses: actions/upload-artifact@v4
         with:
           name: angular-app
@@ -56,4 +61,4 @@ jobs:
       - name: Clean and deploy
         run: |
           ssh -p 2222 s409483@se.ifmo.ru "rm -rf ~/$DEPLOY_FOLDER/* && mkdir -p ~/$DEPLOY_FOLDER"
-          scp -P 2222 -r ./browser/* s409483@se.ifmo.ru:~/$DEPLOY_FOLDER/
+          scp -P 2222 -r ./dist/BandManagerFrontend/* s409483@se.ifmo.ru:~/$DEPLOY_FOLDER/
