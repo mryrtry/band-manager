@@ -1,14 +1,20 @@
-import {Component, HostListener, inject, OnInit} from '@angular/core';
-import {CommonModule, DatePipe} from '@angular/common';
-import {MusicBandFilter, MusicBandGetConfig, MusicBandPagination, MusicBandService, MusicBandSorting,} from '../../services/music-band.service';
-import {MusicBand} from '../../models/music-band.model';
-import {parseMusicGenre} from '../../models/enums/music-genre.model';
-import {FormsModule} from '@angular/forms';
-import {CustomSelectComponent} from '../select/select.component';
-import {CustomButtonComponent} from '../button/button.component';
-import {InputComponent, Validator} from '../input/input.component';
-import {PaginatedResponse} from '../../models/paginated-response.model';
-import {ModalService} from '../../services/modal.service';
+import { Component, HostListener, inject, OnInit, OnDestroy } from '@angular/core';
+import { CommonModule, DatePipe } from '@angular/common';
+import {
+  MusicBandFilter,
+  MusicBandGetConfig,
+  MusicBandPagination,
+  MusicBandService,
+  MusicBandSorting,
+} from '../../services/music-band.service';
+import { MusicBand } from '../../models/music-band.model';
+import { parseMusicGenre } from '../../models/enums/music-genre.model';
+import { FormsModule } from '@angular/forms';
+import { CustomSelectComponent } from '../select/select.component';
+import { CustomButtonComponent } from '../button/button.component';
+import { InputComponent, Validator } from '../input/input.component';
+import { PaginatedResponse } from '../../models/paginated-response.model';
+import { ModalService } from '../../services/modal.service';
 
 @Component({
   selector: 'app-music-table',
@@ -17,8 +23,9 @@ import {ModalService} from '../../services/modal.service';
   templateUrl: './music-band-table.component.html',
   styleUrls: ['./music-band-table.component.scss']
 })
-export class MusicBandTableComponent implements OnInit {
+export class MusicBandTableComponent implements OnInit, OnDestroy {
 
+  private modalService = inject(ModalService);
   private musicBandService: MusicBandService = inject(MusicBandService);
 
   protected bands: MusicBand[] = [];
@@ -33,16 +40,16 @@ export class MusicBandTableComponent implements OnInit {
   protected isAllSelected: boolean = false;
 
   protected sortableFields = [
-    {key: 'id', label: 'ID'},
-    {key: 'name', label: 'Название'},
-    {key: 'frontMan.name', label: 'Лидер'},
-    {key: 'genre', label: 'Жанр'},
-    {key: 'bestAlbum.name', label: 'Лучший альбом'},
-    {key: 'albumsCount', label: 'Альбомы'},
-    {key: 'singlesCount', label: 'Синглы'},
-    {key: 'numberOfParticipants', label: 'Участники'},
-    {key: 'establishmentDate', label: 'Дата основания'},
-    {key: 'coordinates.x', label: 'Координаты'}
+    { key: 'id', label: 'ID' },
+    { key: 'name', label: 'Название' },
+    { key: 'frontMan.name', label: 'Лидер' },
+    { key: 'genre', label: 'Жанр' },
+    { key: 'bestAlbum.name', label: 'Лучший альбом' },
+    { key: 'albumsCount', label: 'Альбомы' },
+    { key: 'singlesCount', label: 'Синглы' },
+    { key: 'numberOfParticipants', label: 'Участники' },
+    { key: 'establishmentDate', label: 'Дата основания' },
+    { key: 'coordinates.x', label: 'Координаты' }
   ];
 
   protected clearFilterOptions: MusicBandFilter = {
@@ -55,19 +62,32 @@ export class MusicBandTableComponent implements OnInit {
     minCoordinateY: null, maxCoordinateY: null
   };
 
-  protected paginationOption: MusicBandPagination = {page: 0, size: 5};
-  protected filterOptions: MusicBandFilter = {...this.clearFilterOptions};
-  protected sortOptions: MusicBandSorting = {sort: ['id'], direction: 'asc'};
+  protected paginationOption: MusicBandPagination = { page: 0, size: 5 };
+  protected filterOptions: MusicBandFilter = { ...this.clearFilterOptions };
+  protected sortOptions: MusicBandSorting = { sort: ['id'], direction: 'asc' };
 
-  protected pageSizeSelectOptions = this.pageSizeOptions.map(size => ({label: `${size} / стр.`, value: size}));
+  protected pageSizeSelectOptions = this.pageSizeOptions.map(size => ({ label: `${size} / стр.`, value: size }));
 
   protected filtersToggle: boolean = false;
   protected filtersOpen: boolean = true;
+
+  private refreshIntervalId: any;
 
   ngOnInit() {
     this.checkScreenSize();
     this.restoreStateFromLocalStorage();
     this.getMusicBands();
+
+    // Тихое обновление каждые 5 секунд
+    this.refreshIntervalId = setInterval(() => {
+      this.getMusicBands(true); // true = "тихое" обновление
+    }, 2000);
+  }
+
+  ngOnDestroy() {
+    if (this.refreshIntervalId) {
+      clearInterval(this.refreshIntervalId);
+    }
   }
 
   private restoreStateFromLocalStorage(): void {
@@ -94,27 +114,29 @@ export class MusicBandTableComponent implements OnInit {
     };
   }
 
-  protected modalService: ModalService = inject(ModalService);
+  protected getMusicBands(silent: boolean = false): void {
+    if (!silent) {
+      this.loading = true;
+      this.error = null;
+      this.saveStateToLocalStorage();
+    }
 
-  protected getModal(): void {
-    this.modalService.open('<p>alabuga</p>')
-  }
-
-  protected getMusicBands(): void {
-    this.loading = true;
-    this.error = null;
-    this.saveStateToLocalStorage();
     this.musicBandService.getMusicBands(this.getConfig()).subscribe({
       next: (response: PaginatedResponse<MusicBand>) => {
         this.bands = response.content;
         this.totalElements = response.page.totalElements;
         this.totalPages = response.page.totalPages;
-        this.loading = false;
-        this.clearSelection();
+
+        if (!silent) {
+          this.loading = false;
+          this.clearSelection();
+        }
       },
       error: (error) => {
-        this.error = 'Ошибка при загрузке данных';
-        this.loading = false;
+        if (!silent) {
+          this.error = 'Ошибка при загрузке данных';
+          this.loading = false;
+        }
         console.error('Error loading music bands:', error);
       }
     });
@@ -131,7 +153,7 @@ export class MusicBandTableComponent implements OnInit {
   }
 
   protected resetFilters(): void {
-    this.filterOptions = {...this.clearFilterOptions};
+    this.filterOptions = { ...this.clearFilterOptions };
     this.getMusicBands();
   }
 
@@ -251,10 +273,10 @@ export class MusicBandTableComponent implements OnInit {
   protected numberValid(min: number, field: string, integer?: boolean): Validator {
     return {
       validate: (value) => {
-        if (!value) return {isValid: true};
-        if (integer && !(/^-?\d+$/.test(value))) return {isValid: false, message: `${field} целое`}
-        if (Number(value) <= min) return {isValid: false, message: `${field} <= ${min}`};
-        return {isValid: true};
+        if (!value) return { isValid: true };
+        if (integer && !(/^-?\d+$/.test(value))) return { isValid: false, message: `${field} целое` };
+        if (Number(value) <= min) return { isValid: false, message: `${field} <= ${min}` };
+        return { isValid: true };
       }
     };
   }
@@ -262,9 +284,9 @@ export class MusicBandTableComponent implements OnInit {
   protected genreValid(): Validator {
     return {
       validate: (value) => {
-        if (!value) return {isValid: true};
-        if (!parseMusicGenre(value)) return {isValid: false, message: "Жанр не существует"};
-        return {isValid: true};
+        if (!value) return { isValid: true };
+        if (!parseMusicGenre(value)) return { isValid: false, message: "Жанр не существует" };
+        return { isValid: true };
       }
     };
   }
@@ -288,8 +310,26 @@ export class MusicBandTableComponent implements OnInit {
   protected getSortAfter(field: string): string {
     if (this.sortOptions.sort[0] != field) return '';
     else {
-      if (this.sortOptions.direction == 'desc') return '"↑"'
-      else return '"↓"'
+      if (this.sortOptions.direction == 'desc') return '"↑"';
+      else return '"↓"';
+    }
+  }
+
+  async openCreateModal(): Promise<void> {
+    try {
+      const result = await this.modalService.openMusicBandModal({ mode: 'create' });
+      if (result) this.getMusicBands();
+    } catch (error) {
+      console.error('Ошибка при создании группы:', error);
+    }
+  }
+
+  async openEditModal(bandId: number): Promise<void> {
+    try {
+      const result = await this.modalService.openMusicBandModal({ mode: 'edit', musicBandId: bandId });
+      if (result) this.getMusicBands();
+    } catch (error) {
+      console.error('Ошибка при редактировании группы:', error);
     }
   }
 

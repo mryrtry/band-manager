@@ -1,41 +1,60 @@
-import {Injectable, ApplicationRef, createComponent, EnvironmentInjector, inject, ComponentRef} from '@angular/core';
-import {ModalComponent} from '../components/modal/modal.component';
+// modal.service.ts
+import { Injectable, ApplicationRef, ComponentRef, createComponent, EnvironmentInjector } from '@angular/core';
+import { MusicBand } from '../models/music-band.model';
+import {MusicBandModalComponent} from '../components/modal/modal.component';
 
-@Injectable({ providedIn: 'root' })
+export interface ModalOptions {
+  mode: 'create' | 'edit';
+  musicBandId?: number;
+  initialData?: MusicBand;
+}
+
+@Injectable({
+  providedIn: 'root'
+})
 export class ModalService {
-  private appRef = inject(ApplicationRef);
-  private injector = inject(EnvironmentInjector);
+  private modalRef: ComponentRef<MusicBandModalComponent> | null = null;
 
-  open(content: string | HTMLElement, options?: { backdropClose?: boolean }) {
-    const modalRef: ComponentRef<any> = createComponent(ModalComponent, {
-      environmentInjector: this.injector,
-    });
+  constructor(
+    private appRef: ApplicationRef,
+    private environmentInjector: EnvironmentInjector
+  ) {}
 
-    if (options?.backdropClose !== undefined) {
-      modalRef.instance.backdropClose = options.backdropClose;
-    }
+  openMusicBandModal(options: ModalOptions): Promise<MusicBand | undefined> {
+    return new Promise((resolve) => {
+      // Закрываем предыдущее модальное окно, если есть
+      this.close();
 
-    this.appRef.attachView(modalRef.hostView);
-    document.body.appendChild(modalRef.location.nativeElement);
+      // Создаем компонент программно
+      this.modalRef = createComponent(MusicBandModalComponent, {
+        environmentInjector: this.environmentInjector
+      });
 
-    setTimeout(() => {
-      const modalEl = modalRef.location.nativeElement as HTMLElement;
-      const contentContainer = modalEl.querySelector('.modal-content');
-      if (contentContainer) {
-        if (typeof content === 'string') {
-          contentContainer.innerHTML = content; // вставляем HTML
-        } else {
-          contentContainer.appendChild(content);
+      // Добавляем в DOM
+      document.body.appendChild(this.modalRef.location.nativeElement);
+      this.appRef.attachView(this.modalRef.hostView);
+
+      // Настраиваем модальное окно
+      this.modalRef.instance.open(
+        {
+          mode: options.mode,
+          musicBandId: options.musicBandId,
+          initialData: options.initialData
+        },
+        {
+          onSubmit: (result) => resolve(result),
+          onCancel: () => resolve(undefined),
+          onDismiss: () => resolve(undefined)
         }
-      }
-      modalRef.instance.open();
+      );
     });
+  }
 
-    modalRef.instance.closed.subscribe(() => {
-      this.appRef.detachView(modalRef.hostView);
-      modalRef.destroy();
-    });
-
-    return modalRef.instance;
+  close(): void {
+    if (this.modalRef) {
+      this.appRef.detachView(this.modalRef.hostView);
+      this.modalRef.destroy();
+      this.modalRef = null;
+    }
   }
 }

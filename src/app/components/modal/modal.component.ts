@@ -1,81 +1,203 @@
-import {AfterViewInit, Component, ElementRef, EventEmitter, HostListener, Input, Output, ViewChild} from '@angular/core';
+// music-band-modal.component.ts
+import {
+  Component,
+  Inject,
+  OnInit,
+  OnDestroy,
+  ViewChild,
+  ElementRef,
+  AfterViewInit,
+  signal
+} from '@angular/core';
+import { CommonModule, DOCUMENT } from '@angular/common';
+import { MusicBand } from '../../models/music-band.model';
+import {MusicBandFormComponent} from '../music-band-form/music-band-form.component';
+
+export interface MusicBandModalConfig {
+  mode: 'create' | 'edit';
+  musicBandId?: number;
+  initialData?: MusicBand;
+}
 
 @Component({
-  selector: 'app-modal', templateUrl: './modal.component.html', styleUrls: ['./modal.component.scss']
+  selector: 'app-music-band-modal',
+  templateUrl: './modal.component.html',
+  styleUrls: ['./modal.component.scss'],
+  standalone: true,
+  imports: [CommonModule, MusicBandFormComponent]
 })
-export class ModalComponent implements AfterViewInit {
-  @ViewChild('modalContainer') modalContainer!: ElementRef<HTMLDivElement>;
+export class MusicBandModalComponent implements OnInit, OnDestroy, AfterViewInit {
+  @ViewChild('modalOverlay') modalOverlay!: ElementRef<HTMLDivElement>;
+  @ViewChild('modalContent') modalContent!: ElementRef<HTMLDivElement>;
+  @ViewChild(MusicBandFormComponent) formComponent!: MusicBandFormComponent;
 
-  @Input() backdropClose: boolean = true;
-  @Output() opened = new EventEmitter<void>();
-  @Output() closed = new EventEmitter<void>();
+  isOpen = signal(false);
+  isLoading = signal(false);
 
-  isOpen = false;
+  // Конфигурация модального окна
+  config: MusicBandModalConfig = {
+    mode: 'create'
+  };
 
-  private focusableElements: HTMLElement[] = [];
-  private firstFocusable!: HTMLElement;
-  private lastFocusable!: HTMLElement;
+  // Callbacks для внешнего кода
+  private onSubmitCallback?: (result: MusicBand) => void;
+  private onCancelCallback?: () => void;
+  private onDismissCallback?: () => void;
 
-  open() {
-    this.isOpen = true;
-    this.opened.emit();
-    setTimeout(() => this.setFocusTrap(), 0);
+  constructor(@Inject(DOCUMENT) private document: Document) {}
+
+  ngOnInit() {
+    this.disableBodyScroll();
   }
 
-  close() {
-    this.isOpen = false;
-    this.closed.emit();
+  ngOnDestroy() {
+    this.enableBodyScroll();
   }
 
   ngAfterViewInit() {
-    if (this.isOpen) {
-      this.setFocusTrap();
-    }
+    // Фокусируемся на модальном окне после инициализации
+    setTimeout(() => {
+      this.focusModal();
+    });
   }
 
-  private setFocusTrap() {
-    const focusableSelectors = ['a[href]', 'button', 'textarea', 'input', 'select', '[tabindex]:not([tabindex="-1"])'];
-    this.focusableElements = Array.from(this.modalContainer.nativeElement.querySelectorAll(focusableSelectors.join(','))) as HTMLElement[];
+  // Public API для открытия модального окна
+  open(config: MusicBandModalConfig, callbacks: {
+    onSubmit?: (result: MusicBand) => void;
+    onCancel?: () => void;
+    onDismiss?: () => void;
+  } = {}): void {
+    this.config = { ...config };
+    this.onSubmitCallback = callbacks.onSubmit;
+    this.onCancelCallback = callbacks.onCancel;
+    this.onDismissCallback = callbacks.onDismiss;
 
-    if (this.focusableElements.length) {
-      this.firstFocusable = this.focusableElements[0];
-      this.lastFocusable = this.focusableElements[this.focusableElements.length - 1];
-      this.firstFocusable.focus();
-    }
+    this.isOpen.set(true);
+    this.disableBodyScroll();
+
+    // Фокусируемся на модальном окне после открытия
+    setTimeout(() => {
+      this.focusModal();
+    }, 100);
   }
 
-  @HostListener('document:keydown', ['$event']) handleKeyboard(event: KeyboardEvent) {
-    if (!this.isOpen) return;
+  close(): void {
+    this.isOpen.set(false);
+    this.enableBodyScroll();
+    this.onDismissCallback?.();
+  }
 
-    if (event.key === 'Escape') {
+  // Обработчики событий формы
+  onFormSubmit(result: MusicBand): void {
+    this.onSubmitCallback?.(result);
+    this.close();
+  }
+
+  onFormCancel(): void {
+    this.onCancelCallback?.();
+    this.close();
+  }
+
+  // Обработка клика на оверлей
+  onOverlayClick(event: MouseEvent): void {
+    if (event.target === this.modalOverlay.nativeElement) {
       this.close();
     }
+  }
 
-    if (event.key === 'Tab') {
-      if (this.focusableElements.length === 0) {
+  // Обработка нажатия клавиш
+  onKeydown(event: KeyboardEvent): void {
+    switch (event.key) {
+      case 'Escape':
         event.preventDefault();
-        return;
+        this.close();
+        break;
+      case 'Tab':
+        this.handleTabKey(event);
+        break;
+    }
+  }
+
+  // Управление фокусом внутри модального окна
+  private handleTabKey(event: KeyboardEvent): void {
+    const focusableElements = this.getFocusableElements();
+    if (focusableElements.length === 0) return;
+
+    const firstElement = focusableElements[0];
+    const lastElement = focusableElements[focusableElements.length - 1];
+
+    if (event.shiftKey) {
+      if (document.activeElement === firstElement) {
+        lastElement.focus();
+        event.preventDefault();
       }
-
-      const active = document.activeElement as HTMLElement;
-
-      if (event.shiftKey) {
-        if (active === this.firstFocusable) {
-          event.preventDefault();
-          this.lastFocusable.focus();
-        }
-      } else {
-        if (active === this.lastFocusable) {
-          event.preventDefault();
-          this.firstFocusable.focus();
-        }
+    } else {
+      if (document.activeElement === lastElement) {
+        firstElement.focus();
+        event.preventDefault();
       }
     }
   }
 
-  onBackdropClick(event: MouseEvent) {
-    if (this.backdropClose && event.target === event.currentTarget) {
-      this.close();
+  private getFocusableElements(): HTMLElement[] {
+    const selector = `
+      button:not([disabled]),
+      [href],
+      input:not([disabled]),
+      select:not([disabled]),
+      textarea:not([disabled]),
+      [tabindex]:not([tabindex="-1"])
+    `;
+
+    return Array.from(
+      this.modalContent.nativeElement.querySelectorAll(selector)
+    ) as HTMLElement[];
+  }
+
+  private focusModal(): void {
+    if (this.modalContent) {
+      // Фокусируемся на первом фокусируемом элементе
+      const focusableElements = this.getFocusableElements();
+      if (focusableElements.length > 0) {
+        focusableElements[0].focus();
+      } else {
+        this.modalContent.nativeElement.focus();
+      }
     }
+  }
+
+  private disableBodyScroll(): void {
+    const body = this.document.body;
+    body.style.overflow = 'hidden';
+    body.style.paddingRight = this.getScrollbarWidth() + 'px';
+  }
+
+  private enableBodyScroll(): void {
+    const body = this.document.body;
+    body.style.overflow = '';
+    body.style.paddingRight = '';
+  }
+
+  private getScrollbarWidth(): number {
+    const outer = this.document.createElement('div');
+    outer.style.visibility = 'hidden';
+    outer.style.overflow = 'scroll';
+    this.document.body.appendChild(outer);
+
+    const inner = this.document.createElement('div');
+    outer.appendChild(inner);
+
+    const scrollbarWidth = outer.offsetWidth - inner.offsetWidth;
+
+    outer.parentNode?.removeChild(outer);
+
+    return scrollbarWidth;
+  }
+
+  // Геттеры для шаблона
+  get modalTitle(): string {
+    return this.config.mode === 'edit'
+      ? 'Редактирование музыкальной группы'
+      : 'Создание музыкальной группы';
   }
 }

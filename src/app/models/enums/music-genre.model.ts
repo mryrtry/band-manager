@@ -9,12 +9,12 @@ export enum MusicGenre {
 
 export function parseMusicGenre(genreString: string): MusicGenre {
   const genreMap: {[key: string]: MusicGenre} = {
-    'PROG ROCK': MusicGenre.PROGRESSIVE_ROCK,
+    'PROGRESSIVE_ROCK': MusicGenre.PROGRESSIVE_ROCK,
     'ROCK': MusicGenre.ROCK,
     'SOUL': MusicGenre.SOUL,
-    'POST ROCK': MusicGenre.POST_ROCK,
-    'PUNK ROCK': MusicGenre.PUNK_ROCK,
-    'POST PUNK': MusicGenre.POST_PUNK
+    'POST_ROCK': MusicGenre.POST_ROCK,
+    'PUNK_ROCK': MusicGenre.PUNK_ROCK,
+    'POST_PUNK': MusicGenre.POST_PUNK
   };
 
   return genreMap[genreString];

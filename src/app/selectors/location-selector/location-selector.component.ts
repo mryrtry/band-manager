@@ -20,6 +20,8 @@ interface LocationOption {
   displayName: string;
 }
 
+type ComponentMode = 'select' | 'create' | 'edit';
+
 @Component({
   selector: 'app-location-selector',
   templateUrl: './location-selector.component.html',
@@ -37,30 +39,47 @@ export class LocationSelectorComponent implements OnInit {
   locationOptions = signal<SelectOption[]>([]);
   isLoading = signal(false);
   selectedLocationId = signal<number | null>(null);
-  mode = signal<'select' | 'create'>('select');
+  editingLocationId = signal<number | null>(null);
+  mode = signal<ComponentMode>('select');
   errorMessage = signal<string | null>(null);
 
   selectedLocation = computed(() => {
     const id = this.selectedLocationId();
-    if (id === null) return null;
-    return this.locations().find(loc => loc.id === id) || null;
+    return id ? this.locations().find(loc => loc.id === id) || null : null;
+  });
+
+  editingLocation = computed(() => {
+    const id = this.editingLocationId();
+    return id ? this.locations().find(loc => loc.id === id) || null : null;
   });
 
   locationForm: FormGroup;
 
   constructor() {
-    this.locationForm = this.fb.group({
+    this.locationForm = this.createForm();
+  }
+
+  private createForm(): FormGroup {
+    return this.fb.group({
       x: [null],
       y: [null, [Validators.required]],
       z: [null, [Validators.required]]
     });
   }
 
-  async ngOnInit() {
+  async ngOnInit(): Promise<void> {
     await this.loadLocations();
   }
 
-  async loadLocations() {
+  public reset(): void {
+    this.selectedLocationId.set(null);
+    this.editingLocationId.set(null);
+    this.mode.set('select');
+    this.locationForm.reset();
+    this.errorMessage.set(null);
+  }
+
+  async loadLocations(): Promise<void> {
     this.isLoading.set(true);
     this.errorMessage.set(null);
 
@@ -82,6 +101,8 @@ export class LocationSelectorComponent implements OnInit {
         }))
       );
     } catch (error) {
+      this.errorMessage.set('Ошибка загрузки локаций');
+      console.error('Error loading locations:', error);
     } finally {
       this.isLoading.set(false);
     }
@@ -92,90 +113,152 @@ export class LocationSelectorComponent implements OnInit {
     return `${xDisplay}, Y: ${location.y}, Z: ${location.z}`;
   }
 
-  switchMode(newMode: 'select' | 'create') {
+  switchMode(newMode: ComponentMode, locationId?: number): void {
     this.mode.set(newMode);
     this.errorMessage.set(null);
     this.locationForm.reset();
+
+    if (newMode === 'edit' && locationId) {
+      this.editingLocationId.set(locationId);
+      this.populateFormForEditing();
+    } else {
+      this.editingLocationId.set(null);
+    }
   }
 
-  onLocationSelect(locationId: number) {
+  private populateFormForEditing(): void {
+    const location = this.editingLocation();
+    if (!location) return;
+
+    this.locationForm.patchValue({
+      x: location.x,
+      y: location.y,
+      z: location.z
+    });
+  }
+
+  onLocationSelect(locationId: number): void {
     this.selectedLocationId.set(locationId);
     this.locationSelected.emit(locationId);
   }
 
-  clearSelection() {
+  clearSelection(): void {
     this.selectedLocationId.set(null);
     this.locationSelected.emit(null);
   }
 
-  async createLocation() {
+  async createLocation(): Promise<void> {
     if (this.locationForm.invalid) {
       this.markFormGroupTouched();
       return;
     }
 
+    await this.saveLocation();
+  }
+
+  async updateLocation(): Promise<void> {
+    if (this.locationForm.invalid) {
+      this.markFormGroupTouched();
+      return;
+    }
+
+    await this.saveLocation(true);
+  }
+
+  private async saveLocation(isUpdate: boolean = false): Promise<void> {
     this.isLoading.set(true);
     this.errorMessage.set(null);
 
     try {
       const formData = this.locationForm.value;
-
       const locationData: LocationRequest = {
-        x: formData.x !== null && formData.x !== '' && !isNaN(Number(formData.x)) ? Number(formData.x) : null,
+        x: this.parseCoordinate(formData.x),
         y: Number(formData.y),
         z: Number(formData.z)
       };
 
-      const createdLocation = await firstValueFrom(this.locationService.create(locationData));
+      let savedLocation: Location;
 
-      const newLocation: LocationOption = {
-        id: createdLocation.id,
-        x: createdLocation.x,
-        y: createdLocation.y,
-        z: createdLocation.z,
-        displayName: this.formatLocationDisplay(createdLocation)
-      };
+      if (isUpdate && this.editingLocationId()) {
+        savedLocation = await firstValueFrom(
+          this.locationService.update(this.editingLocationId()!, locationData)
+        );
+      } else {
+        savedLocation = await firstValueFrom(
+          this.locationService.create(locationData)
+        );
+      }
 
-      this.locations.update(locations => [...locations, newLocation]);
-      this.locationOptions.update(options => [
-        ...options,
-        {value: newLocation.id, label: newLocation.displayName}
-      ]);
-
-      this.selectLocation(newLocation);
-      this.mode.set('select');
-      this.locationForm.reset();
+      await this.handleSaveSuccess(savedLocation, isUpdate);
 
     } catch (error: any) {
-      if (error?.error?.details) {
-        const backendErrors = error.error.details;
-        this.handleBackendErrors(backendErrors);
-      } else {
-        this.errorMessage.set('Ошибка создания локации');
-      }
-      console.error('Error creating location:', error);
+      this.handleSaveError(error);
     } finally {
       this.isLoading.set(false);
     }
   }
 
-  private selectLocation(location: LocationOption) {
+  private parseCoordinate(value: any): number | null {
+    return value !== null && value !== '' && !isNaN(Number(value))
+      ? Number(value)
+      : null;
+  }
+
+  private async handleSaveSuccess(location: Location, isUpdate: boolean): Promise<void> {
+    if (isUpdate) {
+      await this.loadLocations(); // Reload to get updated list
+    } else {
+      this.addLocationToLists(location);
+    }
+
+    this.selectLocation(location);
+    this.switchMode('select');
+    this.locationForm.reset();
+  }
+
+  private addLocationToLists(location: Location): void {
+    const newLocation: LocationOption = {
+      id: location.id,
+      x: location.x,
+      y: location.y,
+      z: location.z,
+      displayName: this.formatLocationDisplay(location)
+    };
+
+    this.locations.update(locations => [...locations, newLocation]);
+    this.locationOptions.update(options => [
+      ...options,
+      { value: newLocation.id, label: newLocation.displayName }
+    ]);
+  }
+
+  private selectLocation(location: Location): void {
     this.selectedLocationId.set(location.id);
     this.locationSelected.emit(location.id);
   }
 
-  private markFormGroupTouched() {
+  private handleSaveError(error: any): void {
+    if (error?.error?.details) {
+      const backendErrors = error.error.details;
+      this.handleBackendErrors(backendErrors);
+    } else {
+      this.errorMessage.set(`Ошибка ${this.isEditMode ? 'обновления' : 'создания'} локации`);
+    }
+    console.error(`Error ${this.isEditMode ? 'updating' : 'creating'} location:`, error);
+  }
+
+  private markFormGroupTouched(): void {
     Object.keys(this.locationForm.controls).forEach(key => {
-      const control = this.locationForm.get(key);
-      control?.markAsTouched();
+      this.locationForm.get(key)?.markAsTouched();
     });
   }
 
-  private handleBackendErrors(errors: any[]) {
+  private handleBackendErrors(errors: any[]): void {
+    // Clear previous server errors
     Object.keys(this.locationForm.controls).forEach(key => {
       const control = this.locationForm.get(key);
       if (control?.errors?.['serverError']) {
-        const {serverError, ...otherErrors} = control.errors;
+        const { serverError, ...otherErrors } = control.errors;
         control.setErrors(Object.keys(otherErrors).length > 0 ? otherErrors : null);
       }
     });
@@ -183,8 +266,8 @@ export class LocationSelectorComponent implements OnInit {
     let hasGlobalError = false;
 
     errors.forEach(error => {
-      const field = error.field.toLowerCase();
-      const control = this.locationForm.get(field);
+      const field = error.field?.toLowerCase();
+      const control = field ? this.locationForm.get(field) : null;
 
       if (control) {
         const currentErrors = control.errors || {};
@@ -200,6 +283,7 @@ export class LocationSelectorComponent implements OnInit {
     });
   }
 
+  // Computed properties for template
   get isSelectMode(): boolean {
     return this.mode() === 'select';
   }
@@ -208,13 +292,29 @@ export class LocationSelectorComponent implements OnInit {
     return this.mode() === 'create';
   }
 
+  get isEditMode(): boolean {
+    return this.mode() === 'edit';
+  }
+
   get isFormValid(): boolean {
     return this.locationForm.valid;
+  }
+
+  get submitButtonText(): string {
+    if (this.isLoading()) {
+      return this.isEditMode ? 'Обновление...' : 'Создание...';
+    }
+    return this.isEditMode ? 'Обновить локацию' : 'Создать локацию';
+  }
+
+  get formTitle(): string {
+    return this.isEditMode ? 'Редактирование локации' : 'Создание локации';
   }
 
   getFieldError(fieldName: string): string {
     const control = this.locationForm.get(fieldName);
     if (!control) return '';
+
     if (control.errors?.['serverError']) {
       return control.errors['serverError'];
     }
@@ -224,6 +324,7 @@ export class LocationSelectorComponent implements OnInit {
     if (control.errors?.['invalidNumber']) {
       return 'Введите корректное число';
     }
+
     return '';
   }
 

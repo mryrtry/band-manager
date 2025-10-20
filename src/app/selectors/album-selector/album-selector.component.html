@@ -4,13 +4,24 @@
     <div class="selector-section">
       <div class="section-header">
         <h4>Выбор альбома</h4>
-        <button
-          (click)="switchMode('create')"
-          [disabled]="isLoading()"
-          class="btn btn-primary"
-          type="button">
-          Создать новый
-        </button>
+        <div class="header-actions">
+          @if (selectedAlbum()) {
+            <button
+              (click)="switchMode('edit', selectedAlbumId()!)"
+              [disabled]="isLoading()"
+              class="btn btn-primary"
+              type="button">
+              Редактировать
+            </button>
+          }
+          <button
+            (click)="switchMode('create')"
+            [disabled]="isLoading()"
+            class="btn btn-primary"
+            type="button">
+            Создать новый
+          </button>
+        </div>
       </div>
 
       @if (selectedAlbum()) {
@@ -45,16 +56,16 @@
     </div>
   }
 
-  @if (isCreateMode) {
-    <div>
+  @if (isCreateMode || isEditMode) {
+    <div class="form-section">
       <div class="section-header">
-        <h4>Создание альбома</h4>
+        <h4>{{ formTitle }}</h4>
         <button
           (click)="switchMode('select')"
           [disabled]="isLoading()"
           class="btn btn-primary"
           type="button">
-          выбор
+          Назад к выбору
         </button>
       </div>
 
@@ -115,20 +126,16 @@
           <button
             (click)="switchMode('select')"
             [disabled]="isLoading()"
-            class="btn btn-secondary"
+            class="btn btn-primary"
             type="button">
             Отмена
           </button>
           <button
-            (click)="createAlbum()"
+            (click)="isEditMode ? updateAlbum() : createAlbum()"
             [disabled]="!isFormValid || isLoading()"
             class="btn btn-primary"
             type="button">
-            @if (isLoading()) {
-              Создание...
-            } @else {
-              Создать альбом
-            }
+            {{ submitButtonText }}
           </button>
         </div>
       </form>
