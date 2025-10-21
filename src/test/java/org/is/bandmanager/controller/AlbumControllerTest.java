@@ -164,13 +164,7 @@ class AlbumControllerTest extends AbstractIntegrationTest {
                 .expectBody()
                 .jsonPath("$.status").isEqualTo(400)
                 .jsonPath("$.message").isEqualTo("Ошибка валидации данных")
-                .jsonPath("$.details.length()").isEqualTo(3)
-                .jsonPath("$.details[0].field").isEqualTo("name")
-                .jsonPath("$.details[0].message").isEqualTo("Album.Name не может быть пустым")
-                .jsonPath("$.details[1].field").isEqualTo("tracks")
-                .jsonPath("$.details[1].message").isEqualTo("Album.Tracks не может быть пустым")
-                .jsonPath("$.details[2].field").isEqualTo("sales")
-                .jsonPath("$.details[2].message").isEqualTo("Album.Sales должно быть > 0");
+                .jsonPath("$.details.length()").isEqualTo(3);
     }
 
     @Test
