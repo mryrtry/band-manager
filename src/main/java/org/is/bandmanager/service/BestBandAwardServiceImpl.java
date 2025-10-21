@@ -8,11 +8,13 @@ import org.is.bandmanager.dto.request.BestBandAwardRequest;
 import org.is.bandmanager.exception.ServiceException;
 import org.is.bandmanager.model.BestBandAward;
 import org.is.bandmanager.model.MusicBand;
-import org.is.bandmanager.model.MusicGenre;
 import org.is.bandmanager.repository.BestBandAwardRepository;
 import org.is.bandmanager.repository.MusicBandRepository;
+import org.is.bandmanager.repository.filter.BestBandAwardFilter;
+import org.is.bandmanager.repository.specifications.BestBandAwardSpecifications;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 
@@ -55,11 +57,9 @@ public class BestBandAwardServiceImpl implements BestBandAwardService {
     }
 
     @Override
-    public Page<BestBandAwardDto> getAll(MusicGenre genre, String bandName,
-                                         Integer bandId, Pageable pageable) {
-        Page<BestBandAward> awards = bestBandAwardRepository.findAllWithFilters(
-                genre, bandName, bandId, pageable
-        );
+    public Page<BestBandAwardDto> getAll(BestBandAwardFilter filter, Pageable pageable) {
+        Specification<BestBandAward> specification = BestBandAwardSpecifications.withFilter(filter);
+        Page<BestBandAward> awards = bestBandAwardRepository.findAll(specification, pageable);
         return awards.map(mapper::toDto);
     }
 

@@ -6,12 +6,11 @@ import jakarta.validation.constraints.PastOrPresent;
 import lombok.RequiredArgsConstructor;
 import org.is.bandmanager.dto.MusicBandDto;
 import org.is.bandmanager.dto.request.MusicBandRequest;
-import org.is.bandmanager.model.MusicGenre;
+import org.is.bandmanager.repository.filter.MusicBandFilter;
+import org.is.bandmanager.repository.util.PageableUtil;
 import org.is.bandmanager.service.MusicBandService;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -29,58 +28,14 @@ public class MusicBandController {
 
     @GetMapping()
     public ResponseEntity<Page<MusicBandDto>> getAllMusicBands(
-            @RequestParam(required = false) String name,
-            @RequestParam(required = false) String description,
-            @RequestParam(required = false) MusicGenre genre,
-            @RequestParam(required = false) String frontManName,
-            @RequestParam(required = false) String bestAlbumName,
-
-            @RequestParam(required = false) Long minParticipants,
-            @RequestParam(required = false) Long maxParticipants,
-            @RequestParam(required = false) Long minSingles,
-            @RequestParam(required = false) Long maxSingles,
-            @RequestParam(required = false) Long minAlbumsCount,
-            @RequestParam(required = false) Long maxAlbumsCount,
-            @RequestParam(required = false) Integer minCoordinateX,
-            @RequestParam(required = false) Integer maxCoordinateX,
-            @RequestParam(required = false) Float minCoordinateY,
-            @RequestParam(required = false) Float maxCoordinateY,
-
+            @ModelAttribute @Valid MusicBandFilter filter,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "id") List<String> sort,
             @RequestParam(defaultValue = "asc") String direction) {
-
-        Sort.Direction sortDirection = direction.equalsIgnoreCase("desc")
-                ? Sort.Direction.DESC
-                : Sort.Direction.ASC;
-
-        Sort pageSort = createSortFromList(sort, sortDirection);
-
-        Pageable pageable = PageRequest.of(page, size, pageSort);
-
-        Page<MusicBandDto> bands = musicBandService.getAll(
-                name, description, genre, frontManName, bestAlbumName,
-                minParticipants, maxParticipants, minSingles, maxSingles,
-                minAlbumsCount, maxAlbumsCount, minCoordinateX, maxCoordinateX,
-                minCoordinateY, maxCoordinateY, pageable
-        );
-
+        Pageable pageable = PageableUtil.createMusicBandPageable(page, size, sort, direction);
+        Page<MusicBandDto> bands = musicBandService.getAll(filter, pageable);
         return ResponseEntity.ok(bands);
-    }
-
-    private Sort createSortFromList(List<String> sortFields, Sort.Direction direction) {
-        if (sortFields == null || sortFields.isEmpty()) {
-            return Sort.by(direction, "id");
-        }
-        if (sortFields.size() == 1) {
-            return Sort.by(direction, sortFields.get(0));
-        }
-        Sort sort = Sort.by(direction, sortFields.get(0));
-        for (int i = 1; i < sortFields.size(); i++) {
-            sort = sort.and(Sort.by(direction, sortFields.get(i)));
-        }
-        return sort;
     }
 
     @GetMapping("/{id}")
