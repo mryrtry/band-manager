@@ -73,12 +73,4 @@ public interface MusicBandRepository extends JpaRepository<MusicBand, Integer> {
 
     boolean existsByBestAlbumId(Long bestAlbumId);
 
-    boolean existsByFrontManId(Long frontManId);
-
-    Long countByCoordinatesId(Long coordinatesId);
-
-    Long countByFrontManId(Long frontManId);
-
-    Long countByBestAlbumId(Long albumId);
-
 }
