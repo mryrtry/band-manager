@@ -104,4 +104,4 @@ jobs:
 
       - name: Check health endpoint
         run: |
-          ssh -p 2222 s409483@se.ifmo.ru "curl -s -o /dev/null -w 'Health Check: %{http_code}\n' localhost:8080/health"
+          ssh -p 2222 s409483@se.ifmo.ru "curl -s -o /dev/null -w 'Health Check: %{http_code}\n' localhost:8126/health"
