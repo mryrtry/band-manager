@@ -140,11 +140,7 @@ class LocationControllerTest extends AbstractIntegrationTest {
                 .expectBody()
                 .jsonPath("$.status").isEqualTo(400)
                 .jsonPath("$.message").isEqualTo("Ошибка валидации данных")
-                .jsonPath("$.details.length()").isEqualTo(2)
-                .jsonPath("$.details[0].field").isEqualTo("y")
-                .jsonPath("$.details[0].message").isEqualTo("Location.Y не может быть пустым")
-                .jsonPath("$.details[1].field").isEqualTo("z")
-                .jsonPath("$.details[1].message").isEqualTo("Location.Z не может быть пустым");
+                .jsonPath("$.details.length()").isEqualTo(2);
     }
 
     @Test

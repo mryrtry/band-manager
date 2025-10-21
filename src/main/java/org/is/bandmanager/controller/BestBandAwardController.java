@@ -4,15 +4,16 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.is.bandmanager.dto.BestBandAwardDto;
 import org.is.bandmanager.dto.request.BestBandAwardRequest;
-import org.is.bandmanager.model.MusicGenre;
+import org.is.bandmanager.repository.filter.BestBandAwardFilter;
+import org.is.bandmanager.repository.util.PageableUtil;
 import org.is.bandmanager.service.BestBandAwardService;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/best-band-awards")
@@ -23,25 +24,13 @@ public class BestBandAwardController {
 
     @GetMapping()
     public ResponseEntity<Page<BestBandAwardDto>> getAllBestBandAwardsFiltered(
-            @RequestParam(required = false) MusicGenre genre,
-            @RequestParam(required = false) String bandName,
-            @RequestParam(required = false) Integer bandId,
-
+            @ModelAttribute BestBandAwardFilter filter,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "createdAt") String sort,
-            @RequestParam(defaultValue = "desc") String direction) {
-
-        Sort.Direction sortDirection = direction.equalsIgnoreCase("desc")
-                ? Sort.Direction.DESC
-                : Sort.Direction.ASC;
-        Sort pageSort = Sort.by(sortDirection, sort);
-
-        Pageable pageable = PageRequest.of(page, size, pageSort);
-
-        Page<BestBandAwardDto> awards = bestBandAwardService.getAll(
-                genre, bandName, bandId, pageable
-        );
+            @RequestParam(defaultValue = "id") List<String> sort,
+            @RequestParam(defaultValue = "acs") String direction) {
+        Pageable pageable = PageableUtil.createBestBandAwardPageable(page, size, sort, direction);
+        Page<BestBandAwardDto> awards = bestBandAwardService.getAll(filter, pageable);
         return ResponseEntity.ok(awards);
     }
 

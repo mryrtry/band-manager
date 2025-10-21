@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import org.is.bandmanager.exception.ErrorResponse;
 import org.is.bandmanager.exception.ServiceException;
+import org.springframework.core.MethodParameter;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -14,8 +15,11 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
+import java.lang.reflect.Field;
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -24,10 +28,15 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponse> handleValidationExceptions(MethodArgumentNotValidException ex) {
+        List<String> fieldOrder = getFieldOrderFromClass(ex.getParameter());
 
         List<ErrorResponse.ErrorDetail> errorDetails = ex.getBindingResult()
                 .getFieldErrors()
                 .stream()
+                .sorted(Comparator.comparing(error -> {
+                    int index = fieldOrder.indexOf(error.getField());
+                    return index != -1 ? index : Integer.MAX_VALUE;
+                }))
                 .map(error -> ErrorResponse.ErrorDetail.builder()
                         .field(error.getField())
                         .message(error.getDefaultMessage())
@@ -45,6 +54,7 @@ public class GlobalExceptionHandler {
 
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
+
 
     @ExceptionHandler(ServiceException.class)
     public ResponseEntity<ErrorResponse> handleServiceException(ServiceException ex) {
@@ -174,6 +184,19 @@ public class GlobalExceptionHandler {
                 .build();
 
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+    }
+
+    private List<String> getFieldOrderFromClass(MethodParameter parameter) {
+        if (parameter == null) {
+            return Collections.emptyList();
+        } else {
+            parameter.getParameterType();
+        }
+
+        Class<?> targetClass = parameter.getParameterType();
+        return Arrays.stream(targetClass.getDeclaredFields())
+                .map(Field::getName)
+                .collect(Collectors.toList());
     }
 
 }

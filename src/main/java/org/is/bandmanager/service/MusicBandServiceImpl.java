@@ -6,8 +6,8 @@ import org.is.bandmanager.dto.MusicBandDto;
 import org.is.bandmanager.dto.MusicBandMapper;
 import org.is.bandmanager.dto.request.MusicBandRequest;
 import org.is.bandmanager.exception.ServiceException;
+import org.is.bandmanager.repository.filter.MusicBandFilter;
 import org.is.bandmanager.model.MusicBand;
-import org.is.bandmanager.model.MusicGenre;
 import org.is.bandmanager.repository.MusicBandRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -49,22 +49,8 @@ public class MusicBandServiceImpl implements MusicBandService {
     }
 
     @Override
-    public Page<MusicBandDto> getAll(String name, String description, MusicGenre genre,
-                                     String frontManName, String bestAlbumName,
-                                     Long minParticipants, Long maxParticipants,
-                                     Long minSingles, Long maxSingles,
-                                     Long minAlbumsCount, Long maxAlbumsCount,
-                                     Integer minCoordinateX, Integer maxCoordinateX,
-                                     Float minCoordinateY, Float maxCoordinateY,
-                                     Pageable pageable) {
-
-        Page<MusicBand> bands = musicBandRepository.findAllWithFilters(
-                name, description, genre, frontManName, bestAlbumName,
-                minParticipants, maxParticipants, minSingles, maxSingles,
-                minAlbumsCount, maxAlbumsCount, minCoordinateX, maxCoordinateX,
-                minCoordinateY, maxCoordinateY, pageable
-        );
-
+    public Page<MusicBandDto> getAll(MusicBandFilter filter, Pageable pageable) {
+        Page<MusicBand> bands = musicBandRepository.findWithFilter(filter, pageable);
         return bands.map(mapper::toDto);
     }
 
@@ -80,8 +66,9 @@ public class MusicBandServiceImpl implements MusicBandService {
 
     @Override
     public MusicBandDto getWithMaxCoordinates() {
-        MusicBand musicBand = musicBandRepository.findBandWithMaxCoordinates().orElseThrow(() -> new ServiceException(SOURCE_NOT_FOUND, "MusicBand.MaxCoordinates"));
-        return mapper.toDto(musicBand);
+        MusicBand band = musicBandRepository.findBandWithMaxCoordinates()
+                .orElseThrow(() -> new ServiceException(SOURCE_NOT_FOUND, "MusicBand.MaxCoordinates"));
+        return mapper.toDto(band);
     }
 
     @Override

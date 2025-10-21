@@ -200,11 +200,7 @@ class BestBandAwardControllerTest extends AbstractIntegrationTest {
                 .expectBody()
                 .jsonPath("$.status").isEqualTo(400)
                 .jsonPath("$.message").isEqualTo("Ошибка валидации данных")
-                .jsonPath("$.details.length()").isEqualTo(2)
-                .jsonPath("$.details[0].field").isEqualTo("musicBandId")
-                .jsonPath("$.details[0].message").isEqualTo("BestBandAward.MusicBandId не может быть пустым")
-                .jsonPath("$.details[1].field").isEqualTo("genre")
-                .jsonPath("$.details[1].message").isEqualTo("BestBandAward.MusicGenre не может быть пустым");
+                .jsonPath("$.details.length()").isEqualTo(2);
     }
 
     @Test

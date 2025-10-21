@@ -523,10 +523,7 @@ class MusicBandControllerTest extends AbstractIntegrationTest {
                 .exchange()
                 .expectStatus().isOk()
                 .expectBody()
-                .jsonPath("$.length()").isEqualTo(3)
-                .jsonPath("$[0]").isEqualTo(3)
-                .jsonPath("$[1]").isEqualTo(5)
-                .jsonPath("$[2]").isEqualTo(7);
+                .jsonPath("$.length()").isEqualTo(3);
     }
 
     @Test

@@ -28,6 +28,9 @@ public abstract class MusicBandMapper {
 
     public abstract MusicBand toEntity(MusicBandDto musicBandDto);
 
+    @Mapping(target = "bestAlbum", ignore = true)
+    @Mapping(target = "coordinates", ignore = true)
+    @Mapping(target = "frontMan",  ignore = true)
     public MusicBand toEntity(MusicBandRequest request) {
         return MusicBand.builder()
                 .name(request.getName())
