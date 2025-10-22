@@ -87,7 +87,7 @@ public class AlbumServiceImpl implements AlbumService {
         Album album = findById(id);
         checkDependencies(album);
         albumRepository.delete(album);
-        AlbumDto deletedAlbum = mapper.toDto(albumRepository.save(album));
+        AlbumDto deletedAlbum = mapper.toDto(album);
         eventPublisher.publishEvent(new EntityEvent<>(DELETED, deletedAlbum));
         return deletedAlbum;
     }
