@@ -44,7 +44,8 @@ public class SubscriptionServiceImpl implements SubscriptionService {
 
     @Override
     public <T> UUID updateSubscription(SubscriptionRequest<T> request) {
-        UUID subscriptionId = subscriptionManager.createSubscription(request);
+        UUID subscriptionId = request.getSubscriptionId();
+        subscriptionManager.updateSubscription(subscriptionId, request);
         subscriptionManager.updateSubscription(subscriptionId, request);
         log.debug("Subscription updated: {}", subscriptionId);
         sendSubscriptionDataAsync(subscriptionId);
