@@ -12,7 +12,7 @@ public interface SubscriptionManager {
 
     <T> Subscription<T> getSubscription(UUID subscriptionId);
 
-    <T> List<Subscription<T>> getSubscriptionsByType(Class<T> entityType);
+    <T> List<Subscription<T>> getSubscriptionsByType(String entityType);
 
     <T> void updateSubscription(UUID id, SubscriptionRequest<T> request);
 

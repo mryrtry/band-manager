@@ -37,7 +37,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
     @Override
     public <T> UUID createSubscription(SubscriptionRequest<T> request) {
         UUID subscriptionId = subscriptionManager.createSubscription(request);
-        log.info("Subscription created: {} for {}", subscriptionId, request.getEntityType().getSimpleName());
+        log.info("Subscription created: {} for {}", subscriptionId, request.getEntityType());
         sendSubscriptionDataAsync(subscriptionId);
         return subscriptionId;
     }
@@ -81,11 +81,10 @@ public class SubscriptionServiceImpl implements SubscriptionService {
             log.debug("Empty entity event received: {}", event.getEventType());
             return;
         }
-        @SuppressWarnings("unchecked")
-        Class<T> entityType = (Class<T>) event.getEntities().get(0).getClass();
+        String entityType = event.getEntities().get(0).getClass().getSimpleName();
         List<Subscription<T>> subscriptions = subscriptionManager.getSubscriptionsByType(entityType);
         if (subscriptions.isEmpty()) {
-            log.debug("No subscriptions for entity type: {}", entityType.getSimpleName());
+            log.debug("No subscriptions for entity type: {}", entityType);
             return;
         }
         log.debug("Processing {} event for {} subscriptions", event.getEventType(), subscriptions.size());
@@ -118,7 +117,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
     @SuppressWarnings("unchecked")
     private <T> Page<T> getSubscriptionData(Subscription<T> subscription) {
         try {
-            return switch (subscription.getEntityType().getSimpleName()) {
+            return switch (subscription.getEntityType()) {
                 case "MusicBandDto" -> {
                     Pageable pageable = PageableUtil.createMusicBandPageable(
                             subscription.getPage(), subscription.getSize(),
@@ -138,7 +137,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
                     );
                 }
                 default -> {
-                    log.error("Unsupported entity type: {}", subscription.getEntityType().getSimpleName());
+                    log.error("Unsupported entity type: {}", subscription.getEntityType());
                     yield null;
                 }
             };

@@ -55,7 +55,7 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
                 .computeIfAbsent(request.getSessionId(), key -> new CopyOnWriteArrayList<>())
                 .add(subscriptionId);
 
-        log.debug("Subscription stored: {} for {}", subscriptionId, request.getEntityType().getSimpleName());
+        log.debug("Subscription stored: {} for {}", subscriptionId, request.getEntityType());
         return subscriptionId;
     }
 
@@ -91,7 +91,7 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
 
     @Override
     @SuppressWarnings("unchecked")
-    public <T> List<Subscription<T>> getSubscriptionsByType(Class<T> entityType) {
+    public <T> List<Subscription<T>> getSubscriptionsByType(String entityType) {
         return subscriptions.values().stream()
                 .filter(subscription -> entityType.equals(subscription.getEntityType()))
                 .map(subscription -> (Subscription<T>) subscription)

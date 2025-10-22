@@ -15,7 +15,7 @@ public final class SubscriptionRequest<T> {
 
     private final UUID subscriptionId;
 
-    private final Class<T> entityType;
+    private final String entityType;
 
     @Valid
     private final EntityFilter filter;

@@ -14,7 +14,7 @@ public class Subscription<T> {
 
     private final UUID id;
 
-    private final Class<T> entityType;
+    private final String entityType;
 
     private final EntityFilter filter;
 
