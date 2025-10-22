@@ -2,26 +2,25 @@ package org.is.bandmanager.dto;
 
 import org.is.bandmanager.dto.request.BestBandAwardRequest;
 import org.is.bandmanager.model.BestBandAward;
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
+import org.mapstruct.*;
 
-@Mapper(componentModel = "spring")
-public abstract class BestBandAwardMapper {
+@Mapper(componentModel = "spring",
+        injectionStrategy = InjectionStrategy.CONSTRUCTOR)
+public interface BestBandAwardMapper {
 
     @Mapping(target = "bandId", source = "band.id")
     @Mapping(target = "bandName", source = "band.name")
-    public abstract BestBandAwardDto toDto(BestBandAward award);
+    BestBandAwardDto toDto(BestBandAward award);
 
-    @Mapping(target = "band", ignore = true)
-    public abstract BestBandAward toEntity(BestBandAwardDto awardDto);
-
-    @Mapping(target = "band", ignore = true)
     @Mapping(target = "id", ignore = true)
+    @Mapping(target = "band", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
-    public BestBandAward toEntity(BestBandAwardRequest request) {
-        return BestBandAward.builder()
-                .genre(request.getGenre())
-                .build();
-    }
+    BestBandAward toEntity(BestBandAwardRequest request);
+
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "band", ignore = true)
+    @Mapping(target = "createdAt", ignore = true)
+    @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
+    void updateEntityFromRequest(BestBandAwardRequest request, @MappingTarget BestBandAward entity);
 
 }

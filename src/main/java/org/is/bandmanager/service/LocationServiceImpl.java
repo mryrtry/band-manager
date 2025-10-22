@@ -5,9 +5,12 @@ import lombok.RequiredArgsConstructor;
 import org.is.bandmanager.dto.LocationDto;
 import org.is.bandmanager.dto.LocationMapper;
 import org.is.bandmanager.dto.request.LocationRequest;
+import org.is.bandmanager.event.EntityEvent;
 import org.is.bandmanager.exception.ServiceException;
 import org.is.bandmanager.model.Location;
 import org.is.bandmanager.repository.LocationRepository;
+import org.is.bandmanager.repository.PersonRepository;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -15,6 +18,7 @@ import org.springframework.validation.annotation.Validated;
 
 import java.util.List;
 
+import static org.is.bandmanager.event.EventType.*;
 import static org.is.bandmanager.exception.message.ServiceErrorMessage.*;
 
 @Service
@@ -23,6 +27,9 @@ import static org.is.bandmanager.exception.message.ServiceErrorMessage.*;
 public class LocationServiceImpl implements LocationService {
 
     private final LocationRepository locationRepository;
+    private final PersonRepository personRepository;
+
+    private final ApplicationEventPublisher eventPublisher;
     private final LocationMapper mapper;
 
     private Location findById(Long id) {
@@ -33,11 +40,20 @@ public class LocationServiceImpl implements LocationService {
                 .orElseThrow(() -> new ServiceException(SOURCE_NOT_FOUND, "Location", id));
     }
 
+    @Transactional
+    protected void checkDependencies(Location location) {
+        Long locationId = location.getId();
+        if (personRepository.existsByLocationId(locationId))
+            throw new ServiceException(ENTITY_IN_USE, "Location", locationId, "Person");
+    }
+
     @Override
     @Transactional
     public LocationDto create(LocationRequest request) {
-        Location location = locationRepository.save(mapper.toEntity(request));
-        return mapper.toDto(location);
+        Location location = mapper.toEntity(request);
+        LocationDto createdLocation = mapper.toDto(locationRepository.save(location));
+        eventPublisher.publishEvent(new EntityEvent<>(CREATED, createdLocation));
+        return createdLocation;
     }
 
     @Override
@@ -58,18 +74,22 @@ public class LocationServiceImpl implements LocationService {
     @Override
     @Transactional
     public LocationDto update(Long id, LocationRequest request) {
-        findById(id);
-        Location updatedLocation = mapper.toEntity(request);
-        updatedLocation.setId(id);
-        return mapper.toDto(locationRepository.save(updatedLocation));
+        Location updatingLocation = findById(id);
+        mapper.updateEntityFromRequest(request, updatingLocation);
+        LocationDto updatedLocation = mapper.toDto(locationRepository.save(updatingLocation));
+        eventPublisher.publishEvent(new EntityEvent<>(UPDATED, updatedLocation));
+        return updatedLocation;
     }
 
     @Override
     @Transactional
     public LocationDto delete(Long id) {
         Location location = findById(id);
+        checkDependencies(location);
         locationRepository.delete(location);
-        return mapper.toDto(location);
+        LocationDto deletedLocation = mapper.toDto(location);
+        eventPublisher.publishEvent(new EntityEvent<>(DELETED, deletedLocation));
+        return deletedLocation;
     }
 
     @Async("cleanupTaskExecutor")
@@ -79,6 +99,7 @@ public class LocationServiceImpl implements LocationService {
         List<Location> unusedLocations = locationRepository.findUnusedLocations();
         if (!unusedLocations.isEmpty()) {
             locationRepository.deleteAll(unusedLocations);
+            eventPublisher.publishEvent(new EntityEvent<>(BULK_DELETED, unusedLocations.stream().map(mapper::toDto).toList()));
         }
     }
 

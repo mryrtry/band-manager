@@ -5,10 +5,12 @@ import lombok.RequiredArgsConstructor;
 import org.is.bandmanager.dto.CoordinatesDto;
 import org.is.bandmanager.dto.CoordinatesMapper;
 import org.is.bandmanager.dto.request.CoordinatesRequest;
+import org.is.bandmanager.event.EntityEvent;
 import org.is.bandmanager.exception.ServiceException;
 import org.is.bandmanager.model.Coordinates;
 import org.is.bandmanager.repository.CoordinatesRepository;
 import org.is.bandmanager.repository.MusicBandRepository;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -16,6 +18,7 @@ import org.springframework.validation.annotation.Validated;
 
 import java.util.List;
 
+import static org.is.bandmanager.event.EventType.*;
 import static org.is.bandmanager.exception.message.ServiceErrorMessage.*;
 
 @Service
@@ -25,6 +28,8 @@ public class CoordinatesServiceImpl implements CoordinatesService {
 
     private final CoordinatesRepository coordinatesRepository;
     private final MusicBandRepository musicBandRepository;
+
+    private final ApplicationEventPublisher eventPublisher;
     private final CoordinatesMapper mapper;
 
     private Coordinates findById(Long id) {
@@ -35,7 +40,8 @@ public class CoordinatesServiceImpl implements CoordinatesService {
                 .orElseThrow(() -> new ServiceException(SOURCE_NOT_FOUND, "Coordinates", id));
     }
 
-    private void checkDependencies(Coordinates coordinates) {
+    @Transactional
+    protected void checkDependencies(Coordinates coordinates) {
         Long coordinatesId = coordinates.getId();
         if (musicBandRepository.existsByCoordinatesId(coordinatesId))
             throw new ServiceException(ENTITY_IN_USE, "Coordinates", coordinatesId, "MusicBand");
@@ -44,8 +50,10 @@ public class CoordinatesServiceImpl implements CoordinatesService {
     @Override
     @Transactional
     public CoordinatesDto create(CoordinatesRequest request) {
-        Coordinates coordinates = coordinatesRepository.save(mapper.toEntity(request));
-        return mapper.toDto(coordinates);
+        Coordinates coordinates = mapper.toEntity(request);
+        CoordinatesDto createdCoordinates = mapper.toDto(coordinatesRepository.save(coordinates));
+        eventPublisher.publishEvent(new EntityEvent<>(CREATED, createdCoordinates));
+        return createdCoordinates;
     }
 
     @Override
@@ -66,10 +74,11 @@ public class CoordinatesServiceImpl implements CoordinatesService {
     @Override
     @Transactional
     public CoordinatesDto update(Long id, CoordinatesRequest request) {
-        findById(id);
-        Coordinates updatedCoordinates = mapper.toEntity(request);
-        updatedCoordinates.setId(id);
-        return mapper.toDto(coordinatesRepository.save(updatedCoordinates));
+        Coordinates updatingCoordinates = findById(id);
+        mapper.updateEntityFromRequest(request, updatingCoordinates);
+        CoordinatesDto updatedCoordinates = mapper.toDto(coordinatesRepository.save(updatingCoordinates));
+        eventPublisher.publishEvent(new EntityEvent<>(UPDATED, updatedCoordinates));
+        return updatedCoordinates;
     }
 
     @Override
@@ -78,7 +87,9 @@ public class CoordinatesServiceImpl implements CoordinatesService {
         Coordinates coordinates = findById(id);
         checkDependencies(coordinates);
         coordinatesRepository.delete(coordinates);
-        return mapper.toDto(coordinates);
+        CoordinatesDto deletedCoordinates = mapper.toDto(coordinates);
+        eventPublisher.publishEvent(new EntityEvent<>(DELETED, deletedCoordinates));
+        return deletedCoordinates;
     }
 
     @Async("cleanupTaskExecutor")
@@ -88,6 +99,7 @@ public class CoordinatesServiceImpl implements CoordinatesService {
         List<Coordinates> unusedCoordinates = coordinatesRepository.findUnusedCoordinates();
         if (!unusedCoordinates.isEmpty()) {
             coordinatesRepository.deleteAll(unusedCoordinates);
+            eventPublisher.publishEvent(new EntityEvent<>(BULK_DELETED, unusedCoordinates.stream().map(mapper::toDto).toList()));
         }
     }
 

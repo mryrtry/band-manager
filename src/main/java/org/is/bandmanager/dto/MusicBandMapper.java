@@ -2,49 +2,31 @@ package org.is.bandmanager.dto;
 
 import org.is.bandmanager.dto.request.MusicBandRequest;
 import org.is.bandmanager.model.MusicBand;
-import org.is.bandmanager.service.AlbumService;
-import org.is.bandmanager.service.CoordinatesService;
-import org.is.bandmanager.service.PersonService;
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
-import org.springframework.beans.factory.annotation.Autowired;
-
-import java.util.Date;
+import org.mapstruct.*;
 
 @Mapper(componentModel = "spring",
-uses = { AlbumMapper.class, PersonMapper.class, CoordinatesMapper.class })
-public abstract class MusicBandMapper {
+        uses = {AlbumMapper.class, PersonMapper.class, CoordinatesMapper.class},
+        injectionStrategy = InjectionStrategy.CONSTRUCTOR)
+public interface MusicBandMapper {
 
-    @Autowired
-    CoordinatesService coordinatesService;
+    @Mapping(target = "coordinates", source = "coordinates")
+    @Mapping(target = "bestAlbum", source = "bestAlbum")
+    @Mapping(target = "frontMan", source = "frontMan")
+    MusicBandDto toDto(MusicBand musicBand);
 
-    @Autowired
-    AlbumService albumService;
-
-    @Autowired
-    PersonService personService;
-
-    public abstract MusicBandDto toDto(MusicBand musicBand);
-
-    public abstract MusicBand toEntity(MusicBandDto musicBandDto);
-
-    @Mapping(target = "bestAlbum", ignore = true)
+    @Mapping(target = "id", ignore = true)
     @Mapping(target = "coordinates", ignore = true)
-    @Mapping(target = "frontMan",  ignore = true)
-    public MusicBand toEntity(MusicBandRequest request) {
-        return MusicBand.builder()
-                .name(request.getName())
-                .coordinates(coordinatesService.getEntity(request.getCoordinatesId()))
-                .genre(request.getGenre())
-                .numberOfParticipants(request.getNumberOfParticipants())
-                .singlesCount(request.getSinglesCount())
-                .description(request.getDescription())
-                .bestAlbum(albumService.getEntity(request.getBestAlbumId()))
-                .albumsCount(request.getAlbumsCount())
-                .establishmentDate(request.getEstablishmentDate())
-                .frontMan(personService.getEntity(request.getFrontManId()))
-                .creationDate(new Date())
-                .build();
-    }
+    @Mapping(target = "bestAlbum", ignore = true)
+    @Mapping(target = "frontMan", ignore = true)
+    @Mapping(target = "creationDate", ignore = true)
+    MusicBand toEntity(MusicBandRequest request);
+
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "coordinates", ignore = true)
+    @Mapping(target = "bestAlbum", ignore = true)
+    @Mapping(target = "frontMan", ignore = true)
+    @Mapping(target = "creationDate", ignore = true)
+    @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
+    void updateEntityFromRequest(MusicBandRequest request, @MappingTarget MusicBand entity);
 
 }
