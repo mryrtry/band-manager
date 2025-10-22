@@ -1,6 +1,5 @@
-package org.is.bandmanager.dto.mapper;
+package org.is.bandmanager.dto;
 
-import org.is.bandmanager.dto.BestBandAwardDto;
 import org.is.bandmanager.dto.request.BestBandAwardRequest;
 import org.is.bandmanager.model.BestBandAward;
 import org.mapstruct.*;

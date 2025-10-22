@@ -3,7 +3,7 @@ package org.is.bandmanager.service;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.is.bandmanager.dto.MusicBandDto;
-import org.is.bandmanager.dto.mapper.MusicBandMapper;
+import org.is.bandmanager.dto.MusicBandMapper;
 import org.is.bandmanager.dto.request.MusicBandRequest;
 import org.is.bandmanager.event.EntityEvent;
 import org.is.bandmanager.exception.ServiceException;

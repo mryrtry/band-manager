@@ -3,7 +3,7 @@ package org.is.bandmanager.service;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.is.bandmanager.dto.PersonDto;
-import org.is.bandmanager.dto.mapper.PersonMapper;
+import org.is.bandmanager.dto.PersonMapper;
 import org.is.bandmanager.dto.request.PersonRequest;
 import org.is.bandmanager.event.EntityEvent;
 import org.is.bandmanager.exception.ServiceException;
@@ -99,7 +99,7 @@ public class PersonServiceImpl implements PersonService {
         List<Person> unusedFrontMen = personRepository.findUnusedPersons();
         if (!unusedFrontMen.isEmpty()) {
             personRepository.deleteAll(unusedFrontMen);
-            eventPublisher.publishEvent(new EntityEvent<>(BULK_DELETED, unusedFrontMen));
+            eventPublisher.publishEvent(new EntityEvent<>(BULK_DELETED, unusedFrontMen.stream().map(mapper::toDto).toList()));
         }
     }
 

@@ -1,6 +1,5 @@
-package org.is.bandmanager.dto.mapper;
+package org.is.bandmanager.dto;
 
-import org.is.bandmanager.dto.AlbumDto;
 import org.is.bandmanager.dto.request.AlbumRequest;
 import org.is.bandmanager.model.Album;
 import org.mapstruct.*;

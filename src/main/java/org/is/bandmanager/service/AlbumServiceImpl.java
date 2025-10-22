@@ -3,7 +3,7 @@ package org.is.bandmanager.service;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.is.bandmanager.dto.AlbumDto;
-import org.is.bandmanager.dto.mapper.AlbumMapper;
+import org.is.bandmanager.dto.AlbumMapper;
 import org.is.bandmanager.dto.request.AlbumRequest;
 import org.is.bandmanager.event.EntityEvent;
 import org.is.bandmanager.exception.ServiceException;
@@ -99,7 +99,7 @@ public class AlbumServiceImpl implements AlbumService {
         List<Album> unusedAlbums = albumRepository.findUnusedAlbum();
         if (!unusedAlbums.isEmpty()) {
             albumRepository.deleteAll(unusedAlbums);
-            eventPublisher.publishEvent(new EntityEvent<>(BULK_DELETED, unusedAlbums));
+            eventPublisher.publishEvent(new EntityEvent<>(BULK_DELETED, unusedAlbums.stream().map(mapper::toDto).toList()));
         }
     }
 

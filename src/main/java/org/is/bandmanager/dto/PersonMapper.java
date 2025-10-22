@@ -1,6 +1,5 @@
-package org.is.bandmanager.dto.mapper;
+package org.is.bandmanager.dto;
 
-import org.is.bandmanager.dto.PersonDto;
 import org.is.bandmanager.dto.request.PersonRequest;
 import org.is.bandmanager.model.Person;
 import org.mapstruct.*;
