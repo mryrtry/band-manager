@@ -4,56 +4,60 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.SendTo;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Controller;
 
 import java.time.Instant;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
 @Controller
 public class TestWebSocketController {
 
-    // Простой эхо-тест
+    private final SimpMessagingTemplate messagingTemplate;
+
+    public TestWebSocketController(SimpMessagingTemplate messagingTemplate) {
+        this.messagingTemplate = messagingTemplate;
+    }
+
+    // Простой эхо-метод
     @MessageMapping("/test/echo")
     @SendTo("/topic/test")
     public String handleEcho(String message) {
-        return "Echo: " + message + " | Server time: " + Instant.now();
+        System.out.println("📨 Received echo message: " + message);
+        return "ECHO: " + message + " | Server time: " + Instant.now();
     }
 
-    // Тест с JSON объектом
+    // Метод для подписки на тестовые данные
     @MessageMapping("/test/subscribe")
     @SendTo("/topic/test-data")
-    public TestResponse handleSubscribe(TestRequest request) {
-        System.out.println("Received subscription: " + request.getFilter());
+    public TestResponse handleSubscribe() {
+        System.out.println("📨 Received subscription request");
 
-        // Имитируем данные
-        List<TestData> data = List.of(
-                new TestData(1, "Test Band 1", "ROCK", 5),
-                new TestData(2, "Test Band 2", "JAZZ", 3),
-                new TestData(3, "Test Band 3", "ROCK", 7)
+        // Создаем тестовые данные
+        List<TestData> data = Arrays.asList(
+                new TestData(1, "Metallica", "HEAVY_METAL", 4),
+                new TestData(2, "The Beatles", "ROCK", 4),
+                new TestData(3, "Miles Davis", "JAZZ", 5)
         );
 
-        return new TestResponse("DATA", data, request.getFilter());
+        return new TestResponse("DATA", data, "All bands");
     }
 
-    @Scheduled(fixedRate = 5000)
-    @SendTo("/topic/updates")
-    public TestData sendPeriodicUpdate() {
-        return new TestData(
-                ThreadLocalRandom.current().nextInt(100),
+    // Периодическая отправка данных (каждые 10 секунд)
+    @Scheduled(fixedRate = 10000)
+    public void sendPeriodicUpdate() {
+        TestData liveData = new TestData(
+                ThreadLocalRandom.current().nextInt(100, 1000),
                 "Live Band " + Instant.now().getEpochSecond(),
                 "POP",
-                ThreadLocalRandom.current().nextInt(2, 10)
+                ThreadLocalRandom.current().nextInt(3, 8)
         );
-    }
 
-    @Data
-    @AllArgsConstructor
-    public static class TestRequest {
-        private String filter;
-        private String sort;
-        private int page;
+        System.out.println("🔄 Sending live update: " + liveData.getName());
+        messagingTemplate.convertAndSend("/topic/updates", liveData);
     }
 
     @Data
@@ -61,7 +65,7 @@ public class TestWebSocketController {
     public static class TestResponse {
         private String type;
         private List<TestData> data;
-        private Object filter;
+        private String filter;
     }
 
     @Data
@@ -74,4 +78,3 @@ public class TestWebSocketController {
     }
 
 }
-
