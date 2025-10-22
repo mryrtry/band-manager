@@ -66,7 +66,6 @@ public class SubscriptionServiceImpl implements SubscriptionService {
         }
     }
 
-    @Override
     @Scheduled(fixedRate = 1800000)
     public void cancelDeadSubscriptions() {
         List<UUID> removedIds = subscriptionManager.deleteDeadSubscriptions();

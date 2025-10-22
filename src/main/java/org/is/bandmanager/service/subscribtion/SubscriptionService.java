@@ -1,5 +1,6 @@
 package org.is.bandmanager.service.subscribtion;
 
+import org.is.bandmanager.event.EntityEvent;
 import org.is.bandmanager.service.subscribtion.model.SubscriptionRequest;
 
 import java.util.UUID;
@@ -12,8 +13,10 @@ public interface SubscriptionService {
 
     void cancelSubscription(UUID subscriptionId);
 
+    void cancelSessionSubscriptions(String sessionId);
+
     void cancelDeadSubscriptions();
 
-    void cancelSessionSubscriptions(String sessionId);
+    <T> void handleEntityEvent(EntityEvent<T> event);
 
 }
