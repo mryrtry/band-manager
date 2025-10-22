@@ -8,6 +8,7 @@ import org.is.bandmanager.dto.request.MusicBandRequest;
 import org.is.bandmanager.event.EntityEvent;
 import org.is.bandmanager.exception.ServiceException;
 import org.is.bandmanager.model.MusicBand;
+import org.is.bandmanager.repository.BestBandAwardRepository;
 import org.is.bandmanager.repository.MusicBandRepository;
 import org.is.bandmanager.repository.filter.MusicBandFilter;
 import org.springframework.context.ApplicationEventPublisher;
@@ -28,11 +29,11 @@ import static org.is.bandmanager.exception.message.ServiceErrorMessage.*;
 public class MusicBandServiceImpl implements MusicBandService {
 
     private final MusicBandRepository musicBandRepository;
+    private final BestBandAwardRepository bestBandAwardRepository;
 
     private final PersonService personService;
     private final AlbumService albumService;
     private final CoordinatesService coordinatesService;
-    private final BestBandAwardService bestBandAwardService;
 
     private final ApplicationEventPublisher eventPublisher;
     private final MusicBandMapper mapper;
@@ -45,15 +46,17 @@ public class MusicBandServiceImpl implements MusicBandService {
                 .orElseThrow(() -> new ServiceException(SOURCE_NOT_FOUND, "MusicBand", id));
     }
 
-    private void handleDependencies(MusicBandRequest request, MusicBand entity) {
+    @Transactional
+    protected void handleDependencies(MusicBandRequest request, MusicBand entity) {
         entity.setFrontMan(personService.getEntity(request.getFrontManId()));
         entity.setBestAlbum(albumService.getEntity(request.getBestAlbumId()));
         entity.setCoordinates(coordinatesService.getEntity(request.getCoordinatesId()));
     }
 
     @Transactional
-    protected void checkDependencies(MusicBand musicBand) {
-        bestBandAwardService.deleteAllByBandId(musicBand.getId());
+    protected void checkDependencies(List<MusicBand> musicBands) {
+        List<Integer> bandIds = musicBands.stream().map(MusicBand::getId).toList();
+        bestBandAwardRepository.deleteAllByBandIdIn(bandIds);
     }
 
     @Override
@@ -75,6 +78,11 @@ public class MusicBandServiceImpl implements MusicBandService {
     @Override
     public MusicBandDto get(Integer id) {
         return mapper.toDto(findById(id));
+    }
+
+    @Override
+    public MusicBand getEntity(Integer id) {
+        return findById(id);
     }
 
     @Override
@@ -109,7 +117,7 @@ public class MusicBandServiceImpl implements MusicBandService {
     @Transactional
     public MusicBandDto delete(Integer id) {
         MusicBand musicBand = findById(id);
-        checkDependencies(musicBand);
+        checkDependencies(List.of(musicBand));
         musicBandRepository.deleteById(id);
         MusicBandDto deletedBand = mapper.toDto(musicBand);
         eventPublisher.publishEvent(new EntityEvent<>(DELETED, deletedBand));
@@ -121,7 +129,7 @@ public class MusicBandServiceImpl implements MusicBandService {
     public List<MusicBandDto> delete(List<Integer> ids) {
         if (ids == null || ids.isEmpty()) return List.of();
         List<MusicBand> bands = musicBandRepository.findAllById(ids);
-        bands.forEach(this::checkDependencies);
+        checkDependencies(bands);
         musicBandRepository.deleteAll(bands);
         List<MusicBandDto> deletedBands = bands.stream().map(mapper::toDto).toList();
         eventPublisher.publishEvent(new EntityEvent<>(BULK_DELETED, deletedBands));
