@@ -24,6 +24,7 @@ public class SubscriptionWebSocketController {
     public SubscriptionResponse createSubscription(
             @Payload SubscriptionRequest<?> request,
             SimpMessageHeaderAccessor headerAccessor) {
+        System.err.println(headerAccessor.getMessageHeaders());
         String sessionId = headerAccessor.getSessionId();
         try {
             request.setSessionId(sessionId);
@@ -39,6 +40,7 @@ public class SubscriptionWebSocketController {
     public SubscriptionResponse updateSubscription(
             @Payload SubscriptionRequest<?> request,
             SimpMessageHeaderAccessor headerAccessor) {
+        System.err.println(headerAccessor.getMessageHeaders());
         String sessionId = headerAccessor.getSessionId();
         try {
             request.setSessionId(sessionId);
