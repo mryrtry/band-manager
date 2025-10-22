@@ -3,8 +3,8 @@ package org.is.bandmanager.service;
 import jakarta.validation.Valid;
 import org.is.bandmanager.dto.MusicBandDto;
 import org.is.bandmanager.dto.request.MusicBandRequest;
-import org.is.bandmanager.repository.filter.MusicBandFilter;
 import org.is.bandmanager.model.MusicBand;
+import org.is.bandmanager.repository.filter.MusicBandFilter;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
