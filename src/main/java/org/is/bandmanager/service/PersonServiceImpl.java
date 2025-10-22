@@ -41,7 +41,8 @@ public class PersonServiceImpl implements PersonService {
                 .orElseThrow(() -> new ServiceException(SOURCE_NOT_FOUND, "Person", id));
     }
 
-    private void handleDependencies(PersonRequest request, Person entity) {
+    @Transactional
+    protected void handleDependencies(PersonRequest request, Person entity) {
         entity.setLocation(locationService.getEntity(request.getLocationId()));
     }
 
@@ -75,6 +76,7 @@ public class PersonServiceImpl implements PersonService {
     public PersonDto update(Long id, PersonRequest request) {
         Person updatingPerson = findById(id);
         mapper.updateEntityFromRequest(request, updatingPerson);
+        handleDependencies(request, updatingPerson);
         PersonDto updatedPerson = mapper.toDto(updatingPerson);
         eventPublisher.publishEvent(new EntityEvent<>(UPDATED, updatedPerson));
         return updatedPerson;
