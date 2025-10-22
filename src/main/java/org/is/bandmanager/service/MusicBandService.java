@@ -19,8 +19,6 @@ public interface MusicBandService {
 
     MusicBandDto get(Integer id);
 
-    MusicBand getEntity(Integer id);
-
     MusicBandDto getWithMaxCoordinates();
 
     List<MusicBandDto> getByEstablishmentDateBefore(Date date);
