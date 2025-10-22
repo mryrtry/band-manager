@@ -6,9 +6,6 @@ on:
   pull_request:
     branches: [ master ]
 
-env:
-  SERVER_PORT: 8126
-
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -28,7 +25,7 @@ jobs:
         run: |
           mkdir -p src/main/resources
           cat > src/main/resources/application-prod.properties << EOF
-          server.port=${{ SERVER_PORT }}
+          server.port=8126
           spring.datasource.url=${{ secrets.DB_URL }}
           spring.datasource.username=${{ secrets.DB_USERNAME }}
           spring.datasource.password=${{ secrets.DB_PASSWORD }}
@@ -107,4 +104,4 @@ jobs:
 
       - name: Check health endpoint
         run: |
-          ssh -p 2222 s409483@se.ifmo.ru "curl -s -o /dev/null -w 'Health Check: %{http_code}\n' localhost:${{ SERVER_PORT }}/health"
+          ssh -p 2222 s409483@se.ifmo.ru "curl -s -o /dev/null -w 'Health Check: %{http_code}\n' localhost:8126/health"
