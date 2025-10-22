@@ -8,7 +8,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 import java.util.Date;
 
 @Data
-public class MusicBandFilter {
+public class MusicBandFilter implements EntityFilter {
 
     private String name;
 
