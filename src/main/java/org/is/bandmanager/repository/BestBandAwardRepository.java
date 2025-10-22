@@ -10,7 +10,7 @@ import java.util.List;
 @Repository
 public interface BestBandAwardRepository extends JpaRepository<BestBandAward, Long>, JpaSpecificationExecutor<BestBandAward> {
 
-    List<BestBandAward> findAllByBandId(Integer bandId);
+    List<BestBandAward> deleteAllByBandIdIn(List<Integer> bandIds);
 
 }
 

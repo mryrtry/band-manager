@@ -1,10 +1,10 @@
-package org.is.bandmanager.dto;
+package org.is.bandmanager.dto.mapper;
 
+import org.is.bandmanager.dto.CoordinatesDto;
 import org.is.bandmanager.dto.request.CoordinatesRequest;
 import org.is.bandmanager.model.Coordinates;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-import org.mapstruct.factory.Mappers;
 
 @Mapper(componentModel = "spring")
 public interface CoordinatesMapper {

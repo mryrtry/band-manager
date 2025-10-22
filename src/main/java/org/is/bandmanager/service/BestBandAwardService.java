@@ -3,10 +3,11 @@ package org.is.bandmanager.service;
 import jakarta.validation.Valid;
 import org.is.bandmanager.dto.BestBandAwardDto;
 import org.is.bandmanager.dto.request.BestBandAwardRequest;
-import org.is.bandmanager.model.MusicGenre;
 import org.is.bandmanager.repository.filter.BestBandAwardFilter;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+
+import java.util.List;
 
 public interface BestBandAwardService {
 
@@ -20,6 +21,6 @@ public interface BestBandAwardService {
 
     BestBandAwardDto delete(Long id);
 
-    void deleteAllByBandId(Integer bandId);
+    List<BestBandAwardDto> delete(List<Long> ids);
 
 }
