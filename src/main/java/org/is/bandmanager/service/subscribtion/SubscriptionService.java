@@ -12,6 +12,8 @@ public interface SubscriptionService {
 
     void cancelSubscription(UUID subscriptionId);
 
+    void cancelDeadSubscriptions();
+
     void cancelSessionSubscriptions(String sessionId);
 
 }
