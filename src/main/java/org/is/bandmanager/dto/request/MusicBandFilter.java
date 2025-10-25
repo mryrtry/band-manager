@@ -1,8 +1,9 @@
-package org.is.bandmanager.repository.filter;
+package org.is.bandmanager.dto.request;
 
 import jakarta.validation.constraints.DecimalMin;
 import lombok.Data;
 import org.is.bandmanager.model.MusicGenre;
+import org.is.bandmanager.repository.specifications.EntityFilter;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.util.Date;
@@ -38,10 +39,10 @@ public class MusicBandFilter implements EntityFilter {
     @DecimalMin(value = "0", inclusive = false, message = "MusicBand.AlbumsCount должно быть > 0")
     private Long maxAlbumsCount;
 
-    @DecimalMin(value = "147", inclusive = false, message = "Coordinates.X должно быть > 157")
+    @DecimalMin(value = "-147", inclusive = false, message = "Coordinates.X должно быть > 157")
     private Integer minCoordinateX;
 
-    @DecimalMin(value = "147", inclusive = false, message = "Coordinates.X должно быть > 147")
+    @DecimalMin(value = "-147", inclusive = false, message = "Coordinates.X должно быть > 147")
     private Integer maxCoordinateX;
 
     private Float minCoordinateY;
