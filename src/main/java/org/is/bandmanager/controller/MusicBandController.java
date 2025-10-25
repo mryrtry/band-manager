@@ -5,12 +5,11 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PastOrPresent;
 import lombok.RequiredArgsConstructor;
 import org.is.bandmanager.dto.MusicBandDto;
+import org.is.bandmanager.dto.request.MusicBandFilter;
 import org.is.bandmanager.dto.request.MusicBandRequest;
-import org.is.bandmanager.repository.filter.MusicBandFilter;
-import org.is.bandmanager.repository.util.PageableUtil;
 import org.is.bandmanager.service.MusicBandService;
+import org.is.bandmanager.service.pageable.PageableConfig;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -29,12 +28,8 @@ public class MusicBandController {
     @GetMapping()
     public ResponseEntity<Page<MusicBandDto>> getAllMusicBands(
             @ModelAttribute @Valid MusicBandFilter filter,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "id") List<String> sort,
-            @RequestParam(defaultValue = "asc") String direction) {
-        Pageable pageable = PageableUtil.createMusicBandPageable(page, size, sort, direction);
-        Page<MusicBandDto> bands = musicBandService.getAll(filter, pageable);
+            @ModelAttribute PageableConfig config) {
+        Page<MusicBandDto> bands = musicBandService.getAll(filter, config);
         return ResponseEntity.ok(bands);
     }
 
