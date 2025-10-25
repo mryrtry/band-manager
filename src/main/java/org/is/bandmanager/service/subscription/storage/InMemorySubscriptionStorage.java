@@ -1,10 +1,13 @@
 package org.is.bandmanager.service.subscription.storage;
 
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.is.bandmanager.exception.ServiceException;
 import org.is.bandmanager.repository.specifications.EntityFilter;
 import org.is.bandmanager.service.pageable.PageableConfig;
 import org.is.bandmanager.service.subscription.model.Subscription;
 import org.is.bandmanager.service.subscription.model.request.SubscriptionRequest;
+import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.util.*;
@@ -15,6 +18,9 @@ import java.util.stream.Collectors;
 import static org.is.bandmanager.exception.message.ServiceErrorMessage.MUST_BE_NOT_NULL;
 import static org.is.bandmanager.exception.message.ServiceErrorMessage.SOURCE_NOT_FOUND;
 
+@Slf4j
+@Service
+@RequiredArgsConstructor
 public class InMemorySubscriptionStorage implements SubscriptionStorage {
 
     private final ConcurrentMap<UUID, Subscription<? extends EntityFilter>> subscriptions = new ConcurrentHashMap<>();
@@ -22,12 +28,12 @@ public class InMemorySubscriptionStorage implements SubscriptionStorage {
     private final ConcurrentMap<String, Set<UUID>> sessionIndex = new ConcurrentHashMap<>();
 
     @Override
-    public <T extends EntityFilter> Subscription<T> createSubscription(String sessionId, SubscriptionRequest<T> request) {
+    public <T extends EntityFilter> Subscription<T> createSubscription(String principalId, SubscriptionRequest<T> request) {
         UUID id = UUID.randomUUID();
 
         Subscription<T> sub = Subscription.<T>builder()
                 .subscriptionId(id)
-                .sessionId(sessionId)
+                .principalId(principalId)
                 .filter(request.getFilter())
                 .pageableConfig(Optional.ofNullable(request.getPageableConfig()).orElse(new PageableConfig()))
                 .createdAt(Instant.now())
@@ -36,7 +42,7 @@ public class InMemorySubscriptionStorage implements SubscriptionStorage {
 
         subscriptions.put(id, sub);
         typeIndex.computeIfAbsent(request.getFilter().getClass(), k -> ConcurrentHashMap.newKeySet()).add(id);
-        sessionIndex.computeIfAbsent(sessionId, k -> ConcurrentHashMap.newKeySet()).add(id);
+        sessionIndex.computeIfAbsent(principalId, k -> ConcurrentHashMap.newKeySet()).add(id);
 
         return sub;
     }
@@ -60,7 +66,7 @@ public class InMemorySubscriptionStorage implements SubscriptionStorage {
 
         Subscription<T> updated = Subscription.<T>builder()
                 .subscriptionId(existing.getSubscriptionId())
-                .sessionId(existing.getSessionId())
+                .principalId(existing.getPrincipalId())
                 .filter(request.getFilter())
                 .pageableConfig(Optional.ofNullable(request.getPageableConfig()).orElse(new PageableConfig()))
                 .createdAt(existing.getCreatedAt())
@@ -93,12 +99,12 @@ public class InMemorySubscriptionStorage implements SubscriptionStorage {
         Subscription<?> removed = subscriptions.remove(subscriptionId);
         if (removed != null) {
             typeIndex.getOrDefault(removed.getFilter().getClass(), Collections.emptySet()).remove(subscriptionId);
-            sessionIndex.getOrDefault(removed.getSessionId(), Collections.emptySet()).remove(subscriptionId);
+            sessionIndex.getOrDefault(removed.getPrincipalId(), Collections.emptySet()).remove(subscriptionId);
         }
     }
 
     @Override
-    public List<UUID> deleteSessionSubscriptions(String sessionId) {
+    public List<UUID> deleteAllPrincipalSubscriptions(String sessionId) {
         Set<UUID> ids = sessionIndex.remove(sessionId);
         if (ids == null) return List.of();
         List<UUID> deleted = new ArrayList<>();
@@ -122,7 +128,7 @@ public class InMemorySubscriptionStorage implements SubscriptionStorage {
                 Subscription<?> sub = subscriptions.remove(id);
                 if (sub != null) {
                     typeIndex.getOrDefault(sub.getFilter().getClass(), Collections.emptySet()).remove(id);
-                    sessionIndex.getOrDefault(sub.getSessionId(), Collections.emptySet()).remove(id);
+                    sessionIndex.getOrDefault(sub.getPrincipalId(), Collections.emptySet()).remove(id);
                     removed.add(id);
                 }
             }

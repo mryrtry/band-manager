@@ -10,7 +10,7 @@ import java.util.UUID;
 
 public interface SubscriptionStorage {
 
-    <T extends EntityFilter> Subscription<T> createSubscription(String sessionId, SubscriptionRequest<T> subscriptionRequest);
+    <T extends EntityFilter> Subscription<T> createSubscription(String principalId, SubscriptionRequest<T> subscriptionRequest);
 
     <T extends EntityFilter> Subscription<T> updateSubscription(SubscriptionRequest<T> subscriptionRequest);
 
@@ -20,8 +20,8 @@ public interface SubscriptionStorage {
 
     void deleteSubscription(UUID subscriptionId);
 
-    List<UUID> deleteSessionSubscriptions(String sessionId);
+    List<UUID> deleteAllPrincipalSubscriptions(String principalId);
 
     List<UUID> deleteDeadSubscriptions();
-}
 
+}
