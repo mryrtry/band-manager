@@ -1,7 +1,6 @@
 package org.is.bandmanager.service.subscription.storage;
 
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.is.bandmanager.exception.ServiceException;
 import org.is.bandmanager.repository.specifications.EntityFilter;
 import org.is.bandmanager.service.pageable.PageableConfig;
@@ -18,7 +17,6 @@ import java.util.stream.Collectors;
 import static org.is.bandmanager.exception.message.ServiceErrorMessage.MUST_BE_NOT_NULL;
 import static org.is.bandmanager.exception.message.ServiceErrorMessage.SOURCE_NOT_FOUND;
 
-@Slf4j
 @Service
 @RequiredArgsConstructor
 public class InMemorySubscriptionStorage implements SubscriptionStorage {

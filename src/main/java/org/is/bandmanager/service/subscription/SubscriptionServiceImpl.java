@@ -1,7 +1,6 @@
 package org.is.bandmanager.service.subscription;
 
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.is.bandmanager.dto.BestBandAwardDto;
 import org.is.bandmanager.dto.MusicBandDto;
 import org.is.bandmanager.dto.request.BestBandAwardFilter;
@@ -28,7 +27,6 @@ import java.util.UUID;
 import static org.is.bandmanager.exception.message.ServiceErrorMessage.CANNOT_ACCESS_SOURCE;
 import static org.is.bandmanager.exception.message.ServiceErrorMessage.SOURCE_NOT_FOUND;
 
-@Slf4j
 @Service
 @RequiredArgsConstructor
 public class SubscriptionServiceImpl implements SubscriptionService {

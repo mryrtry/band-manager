@@ -32,7 +32,6 @@ public class WebSocketSubscriptionNotifier implements SubscriptionNotifier {
     @Override
     public void notifySubscription(Subscription<?> subscription, Page<?> data) {
         try {
-            log.debug("Send to dest: {}", DESTINATION.formatted(subscription.getSubscriptionId()));
             messagingTemplate.convertAndSendToUser(
                     subscription.getPrincipalId(),
                     DESTINATION.formatted(subscription.getSubscriptionId()),
