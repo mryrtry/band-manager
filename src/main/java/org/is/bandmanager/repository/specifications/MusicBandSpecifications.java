@@ -28,7 +28,9 @@ public class MusicBandSpecifications {
 
 	public static Specification<MusicBand> hasFrontManName(String frontManName) {
 		return (root, query, cb) -> {
-			if (frontManName == null) return null;
+			if (frontManName == null) {
+				return null;
+			}
 			Join<MusicBand, Person> frontManJoin = root.join("frontMan", JoinType.LEFT);
 			return cb.equal(frontManJoin.get("name"), frontManName);
 		};
@@ -36,7 +38,9 @@ public class MusicBandSpecifications {
 
 	public static Specification<MusicBand> hasBestAlbumName(String bestAlbumName) {
 		return (root, query, cb) -> {
-			if (bestAlbumName == null) return null;
+			if (bestAlbumName == null) {
+				return null;
+			}
 			Join<MusicBand, Album> albumJoin = root.join("bestAlbum", JoinType.LEFT);
 			return cb.equal(albumJoin.get("name"), bestAlbumName);
 		};
@@ -44,47 +48,77 @@ public class MusicBandSpecifications {
 
 	public static Specification<MusicBand> participantsBetween(Long min, Long max) {
 		return (root, query, cb) -> {
-			if (min == null && max == null) return null;
-			if (min == null) return cb.lessThanOrEqualTo(root.get("numberOfParticipants"), max);
-			if (max == null) return cb.greaterThanOrEqualTo(root.get("numberOfParticipants"), min);
+			if (min == null && max == null) {
+				return null;
+			}
+			if (min == null) {
+				return cb.lessThanOrEqualTo(root.get("numberOfParticipants"), max);
+			}
+			if (max == null) {
+				return cb.greaterThanOrEqualTo(root.get("numberOfParticipants"), min);
+			}
 			return cb.between(root.get("numberOfParticipants"), min, max);
 		};
 	}
 
 	public static Specification<MusicBand> singlesBetween(Long min, Long max) {
 		return (root, query, cb) -> {
-			if (min == null && max == null) return null;
-			if (min == null) return cb.lessThanOrEqualTo(root.get("singlesCount"), max);
-			if (max == null) return cb.greaterThanOrEqualTo(root.get("singlesCount"), min);
+			if (min == null && max == null) {
+				return null;
+			}
+			if (min == null) {
+				return cb.lessThanOrEqualTo(root.get("singlesCount"), max);
+			}
+			if (max == null) {
+				return cb.greaterThanOrEqualTo(root.get("singlesCount"), min);
+			}
 			return cb.between(root.get("singlesCount"), min, max);
 		};
 	}
 
 	public static Specification<MusicBand> albumsCountBetween(Long min, Long max) {
 		return (root, query, cb) -> {
-			if (min == null && max == null) return null;
-			if (min == null) return cb.lessThanOrEqualTo(root.get("albumsCount"), max);
-			if (max == null) return cb.greaterThanOrEqualTo(root.get("albumsCount"), min);
+			if (min == null && max == null) {
+				return null;
+			}
+			if (min == null) {
+				return cb.lessThanOrEqualTo(root.get("albumsCount"), max);
+			}
+			if (max == null) {
+				return cb.greaterThanOrEqualTo(root.get("albumsCount"), min);
+			}
 			return cb.between(root.get("albumsCount"), min, max);
 		};
 	}
 
 	public static Specification<MusicBand> coordinateXBetween(Integer min, Integer max) {
 		return (root, query, cb) -> {
-			if (min == null && max == null) return null;
+			if (min == null && max == null) {
+				return null;
+			}
 			Join<MusicBand, Coordinates> coordJoin = root.join("coordinates", JoinType.LEFT);
-			if (min == null) return cb.lessThanOrEqualTo(coordJoin.get("x"), max);
-			if (max == null) return cb.greaterThanOrEqualTo(coordJoin.get("x"), min);
+			if (min == null) {
+				return cb.lessThanOrEqualTo(coordJoin.get("x"), max);
+			}
+			if (max == null) {
+				return cb.greaterThanOrEqualTo(coordJoin.get("x"), min);
+			}
 			return cb.between(coordJoin.get("x"), min, max);
 		};
 	}
 
 	public static Specification<MusicBand> coordinateYBetween(Float min, Float max) {
 		return (root, query, cb) -> {
-			if (min == null && max == null) return null;
+			if (min == null && max == null) {
+				return null;
+			}
 			Join<MusicBand, Coordinates> coordJoin = root.join("coordinates", JoinType.LEFT);
-			if (min == null) return cb.lessThanOrEqualTo(coordJoin.get("y"), max);
-			if (max == null) return cb.greaterThanOrEqualTo(coordJoin.get("y"), min);
+			if (min == null) {
+				return cb.lessThanOrEqualTo(coordJoin.get("y"), max);
+			}
+			if (max == null) {
+				return cb.greaterThanOrEqualTo(coordJoin.get("y"), min);
+			}
 			return cb.between(coordJoin.get("y"), min, max);
 		};
 	}

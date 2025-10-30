@@ -12,12 +12,16 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 @EnableScheduling
 public class AsyncConfig {
 
+	private final static int CORE_POOL_SIZE = 5;
+	private final static int MAX_POOL_SIZE = 10;
+	private final static int QUEUE_CAPACITY = 100;
+
 	@Bean(name = "cleanupTaskExecutor")
 	public TaskExecutor cleanUpTaskExecutor() {
 		ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-		executor.setCorePoolSize(2);
-		executor.setMaxPoolSize(5);
-		executor.setQueueCapacity(100);
+		executor.setCorePoolSize(CORE_POOL_SIZE);
+		executor.setMaxPoolSize(MAX_POOL_SIZE);
+		executor.setQueueCapacity(QUEUE_CAPACITY);
 		executor.setThreadNamePrefix("cleanup-");
 		executor.initialize();
 		return executor;
@@ -26,9 +30,9 @@ public class AsyncConfig {
 	@Bean("subscriptionTaskExecutor")
 	public TaskExecutor subscriptionTaskExecutor() {
 		ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-		executor.setCorePoolSize(5);
-		executor.setMaxPoolSize(10);
-		executor.setQueueCapacity(100);
+		executor.setCorePoolSize(CORE_POOL_SIZE);
+		executor.setMaxPoolSize(MAX_POOL_SIZE);
+		executor.setQueueCapacity(QUEUE_CAPACITY);
 		executor.setThreadNamePrefix("subscription-");
 		return executor;
 	}

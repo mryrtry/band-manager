@@ -32,8 +32,8 @@ public class AlbumController {
 
 	@GetMapping("/{id}")
 	public ResponseEntity<AlbumDto> getAlbum(@PathVariable Long id) {
-		AlbumDto Album = albumService.get(id);
-		return ResponseEntity.ok(Album);
+		AlbumDto album = albumService.get(id);
+		return ResponseEntity.ok(album);
 	}
 
 	@PostMapping
