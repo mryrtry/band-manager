@@ -11,7 +11,6 @@ import org.is.bandmanager.model.Coordinates;
 import org.is.bandmanager.repository.CoordinatesRepository;
 import org.is.bandmanager.repository.MusicBandRepository;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
@@ -47,8 +46,9 @@ public class CoordinatesServiceImpl implements CoordinatesService {
 	@Transactional
 	protected void checkDependencies(Coordinates coordinates) {
 		Long coordinatesId = coordinates.getId();
-		if (musicBandRepository.existsByCoordinatesId(coordinatesId))
+		if (musicBandRepository.existsByCoordinatesId(coordinatesId)) {
 			throw new ServiceException(ENTITY_IN_USE, "Coordinates", coordinatesId, "MusicBand");
+		}
 	}
 
 	@Override
@@ -96,8 +96,7 @@ public class CoordinatesServiceImpl implements CoordinatesService {
 		return deletedCoordinates;
 	}
 
-	@Async("cleanupTaskExecutor")
-	@Scheduled(fixedDelay = 300000)
+	@Scheduled(cron = "${band-manager.clean-up-interval}")
 	@Transactional
 	public void cleanupUnusedCoordinates() {
 		List<Coordinates> unusedCoordinates = coordinatesRepository.findUnusedCoordinates();

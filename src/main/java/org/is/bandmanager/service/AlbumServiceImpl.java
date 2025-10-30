@@ -11,7 +11,6 @@ import org.is.bandmanager.model.Album;
 import org.is.bandmanager.repository.AlbumRepository;
 import org.is.bandmanager.repository.MusicBandRepository;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
@@ -47,8 +46,9 @@ public class AlbumServiceImpl implements AlbumService {
 	@Transactional
 	protected void checkDependencies(Album album) {
 		Long albumId = album.getId();
-		if (musicBandRepository.existsByBestAlbumId(albumId))
+		if (musicBandRepository.existsByBestAlbumId(albumId)) {
 			throw new ServiceException(ENTITY_IN_USE, "Album", albumId, "MusicBand");
+		}
 	}
 
 	@Override
@@ -96,9 +96,8 @@ public class AlbumServiceImpl implements AlbumService {
 		return deletedAlbum;
 	}
 
-	@Async("cleanupTaskExecutor")
-	@Scheduled(fixedDelay = 300000)
 	@Transactional
+	@Scheduled(cron = "${band-manager.clean-up-interval}")
 	public void cleanupUnusedAlbums() {
 		List<Album> unusedAlbums = albumRepository.findUnusedAlbum();
 		if (!unusedAlbums.isEmpty()) {

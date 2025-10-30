@@ -10,7 +10,6 @@ import org.is.bandmanager.exception.ServiceException;
 import org.is.bandmanager.model.Person;
 import org.is.bandmanager.repository.PersonRepository;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
@@ -94,8 +93,7 @@ public class PersonServiceImpl implements PersonService {
 		return deletedPerson;
 	}
 
-	@Async("cleanupTaskExecutor")
-	@Scheduled(fixedDelay = 300000)
+	@Scheduled(cron = "${band-manager.clean-up-interval}")
 	@Transactional
 	public void cleanupUnusedPersons() {
 		List<Person> unusedFrontMen = personRepository.findUnusedPersons();

@@ -93,7 +93,9 @@ public class BestBandAwardServiceImpl implements BestBandAwardService {
 	@Override
 	@Transactional
 	public List<BestBandAwardDto> delete(List<Long> ids) {
-		if (ids == null || ids.isEmpty()) return List.of();
+		if (ids == null || ids.isEmpty()) {
+			return List.of();
+		}
 		List<BestBandAward> awards = bestBandAwardRepository.findAllById(ids);
 		bestBandAwardRepository.deleteAll(awards);
 		List<BestBandAwardDto> deletedAwards = awards.stream().map(mapper::toDto).toList();

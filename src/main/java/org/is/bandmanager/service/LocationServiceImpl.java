@@ -11,7 +11,6 @@ import org.is.bandmanager.model.Location;
 import org.is.bandmanager.repository.LocationRepository;
 import org.is.bandmanager.repository.PersonRepository;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
@@ -47,8 +46,9 @@ public class LocationServiceImpl implements LocationService {
 	@Transactional
 	protected void checkDependencies(Location location) {
 		Long locationId = location.getId();
-		if (personRepository.existsByLocationId(locationId))
+		if (personRepository.existsByLocationId(locationId)) {
 			throw new ServiceException(ENTITY_IN_USE, "Location", locationId, "Person");
+		}
 	}
 
 	@Override
@@ -96,8 +96,7 @@ public class LocationServiceImpl implements LocationService {
 		return deletedLocation;
 	}
 
-	@Async("cleanupTaskExecutor")
-	@Scheduled(fixedDelay = 300000)
+	@Scheduled(cron = "${band-manager.clean-up-interval}")
 	@Transactional
 	public void cleanupUnusedLocations() {
 		List<Location> unusedLocations = locationRepository.findUnusedLocations();
