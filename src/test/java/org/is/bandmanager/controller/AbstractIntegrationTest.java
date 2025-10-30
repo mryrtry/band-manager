@@ -1,13 +1,17 @@
 package org.is.bandmanager.controller;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
+import org.springframework.test.web.reactive.server.WebTestClient;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 @Testcontainers
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@AutoConfigureWebTestClient
 public abstract class AbstractIntegrationTest {
 
     static final PostgreSQLContainer<?> POSTGRESQL_CONTAINER;
@@ -16,6 +20,9 @@ public abstract class AbstractIntegrationTest {
         POSTGRESQL_CONTAINER = new PostgreSQLContainer<>("postgres:15-alpine").withDatabaseName("band_manager_test").withUsername("test_user").withPassword("test_password");
         POSTGRESQL_CONTAINER.start();
     }
+
+    @Autowired
+    WebTestClient webTestClient;
 
     @DynamicPropertySource
     static void configureProperties(DynamicPropertyRegistry registry) {

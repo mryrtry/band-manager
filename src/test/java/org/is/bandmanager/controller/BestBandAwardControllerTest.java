@@ -18,14 +18,11 @@ import org.is.bandmanager.repository.LocationRepository;
 import org.is.bandmanager.repository.MusicBandRepository;
 import org.is.bandmanager.repository.PersonRepository;
 import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.http.MediaType;
-import org.springframework.test.web.reactive.server.WebTestClient;
 
 import java.util.List;
 
@@ -59,17 +56,7 @@ class BestBandAwardControllerTest extends AbstractIntegrationTest {
     @Autowired
     private LocationRepository locationRepository;
 
-    @LocalServerPort
-    private int port;
-
-    private WebTestClient webTestClient;
-
     private MusicBand savedMusicBand;
-
-    @BeforeAll
-    void setClient() {
-        this.webTestClient = WebTestClient.bindToServer().baseUrl("http://localhost:" + port).build();
-    }
 
     @BeforeEach
     void setUp() {
