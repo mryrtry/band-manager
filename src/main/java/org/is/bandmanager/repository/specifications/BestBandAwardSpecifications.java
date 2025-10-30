@@ -7,6 +7,7 @@ import org.springframework.data.jpa.domain.Specification;
 
 import java.time.LocalDateTime;
 
+
 public class BestBandAwardSpecifications {
 
 	public static Specification<BestBandAward> hasGenre(MusicGenre genre) {

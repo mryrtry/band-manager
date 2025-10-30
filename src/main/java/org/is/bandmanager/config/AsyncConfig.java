@@ -7,13 +7,16 @@ import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
+
 @Configuration
 @EnableAsync
 @EnableScheduling
 public class AsyncConfig {
 
 	private final static int CORE_POOL_SIZE = 5;
+
 	private final static int MAX_POOL_SIZE = 10;
+
 	private final static int QUEUE_CAPACITY = 100;
 
 	@Bean(name = "cleanupTaskExecutor")

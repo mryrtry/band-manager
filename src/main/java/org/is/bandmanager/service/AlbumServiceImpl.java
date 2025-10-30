@@ -25,15 +25,18 @@ import static org.is.bandmanager.exception.message.ServiceErrorMessage.ENTITY_IN
 import static org.is.bandmanager.exception.message.ServiceErrorMessage.MUST_BE_NOT_NULL;
 import static org.is.bandmanager.exception.message.ServiceErrorMessage.SOURCE_NOT_FOUND;
 
+
 @Service
 @Validated
 @RequiredArgsConstructor
 public class AlbumServiceImpl implements AlbumService {
 
 	private final AlbumRepository albumRepository;
+
 	private final MusicBandRepository musicBandRepository;
 
 	private final ApplicationEventPublisher eventPublisher;
+
 	private final AlbumMapper mapper;
 
 	private Album findById(Long id) {

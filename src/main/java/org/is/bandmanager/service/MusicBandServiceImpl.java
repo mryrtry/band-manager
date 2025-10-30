@@ -28,19 +28,24 @@ import static org.is.bandmanager.exception.message.ServiceErrorMessage.CANNOT_RE
 import static org.is.bandmanager.exception.message.ServiceErrorMessage.MUST_BE_NOT_NULL;
 import static org.is.bandmanager.exception.message.ServiceErrorMessage.SOURCE_NOT_FOUND;
 
+
 @Service
 @Validated
 @RequiredArgsConstructor
 public class MusicBandServiceImpl implements MusicBandService {
 
 	private final MusicBandRepository musicBandRepository;
+
 	private final BestBandAwardRepository bestBandAwardRepository;
 
 	private final PersonService personService;
+
 	private final AlbumService albumService;
+
 	private final CoordinatesService coordinatesService;
 
 	private final ApplicationEventPublisher eventPublisher;
+
 	private final MusicBandMapper mapper;
 
 	private MusicBand findById(Integer id) {

@@ -25,15 +25,18 @@ import static org.is.bandmanager.exception.message.ServiceErrorMessage.ENTITY_IN
 import static org.is.bandmanager.exception.message.ServiceErrorMessage.MUST_BE_NOT_NULL;
 import static org.is.bandmanager.exception.message.ServiceErrorMessage.SOURCE_NOT_FOUND;
 
+
 @Service
 @Validated
 @RequiredArgsConstructor
 public class CoordinatesServiceImpl implements CoordinatesService {
 
 	private final CoordinatesRepository coordinatesRepository;
+
 	private final MusicBandRepository musicBandRepository;
 
 	private final ApplicationEventPublisher eventPublisher;
+
 	private final CoordinatesMapper mapper;
 
 	private Coordinates findById(Long id) {

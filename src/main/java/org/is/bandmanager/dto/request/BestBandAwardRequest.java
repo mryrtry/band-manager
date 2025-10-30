@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import org.is.bandmanager.model.MusicGenre;
 
+
 @Builder
 @Data
 public class BestBandAwardRequest {

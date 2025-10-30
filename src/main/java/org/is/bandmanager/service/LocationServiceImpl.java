@@ -25,15 +25,18 @@ import static org.is.bandmanager.exception.message.ServiceErrorMessage.ENTITY_IN
 import static org.is.bandmanager.exception.message.ServiceErrorMessage.MUST_BE_NOT_NULL;
 import static org.is.bandmanager.exception.message.ServiceErrorMessage.SOURCE_NOT_FOUND;
 
+
 @Service
 @Validated
 @RequiredArgsConstructor
 public class LocationServiceImpl implements LocationService {
 
 	private final LocationRepository locationRepository;
+
 	private final PersonRepository personRepository;
 
 	private final ApplicationEventPublisher eventPublisher;
+
 	private final LocationMapper mapper;
 
 	private Location findById(Long id) {

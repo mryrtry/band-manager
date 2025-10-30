@@ -23,6 +23,7 @@ import static org.is.bandmanager.event.EventType.UPDATED;
 import static org.is.bandmanager.exception.message.ServiceErrorMessage.MUST_BE_NOT_NULL;
 import static org.is.bandmanager.exception.message.ServiceErrorMessage.SOURCE_NOT_FOUND;
 
+
 @Service
 @Validated
 @RequiredArgsConstructor
@@ -33,6 +34,7 @@ public class PersonServiceImpl implements PersonService {
 	private final LocationService locationService;
 
 	private final ApplicationEventPublisher eventPublisher;
+
 	private final PersonMapper mapper;
 
 	private Person findById(Long id) {

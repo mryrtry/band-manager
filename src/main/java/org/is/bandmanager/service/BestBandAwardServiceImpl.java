@@ -26,6 +26,7 @@ import static org.is.bandmanager.event.EventType.UPDATED;
 import static org.is.bandmanager.exception.message.ServiceErrorMessage.MUST_BE_NOT_NULL;
 import static org.is.bandmanager.exception.message.ServiceErrorMessage.SOURCE_NOT_FOUND;
 
+
 @Service
 @Validated
 @RequiredArgsConstructor
@@ -36,6 +37,7 @@ public class BestBandAwardServiceImpl implements BestBandAwardService {
 	private final MusicBandService musicBandService;
 
 	private final ApplicationEventPublisher eventPublisher;
+
 	private final BestBandAwardMapper mapper;
 
 	private BestBandAward findById(Long id) {

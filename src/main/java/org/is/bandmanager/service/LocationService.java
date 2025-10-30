@@ -7,6 +7,7 @@ import org.is.bandmanager.model.Location;
 
 import java.util.List;
 
+
 public interface LocationService {
 
 	LocationDto create(@Valid LocationRequest request);

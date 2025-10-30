@@ -12,6 +12,7 @@ import org.springframework.data.jpa.domain.Specification;
 
 import java.util.Date;
 
+
 public class MusicBandSpecifications {
 
 	public static Specification<MusicBand> hasName(String name) {

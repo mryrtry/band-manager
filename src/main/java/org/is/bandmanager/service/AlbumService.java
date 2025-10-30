@@ -7,6 +7,7 @@ import org.is.bandmanager.model.Album;
 
 import java.util.List;
 
+
 public interface AlbumService {
 
 	AlbumDto create(@Valid AlbumRequest request);

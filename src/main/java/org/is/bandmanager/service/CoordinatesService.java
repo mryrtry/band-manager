@@ -7,6 +7,7 @@ import org.is.bandmanager.model.Coordinates;
 
 import java.util.List;
 
+
 public interface CoordinatesService {
 
 	CoordinatesDto create(@Valid CoordinatesRequest request);

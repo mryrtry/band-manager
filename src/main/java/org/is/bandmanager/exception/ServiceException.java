@@ -4,6 +4,7 @@ import lombok.Getter;
 import org.is.bandmanager.exception.message.ErrorMessage;
 import org.springframework.http.HttpStatus;
 
+
 @Getter
 public class ServiceException extends RuntimeException {
 

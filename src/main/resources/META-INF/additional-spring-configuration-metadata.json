@@ -1,7 +1,0 @@
-{
-  "properties": [
-    {
-      "name": "band-manager.clean-up-interval",
-      "type": "java.lang.Integer"
-  }
-] }

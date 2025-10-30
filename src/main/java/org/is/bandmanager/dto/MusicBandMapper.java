@@ -9,6 +9,7 @@ import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 import org.mapstruct.NullValuePropertyMappingStrategy;
 
+
 @Mapper(componentModel = "spring", uses = {AlbumMapper.class, PersonMapper.class, CoordinatesMapper.class}, injectionStrategy = InjectionStrategy.CONSTRUCTOR)
 public interface MusicBandMapper {
 

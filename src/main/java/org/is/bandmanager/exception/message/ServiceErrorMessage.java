@@ -3,6 +3,7 @@ package org.is.bandmanager.exception.message;
 import lombok.Getter;
 import org.springframework.http.HttpStatus;
 
+
 @Getter
 public enum ServiceErrorMessage implements ErrorMessage {
 
