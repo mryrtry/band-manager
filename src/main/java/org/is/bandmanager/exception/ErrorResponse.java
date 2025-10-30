@@ -13,19 +13,19 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 public class ErrorResponse {
-    private int status;
-    private String message;
-    private List<ErrorDetail> details;
-    private LocalDateTime timestamp;
+	private int status;
+	private String message;
+	private List<ErrorDetail> details;
+	private LocalDateTime timestamp;
 
-    @Data
-    @Builder
-    @AllArgsConstructor
-    @NoArgsConstructor
-    public static class ErrorDetail {
-        private String field;
-        private String message;
-        private Object rejectedValue;
-        private String errorType;
-    }
+	@Data
+	@Builder
+	@AllArgsConstructor
+	@NoArgsConstructor
+	public static class ErrorDetail {
+		private String field;
+		private String message;
+		private Object rejectedValue;
+		private String errorType;
+	}
 }

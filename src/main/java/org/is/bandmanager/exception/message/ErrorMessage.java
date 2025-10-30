@@ -4,8 +4,8 @@ import org.springframework.http.HttpStatus;
 
 public interface ErrorMessage {
 
-    String getFormattedMessage(Object... args);
+	String getFormattedMessage(Object... args);
 
-    HttpStatus getHttpStatus();
+	HttpStatus getHttpStatus();
 
 }

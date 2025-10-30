@@ -9,16 +9,16 @@ import java.util.List;
 
 public interface LocationService {
 
-    LocationDto create(@Valid LocationRequest request);
+	LocationDto create(@Valid LocationRequest request);
 
-    List<LocationDto> getAll();
+	List<LocationDto> getAll();
 
-    LocationDto get(Long id);
+	LocationDto get(Long id);
 
-    Location getEntity(Long id);
+	Location getEntity(Long id);
 
-    LocationDto update(Long id, @Valid LocationRequest request);
+	LocationDto update(Long id, @Valid LocationRequest request);
 
-    LocationDto delete(Long id);
+	LocationDto delete(Long id);
 
 }

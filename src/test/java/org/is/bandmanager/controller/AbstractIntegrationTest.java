@@ -10,22 +10,19 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public abstract class AbstractIntegrationTest {
 
-    static final PostgreSQLContainer<?> POSTGRESQL_CONTAINER;
+	static final PostgreSQLContainer<?> POSTGRESQL_CONTAINER;
 
-    static {
-        POSTGRESQL_CONTAINER = new PostgreSQLContainer<>("postgres:15-alpine")
-                .withDatabaseName("band_manager_test")
-                .withUsername("test_user")
-                .withPassword("test_password");
-        POSTGRESQL_CONTAINER.start();
-    }
+	static {
+		POSTGRESQL_CONTAINER = new PostgreSQLContainer<>("postgres:15-alpine").withDatabaseName("band_manager_test").withUsername("test_user").withPassword("test_password");
+		POSTGRESQL_CONTAINER.start();
+	}
 
-    @DynamicPropertySource
-    static void configureProperties(DynamicPropertyRegistry registry) {
-        registry.add("spring.datasource.url", POSTGRESQL_CONTAINER::getJdbcUrl);
-        registry.add("spring.datasource.username", POSTGRESQL_CONTAINER::getUsername);
-        registry.add("spring.datasource.password", POSTGRESQL_CONTAINER::getPassword);
-        registry.add("spring.datasource.driver-class-name", POSTGRESQL_CONTAINER::getDriverClassName);
-    }
+	@DynamicPropertySource
+	static void configureProperties(DynamicPropertyRegistry registry) {
+		registry.add("spring.datasource.url", POSTGRESQL_CONTAINER::getJdbcUrl);
+		registry.add("spring.datasource.username", POSTGRESQL_CONTAINER::getUsername);
+		registry.add("spring.datasource.password", POSTGRESQL_CONTAINER::getPassword);
+		registry.add("spring.datasource.driver-class-name", POSTGRESQL_CONTAINER::getDriverClassName);
+	}
 
 }

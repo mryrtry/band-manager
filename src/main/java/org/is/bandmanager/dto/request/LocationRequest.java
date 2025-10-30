@@ -8,12 +8,12 @@ import lombok.Data;
 @Data
 public class LocationRequest {
 
-    private Integer x;
+	private Integer x;
 
-    @NotNull(message = "Location.Y не может быть пустым")
-    private Long y;
+	@NotNull(message = "Location.Y не может быть пустым")
+	private Long y;
 
-    @NotNull(message = "Location.Z не может быть пустым")
-    private Long z;
+	@NotNull(message = "Location.Z не может быть пустым")
+	private Long z;
 
 }

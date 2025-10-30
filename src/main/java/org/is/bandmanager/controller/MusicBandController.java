@@ -14,7 +14,16 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Date;
 import java.util.List;
@@ -24,80 +33,68 @@ import java.util.List;
 @RequiredArgsConstructor
 public class MusicBandController {
 
-    private final MusicBandService musicBandService;
+	private final MusicBandService musicBandService;
 
-    @GetMapping()
-    public ResponseEntity<Page<MusicBandDto>> getAllMusicBands(
-            @ModelAttribute @Valid MusicBandFilter filter,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "id") List<String> sort,
-            @RequestParam(defaultValue = "asc") String direction) {
-        Pageable pageable = PageableUtil.createMusicBandPageable(page, size, sort, direction);
-        Page<MusicBandDto> bands = musicBandService.getAll(filter, pageable);
-        return ResponseEntity.ok(bands);
-    }
+	@GetMapping()
+	public ResponseEntity<Page<MusicBandDto>> getAllMusicBands(@ModelAttribute @Valid MusicBandFilter filter, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size, @RequestParam(defaultValue = "id") List<String> sort, @RequestParam(defaultValue = "asc") String direction) {
+		Pageable pageable = PageableUtil.createMusicBandPageable(page, size, sort, direction);
+		Page<MusicBandDto> bands = musicBandService.getAll(filter, pageable);
+		return ResponseEntity.ok(bands);
+	}
 
-    @GetMapping("/{id}")
-    public ResponseEntity<MusicBandDto> getMusicBand(@PathVariable Integer id) {
-        MusicBandDto musicBand = musicBandService.get(id);
-        return ResponseEntity.ok(musicBand);
-    }
+	@GetMapping("/{id}")
+	public ResponseEntity<MusicBandDto> getMusicBand(@PathVariable Integer id) {
+		MusicBandDto musicBand = musicBandService.get(id);
+		return ResponseEntity.ok(musicBand);
+	}
 
-    @GetMapping("/max-coordinates")
-    public ResponseEntity<MusicBandDto> getMaxCoordinates() {
-        MusicBandDto musicBand = musicBandService.getWithMaxCoordinates();
-        return ResponseEntity.ok(musicBand);
-    }
+	@GetMapping("/max-coordinates")
+	public ResponseEntity<MusicBandDto> getMaxCoordinates() {
+		MusicBandDto musicBand = musicBandService.getWithMaxCoordinates();
+		return ResponseEntity.ok(musicBand);
+	}
 
-    @GetMapping("/established-before")
-    public ResponseEntity<List<MusicBandDto>> getBandsEstablishedBefore(
-            @RequestParam
-            @NotNull(message = "Date parameter is required")
-            @DateTimeFormat(pattern = "yyyy-MM-dd")
-            @PastOrPresent(message = "Date cannot be in the future")
-            Date date) {
+	@GetMapping("/established-before")
+	public ResponseEntity<List<MusicBandDto>> getBandsEstablishedBefore(@RequestParam @NotNull(message = "Date parameter is required") @DateTimeFormat(pattern = "yyyy-MM-dd") @PastOrPresent(message = "Date cannot be in the future") Date date) {
 
-        List<MusicBandDto> bands = musicBandService.getByEstablishmentDateBefore(date);
-        return ResponseEntity.ok(bands);
-    }
+		List<MusicBandDto> bands = musicBandService.getByEstablishmentDateBefore(date);
+		return ResponseEntity.ok(bands);
+	}
 
-    @GetMapping("/unique-albums-count")
-    public ResponseEntity<List<Long>> getUniqueAlbumsCount() {
-        List<Long> uniqueCounts = musicBandService.getDistinctAlbumsCount();
-        return ResponseEntity.ok(uniqueCounts);
-    }
+	@GetMapping("/unique-albums-count")
+	public ResponseEntity<List<Long>> getUniqueAlbumsCount() {
+		List<Long> uniqueCounts = musicBandService.getDistinctAlbumsCount();
+		return ResponseEntity.ok(uniqueCounts);
+	}
 
-    @PostMapping
-    public ResponseEntity<MusicBandDto> createMusicBand(@Valid @RequestBody MusicBandRequest request) {
-        MusicBandDto createdMusicBand = musicBandService.create(request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(createdMusicBand);
-    }
+	@PostMapping
+	public ResponseEntity<MusicBandDto> createMusicBand(@Valid @RequestBody MusicBandRequest request) {
+		MusicBandDto createdMusicBand = musicBandService.create(request);
+		return ResponseEntity.status(HttpStatus.CREATED).body(createdMusicBand);
+	}
 
-    @PutMapping("/{id}")
-    public ResponseEntity<MusicBandDto> updateMusicBand(
-            @PathVariable Integer id,
-            @Valid @RequestBody MusicBandRequest request) {
-        MusicBandDto updatedMusicBand = musicBandService.update(id, request);
-        return ResponseEntity.ok(updatedMusicBand);
-    }
+	@PutMapping("/{id}")
+	public ResponseEntity<MusicBandDto> updateMusicBand(@PathVariable Integer id, @Valid @RequestBody MusicBandRequest request) {
+		MusicBandDto updatedMusicBand = musicBandService.update(id, request);
+		return ResponseEntity.ok(updatedMusicBand);
+	}
 
-    @PutMapping("/{id}/remove-participant")
-    public ResponseEntity<MusicBandDto> removeParticipant(@PathVariable Integer id) {
-        MusicBandDto updatedBand = musicBandService.removeParticipant(id);
-        return ResponseEntity.ok(updatedBand);
-    }
+	@PutMapping("/{id}/remove-participant")
+	public ResponseEntity<MusicBandDto> removeParticipant(@PathVariable Integer id) {
+		MusicBandDto updatedBand = musicBandService.removeParticipant(id);
+		return ResponseEntity.ok(updatedBand);
+	}
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<MusicBandDto> deleteMusicBand(@PathVariable Integer id) {
-        MusicBandDto deletedMusicBand = musicBandService.delete(id);
-        return ResponseEntity.ok(deletedMusicBand);
-    }
+	@DeleteMapping("/{id}")
+	public ResponseEntity<MusicBandDto> deleteMusicBand(@PathVariable Integer id) {
+		MusicBandDto deletedMusicBand = musicBandService.delete(id);
+		return ResponseEntity.ok(deletedMusicBand);
+	}
 
-    @DeleteMapping()
-    public ResponseEntity<List<MusicBandDto>> deleteMusicBands(@RequestBody List<Integer> ids) {
-        List<MusicBandDto> deletedMusicBands = musicBandService.delete(ids);
-        return ResponseEntity.ok(deletedMusicBands);
-    }
+	@DeleteMapping()
+	public ResponseEntity<List<MusicBandDto>> deleteMusicBands(@RequestBody List<Integer> ids) {
+		List<MusicBandDto> deletedMusicBands = musicBandService.delete(ids);
+		return ResponseEntity.ok(deletedMusicBands);
+	}
 
 }

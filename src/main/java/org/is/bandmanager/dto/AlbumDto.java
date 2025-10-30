@@ -11,12 +11,12 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class AlbumDto {
 
-    private Long id;
+	private Long id;
 
-    private String name;
+	private String name;
 
-    private Long tracks;
+	private Long tracks;
 
-    private Integer sales;
+	private Integer sales;
 
 }

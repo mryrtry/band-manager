@@ -9,10 +9,10 @@ import org.is.bandmanager.model.MusicGenre;
 @Data
 public class BestBandAwardRequest {
 
-    @NotNull(message = "BestBandAward.MusicBandId не может быть пустым")
-    private Integer musicBandId;
+	@NotNull(message = "BestBandAward.MusicBandId не может быть пустым")
+	private Integer musicBandId;
 
-    @NotNull(message = "BestBandAward.MusicGenre не может быть пустым")
-    private MusicGenre genre;
+	@NotNull(message = "BestBandAward.MusicGenre не может быть пустым")
+	private MusicGenre genre;
 
 }

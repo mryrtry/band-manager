@@ -14,28 +14,28 @@ import java.util.Date;
 @AllArgsConstructor
 public class MusicBandDto {
 
-    private Integer id;
+	private Integer id;
 
-    private String name;
+	private String name;
 
-    private CoordinatesDto coordinates;
+	private CoordinatesDto coordinates;
 
-    private MusicGenre genre;
+	private MusicGenre genre;
 
-    private Long numberOfParticipants;
+	private Long numberOfParticipants;
 
-    private Long singlesCount;
+	private Long singlesCount;
 
-    private String description;
+	private String description;
 
-    private AlbumDto bestAlbum;
+	private AlbumDto bestAlbum;
 
-    private Long albumsCount;
+	private Long albumsCount;
 
-    private Date establishmentDate;
+	private Date establishmentDate;
 
-    private PersonDto frontMan;
+	private PersonDto frontMan;
 
-    private Date creationDate;
+	private Date creationDate;
 
 }

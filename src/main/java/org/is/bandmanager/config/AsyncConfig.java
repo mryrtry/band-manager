@@ -12,25 +12,25 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 @EnableScheduling
 public class AsyncConfig {
 
-    @Bean(name = "cleanupTaskExecutor")
-    public TaskExecutor cleanUpTaskExecutor() {
-        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-        executor.setCorePoolSize(2);
-        executor.setMaxPoolSize(5);
-        executor.setQueueCapacity(100);
-        executor.setThreadNamePrefix("cleanup-");
-        executor.initialize();
-        return executor;
-    }
+	@Bean(name = "cleanupTaskExecutor")
+	public TaskExecutor cleanUpTaskExecutor() {
+		ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+		executor.setCorePoolSize(2);
+		executor.setMaxPoolSize(5);
+		executor.setQueueCapacity(100);
+		executor.setThreadNamePrefix("cleanup-");
+		executor.initialize();
+		return executor;
+	}
 
-    @Bean("subscriptionTaskExecutor")
-    public TaskExecutor subscriptionTaskExecutor() {
-        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-        executor.setCorePoolSize(5);
-        executor.setMaxPoolSize(10);
-        executor.setQueueCapacity(100);
-        executor.setThreadNamePrefix("subscription-");
-        return executor;
-    }
+	@Bean("subscriptionTaskExecutor")
+	public TaskExecutor subscriptionTaskExecutor() {
+		ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+		executor.setCorePoolSize(5);
+		executor.setMaxPoolSize(10);
+		executor.setQueueCapacity(100);
+		executor.setThreadNamePrefix("subscription-");
+		return executor;
+	}
 
 }

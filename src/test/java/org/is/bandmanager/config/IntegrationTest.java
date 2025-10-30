@@ -14,5 +14,4 @@ import java.lang.annotation.Target;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
 @Import(TestContainersConfig.class)
-public @interface IntegrationTest {
-}
+public @interface IntegrationTest {}

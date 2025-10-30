@@ -4,22 +4,21 @@ import jakarta.validation.Valid;
 import org.is.bandmanager.dto.CoordinatesDto;
 import org.is.bandmanager.dto.request.CoordinatesRequest;
 import org.is.bandmanager.model.Coordinates;
-import org.is.bandmanager.model.Location;
 
 import java.util.List;
 
 public interface CoordinatesService {
 
-    CoordinatesDto create(@Valid CoordinatesRequest request);
+	CoordinatesDto create(@Valid CoordinatesRequest request);
 
-    List<CoordinatesDto> getAll();
+	List<CoordinatesDto> getAll();
 
-    CoordinatesDto get(Long id);
+	CoordinatesDto get(Long id);
 
-    Coordinates getEntity(Long id);
+	Coordinates getEntity(Long id);
 
-    CoordinatesDto update(Long id, @Valid CoordinatesRequest request);
+	CoordinatesDto update(Long id, @Valid CoordinatesRequest request);
 
-    CoordinatesDto delete(Long id);
+	CoordinatesDto delete(Long id);
 
 }
