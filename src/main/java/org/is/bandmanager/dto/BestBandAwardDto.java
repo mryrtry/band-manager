@@ -15,14 +15,14 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class BestBandAwardDto {
 
-	private Long id;
+    private Long id;
 
-	private Long bandId;
+    private Long bandId;
 
-	private String bandName;
+    private String bandName;
 
-	private MusicGenre genre;
+    private MusicGenre genre;
 
-	private LocalDateTime createdAt;
+    private LocalDateTime createdAt;
 
 }

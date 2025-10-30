@@ -16,41 +16,41 @@ import java.util.Date;
 @Data
 public class MusicBandRequest {
 
-	@NotBlank(message = "MusicBand.Name не может быть пустым")
-	@Column(nullable = false)
-	private String name;
+    @NotBlank(message = "MusicBand.Name не может быть пустым")
+    @Column(nullable = false)
+    private String name;
 
-	@Valid
-	@NotNull(message = "MusicBand.CoordinatesId не может быть пустым")
-	private Long coordinatesId;
+    @Valid
+    @NotNull(message = "MusicBand.CoordinatesId не может быть пустым")
+    private Long coordinatesId;
 
-	@NotNull(message = "MusicBand.MusicGenre не может быть пустым")
-	private MusicGenre genre;
+    @NotNull(message = "MusicBand.MusicGenre не может быть пустым")
+    private MusicGenre genre;
 
-	@NotNull(message = "MusicBand.NumberOfParticipants не может быть пустым")
-	@DecimalMin(value = "0", inclusive = false, message = "MusicBand.NumberOfParticipants должно быть > 0")
-	private Long numberOfParticipants;
+    @NotNull(message = "MusicBand.NumberOfParticipants не может быть пустым")
+    @DecimalMin(value = "0", inclusive = false, message = "MusicBand.NumberOfParticipants должно быть > 0")
+    private Long numberOfParticipants;
 
-	@NotNull(message = "MusicBand.SinglesCount не может быть пустым")
-	@DecimalMin(value = "0", inclusive = false, message = "MusicBand.NumberOfParticipants должно быть > 0")
-	private Long singlesCount;
+    @NotNull(message = "MusicBand.SinglesCount не может быть пустым")
+    @DecimalMin(value = "0", inclusive = false, message = "MusicBand.NumberOfParticipants должно быть > 0")
+    private Long singlesCount;
 
-	@NotBlank(message = "MusicBand.Description не может быть пустым")
-	private String description;
+    @NotBlank(message = "MusicBand.Description не может быть пустым")
+    private String description;
 
-	@Valid
-	@NotNull(message = "MusicBand.BestAlbumId не может быть пустым")
-	private Long bestAlbumId;
+    @Valid
+    @NotNull(message = "MusicBand.BestAlbumId не может быть пустым")
+    private Long bestAlbumId;
 
-	@NotNull(message = "MusicBand.AlbumsCount не может быть пустым")
-	@DecimalMin(value = "0", inclusive = false, message = "MusicBand.AlbumsCount должно быть > 0")
-	private Long albumsCount;
+    @NotNull(message = "MusicBand.AlbumsCount не может быть пустым")
+    @DecimalMin(value = "0", inclusive = false, message = "MusicBand.AlbumsCount должно быть > 0")
+    private Long albumsCount;
 
-	@NotNull(message = "MusicBand.EstablishmentDate не может быть пустым")
-	private Date establishmentDate;
+    @NotNull(message = "MusicBand.EstablishmentDate не может быть пустым")
+    private Date establishmentDate;
 
-	@Valid
-	@NotNull(message = "MusicBand.FrontManId не может быть пустым")
-	private Long frontManId;
+    @Valid
+    @NotNull(message = "MusicBand.FrontManId не может быть пустым")
+    private Long frontManId;
 
 }

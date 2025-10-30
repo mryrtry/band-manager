@@ -31,82 +31,82 @@ import static org.is.bandmanager.exception.message.ServiceErrorMessage.SOURCE_NO
 @RequiredArgsConstructor
 public class LocationServiceImpl implements LocationService {
 
-	private final LocationRepository locationRepository;
+    private final LocationRepository locationRepository;
 
-	private final PersonRepository personRepository;
+    private final PersonRepository personRepository;
 
-	private final ApplicationEventPublisher eventPublisher;
+    private final ApplicationEventPublisher eventPublisher;
 
-	private final LocationMapper mapper;
+    private final LocationMapper mapper;
 
-	private Location findById(Long id) {
-		if (id == null) {
-			throw new ServiceException(MUST_BE_NOT_NULL, "Location.id");
-		}
-		return locationRepository.findById(id).orElseThrow(() -> new ServiceException(SOURCE_NOT_FOUND, "Location", id));
-	}
+    private Location findById(Long id) {
+        if (id == null) {
+            throw new ServiceException(MUST_BE_NOT_NULL, "Location.id");
+        }
+        return locationRepository.findById(id).orElseThrow(() -> new ServiceException(SOURCE_NOT_FOUND, "Location", id));
+    }
 
-	@Transactional
-	protected void checkDependencies(Location location) {
-		Long locationId = location.getId();
-		if (personRepository.existsByLocationId(locationId)) {
-			throw new ServiceException(ENTITY_IN_USE, "Location", locationId, "Person");
-		}
-	}
+    @Transactional
+    protected void checkDependencies(Location location) {
+        Long locationId = location.getId();
+        if (personRepository.existsByLocationId(locationId)) {
+            throw new ServiceException(ENTITY_IN_USE, "Location", locationId, "Person");
+        }
+    }
 
-	@Override
-	@Transactional
-	public LocationDto create(LocationRequest request) {
-		Location location = mapper.toEntity(request);
-		LocationDto createdLocation = mapper.toDto(locationRepository.save(location));
-		eventPublisher.publishEvent(new EntityEvent<>(CREATED, createdLocation));
-		return createdLocation;
-	}
+    @Override
+    @Transactional
+    public LocationDto create(LocationRequest request) {
+        Location location = mapper.toEntity(request);
+        LocationDto createdLocation = mapper.toDto(locationRepository.save(location));
+        eventPublisher.publishEvent(new EntityEvent<>(CREATED, createdLocation));
+        return createdLocation;
+    }
 
-	@Override
-	public List<LocationDto> getAll() {
-		return locationRepository.findAll().stream().map(mapper::toDto).toList();
-	}
+    @Override
+    public List<LocationDto> getAll() {
+        return locationRepository.findAll().stream().map(mapper::toDto).toList();
+    }
 
-	@Override
-	public LocationDto get(Long id) {
-		return mapper.toDto(findById(id));
-	}
+    @Override
+    public LocationDto get(Long id) {
+        return mapper.toDto(findById(id));
+    }
 
-	@Override
-	public Location getEntity(Long id) {
-		return findById(id);
-	}
+    @Override
+    public Location getEntity(Long id) {
+        return findById(id);
+    }
 
-	@Override
-	@Transactional
-	public LocationDto update(Long id, LocationRequest request) {
-		Location updatingLocation = findById(id);
-		mapper.updateEntityFromRequest(request, updatingLocation);
-		LocationDto updatedLocation = mapper.toDto(locationRepository.save(updatingLocation));
-		eventPublisher.publishEvent(new EntityEvent<>(UPDATED, updatedLocation));
-		return updatedLocation;
-	}
+    @Override
+    @Transactional
+    public LocationDto update(Long id, LocationRequest request) {
+        Location updatingLocation = findById(id);
+        mapper.updateEntityFromRequest(request, updatingLocation);
+        LocationDto updatedLocation = mapper.toDto(locationRepository.save(updatingLocation));
+        eventPublisher.publishEvent(new EntityEvent<>(UPDATED, updatedLocation));
+        return updatedLocation;
+    }
 
-	@Override
-	@Transactional
-	public LocationDto delete(Long id) {
-		Location location = findById(id);
-		checkDependencies(location);
-		locationRepository.delete(location);
-		LocationDto deletedLocation = mapper.toDto(location);
-		eventPublisher.publishEvent(new EntityEvent<>(DELETED, deletedLocation));
-		return deletedLocation;
-	}
+    @Override
+    @Transactional
+    public LocationDto delete(Long id) {
+        Location location = findById(id);
+        checkDependencies(location);
+        locationRepository.delete(location);
+        LocationDto deletedLocation = mapper.toDto(location);
+        eventPublisher.publishEvent(new EntityEvent<>(DELETED, deletedLocation));
+        return deletedLocation;
+    }
 
-	@Scheduled(cron = "${band-manager.clean-up-interval}")
-	@Transactional
-	public void cleanupUnusedLocations() {
-		List<Location> unusedLocations = locationRepository.findUnusedLocations();
-		if (!unusedLocations.isEmpty()) {
-			locationRepository.deleteAll(unusedLocations);
-			eventPublisher.publishEvent(new EntityEvent<>(BULK_DELETED, unusedLocations.stream().map(mapper::toDto).toList()));
-		}
-	}
+    @Scheduled(cron = "${band-manager.clean-up-interval}")
+    @Transactional
+    public void cleanupUnusedLocations() {
+        List<Location> unusedLocations = locationRepository.findUnusedLocations();
+        if (!unusedLocations.isEmpty()) {
+            locationRepository.deleteAll(unusedLocations);
+            eventPublisher.publishEvent(new EntityEvent<>(BULK_DELETED, unusedLocations.stream().map(mapper::toDto).toList()));
+        }
+    }
 
 }

@@ -38,60 +38,60 @@ import java.util.Date;
 @Builder
 public class MusicBand {
 
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Integer id;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer id;
 
-	@NotBlank(message = "MusicBand.Name не может быть пустым")
-	@Column(nullable = false)
-	private String name;
+    @NotBlank(message = "MusicBand.Name не может быть пустым")
+    @Column(nullable = false)
+    private String name;
 
-	@NotNull(message = "MusicBand.Coordinates не может быть пустым")
-	@ManyToOne(optional = false, fetch = FetchType.EAGER)
-	@JoinColumn(name = "coordinates_id", nullable = false)
-	private Coordinates coordinates;
+    @NotNull(message = "MusicBand.Coordinates не может быть пустым")
+    @ManyToOne(optional = false, fetch = FetchType.EAGER)
+    @JoinColumn(name = "coordinates_id", nullable = false)
+    private Coordinates coordinates;
 
-	@NotNull(message = "MusicBand.MusicGenre не может быть пустым")
-	@Enumerated(EnumType.STRING)
-	@Column(nullable = false)
-	private MusicGenre genre;
+    @NotNull(message = "MusicBand.MusicGenre не может быть пустым")
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private MusicGenre genre;
 
-	@NotNull(message = "MusicBand.NumberOfParticipants не может быть пустым")
-	@DecimalMin(value = "0", inclusive = false, message = "MusicBand.NumberOfParticipants должно быть > 0")
-	@Column(name = "number_of_participants", nullable = false)
-	private Long numberOfParticipants;
+    @NotNull(message = "MusicBand.NumberOfParticipants не может быть пустым")
+    @DecimalMin(value = "0", inclusive = false, message = "MusicBand.NumberOfParticipants должно быть > 0")
+    @Column(name = "number_of_participants", nullable = false)
+    private Long numberOfParticipants;
 
-	@NotNull(message = "MusicBand.SinglesCount не может быть пустым")
-	@DecimalMin(value = "0", inclusive = false, message = "MusicBand.NumberOfParticipants должно быть > 0")
-	@Column(name = "singles_count", nullable = false)
-	private Long singlesCount;
+    @NotNull(message = "MusicBand.SinglesCount не может быть пустым")
+    @DecimalMin(value = "0", inclusive = false, message = "MusicBand.NumberOfParticipants должно быть > 0")
+    @Column(name = "singles_count", nullable = false)
+    private Long singlesCount;
 
-	@NotBlank(message = "MusicBand.Description не может быть пустым")
-	@Column(nullable = false, columnDefinition = "text")
-	private String description;
+    @NotBlank(message = "MusicBand.Description не может быть пустым")
+    @Column(nullable = false, columnDefinition = "text")
+    private String description;
 
-	@NotNull(message = "MusicBand.BestAlbum не может быть пустым")
-	@ManyToOne(optional = false, fetch = FetchType.EAGER)
-	@JoinColumn(name = "best_album_id", nullable = false)
-	private Album bestAlbum;
+    @NotNull(message = "MusicBand.BestAlbum не может быть пустым")
+    @ManyToOne(optional = false, fetch = FetchType.EAGER)
+    @JoinColumn(name = "best_album_id", nullable = false)
+    private Album bestAlbum;
 
-	@NotNull(message = "MusicBand.AlbumsCount не может быть пустым")
-	@Column(name = "albums_count", nullable = false)
-	@DecimalMin(value = "0", inclusive = false, message = "MusicBand.AlbumsCount должно быть > 0")
-	private Long albumsCount;
+    @NotNull(message = "MusicBand.AlbumsCount не может быть пустым")
+    @Column(name = "albums_count", nullable = false)
+    @DecimalMin(value = "0", inclusive = false, message = "MusicBand.AlbumsCount должно быть > 0")
+    private Long albumsCount;
 
-	@NotNull(message = "MusicBand.EstablishmentDate не может быть пустым")
-	@Column(name = "establishment_date", nullable = false)
-	@Temporal(TemporalType.TIMESTAMP)
-	private Date establishmentDate;
+    @NotNull(message = "MusicBand.EstablishmentDate не может быть пустым")
+    @Column(name = "establishment_date", nullable = false)
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date establishmentDate;
 
-	@NotNull(message = "MusicBand.FrontMan не может быть пустым")
-	@ManyToOne(optional = false, fetch = FetchType.EAGER)
-	@JoinColumn(name = "front_man_id", nullable = false)
-	private Person frontMan;
+    @NotNull(message = "MusicBand.FrontMan не может быть пустым")
+    @ManyToOne(optional = false, fetch = FetchType.EAGER)
+    @JoinColumn(name = "front_man_id", nullable = false)
+    private Person frontMan;
 
-	@CreatedDate
-	@Column(name = "creation_date", nullable = false, updatable = false)
-	private Date creationDate;
+    @CreatedDate
+    @Column(name = "creation_date", nullable = false, updatable = false)
+    private Date creationDate;
 
 }

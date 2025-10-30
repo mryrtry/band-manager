@@ -25,21 +25,21 @@ import lombok.Setter;
 @Builder
 public class Album {
 
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long id;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-	@NotBlank(message = "Album.Name не может быть пустым")
-	@Column(nullable = false)
-	private String name;
+    @NotBlank(message = "Album.Name не может быть пустым")
+    @Column(nullable = false)
+    private String name;
 
-	@NotNull(message = "Album.Tracks не может быть пустым")
-	@DecimalMin(value = "0", inclusive = false, message = "Album.Tracks должно быть > 0")
-	@Column(nullable = false)
-	private Long tracks;
+    @NotNull(message = "Album.Tracks не может быть пустым")
+    @DecimalMin(value = "0", inclusive = false, message = "Album.Tracks должно быть > 0")
+    @Column(nullable = false)
+    private Long tracks;
 
-	@DecimalMin(value = "0", inclusive = false, message = "Album.Sales должно быть > 0")
-	@Column(nullable = false)
-	private Integer sales;
+    @DecimalMin(value = "0", inclusive = false, message = "Album.Sales должно быть > 0")
+    @Column(nullable = false)
+    private Integer sales;
 
 }

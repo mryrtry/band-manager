@@ -10,16 +10,16 @@ import java.util.List;
 
 public interface PersonService {
 
-	PersonDto create(@Valid PersonRequest request);
+    PersonDto create(@Valid PersonRequest request);
 
-	List<PersonDto> getAll();
+    List<PersonDto> getAll();
 
-	PersonDto get(Long id);
+    PersonDto get(Long id);
 
-	Person getEntity(Long id);
+    Person getEntity(Long id);
 
-	PersonDto update(Long id, @Valid PersonRequest request);
+    PersonDto update(Long id, @Valid PersonRequest request);
 
-	PersonDto delete(Long id);
+    PersonDto delete(Long id);
 
 }

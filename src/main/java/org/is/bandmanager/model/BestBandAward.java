@@ -34,22 +34,22 @@ import java.time.LocalDateTime;
 @EntityListeners(AuditingEntityListener.class)
 public class BestBandAward {
 
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long id;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-	@NotNull(message = "Award.Band не может быть пустым")
-	@ManyToOne(fetch = FetchType.EAGER)
-	@JoinColumn(name = "band_id", nullable = false)
-	private MusicBand band;
+    @NotNull(message = "Award.Band не может быть пустым")
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "band_id", nullable = false)
+    private MusicBand band;
 
-	@NotNull(message = "Award.Genre не может быть пустым")
-	@Enumerated(EnumType.STRING)
-	@Column(nullable = false)
-	private MusicGenre genre;
+    @NotNull(message = "Award.Genre не может быть пустым")
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private MusicGenre genre;
 
-	@CreatedDate
-	@Column(name = "created_at", nullable = false, updatable = false)
-	private LocalDateTime createdAt;
+    @CreatedDate
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private LocalDateTime createdAt;
 
 }

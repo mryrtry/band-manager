@@ -24,15 +24,15 @@ import lombok.Setter;
 @Builder
 public class Coordinates {
 
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long id;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-	@NotNull(message = "Coordinates.X не может быть пустым")
-	@DecimalMin(value = "-147", inclusive = false, message = "Coordinates.X должно быть больше -147")
-	@Column(nullable = false)
-	private Integer x;
+    @NotNull(message = "Coordinates.X не может быть пустым")
+    @DecimalMin(value = "-147", inclusive = false, message = "Coordinates.X должно быть больше -147")
+    @Column(nullable = false)
+    private Integer x;
 
-	private Float y;
+    private Float y;
 
 }

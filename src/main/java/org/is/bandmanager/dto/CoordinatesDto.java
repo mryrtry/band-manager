@@ -12,10 +12,10 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class CoordinatesDto {
 
-	private Long id;
+    private Long id;
 
-	private Integer x;
+    private Integer x;
 
-	private Float y;
+    private Float y;
 
 }

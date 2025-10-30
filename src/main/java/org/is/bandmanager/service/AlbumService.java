@@ -10,16 +10,16 @@ import java.util.List;
 
 public interface AlbumService {
 
-	AlbumDto create(@Valid AlbumRequest request);
+    AlbumDto create(@Valid AlbumRequest request);
 
-	List<AlbumDto> getAll();
+    List<AlbumDto> getAll();
 
-	AlbumDto get(Long id);
+    AlbumDto get(Long id);
 
-	Album getEntity(Long id);
+    Album getEntity(Long id);
 
-	AlbumDto update(Long id, @Valid AlbumRequest request);
+    AlbumDto update(Long id, @Valid AlbumRequest request);
 
-	AlbumDto delete(Long id);
+    AlbumDto delete(Long id);
 
 }

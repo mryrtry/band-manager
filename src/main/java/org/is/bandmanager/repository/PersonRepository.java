@@ -11,9 +11,9 @@ import java.util.List;
 @Repository
 public interface PersonRepository extends JpaRepository<Person, Long> {
 
-	@Query("SELECT p FROM Person p WHERE NOT EXISTS (SELECT 1 FROM MusicBand m WHERE m.frontMan.id = p.id)")
-	List<Person> findUnusedPersons();
+    @Query("SELECT p FROM Person p WHERE NOT EXISTS (SELECT 1 FROM MusicBand m WHERE m.frontMan.id = p.id)")
+    List<Person> findUnusedPersons();
 
-	boolean existsByLocationId(Long locationId);
+    boolean existsByLocationId(Long locationId);
 
 }

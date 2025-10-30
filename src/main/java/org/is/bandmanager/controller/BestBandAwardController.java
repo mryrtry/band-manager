@@ -30,37 +30,37 @@ import java.util.List;
 @RequiredArgsConstructor
 public class BestBandAwardController {
 
-	private final BestBandAwardService bestBandAwardService;
+    private final BestBandAwardService bestBandAwardService;
 
-	@GetMapping()
-	public ResponseEntity<Page<BestBandAwardDto>> getAllBestBandAwardsFiltered(@ModelAttribute BestBandAwardFilter filter, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size, @RequestParam(defaultValue = "id") List<String> sort, @RequestParam(defaultValue = "acs") String direction) {
-		Pageable pageable = PageableUtil.createBestBandAwardPageable(page, size, sort, direction);
-		Page<BestBandAwardDto> awards = bestBandAwardService.getAll(filter, pageable);
-		return ResponseEntity.ok(awards);
-	}
+    @GetMapping()
+    public ResponseEntity<Page<BestBandAwardDto>> getAllBestBandAwardsFiltered(@ModelAttribute BestBandAwardFilter filter, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size, @RequestParam(defaultValue = "id") List<String> sort, @RequestParam(defaultValue = "acs") String direction) {
+        Pageable pageable = PageableUtil.createBestBandAwardPageable(page, size, sort, direction);
+        Page<BestBandAwardDto> awards = bestBandAwardService.getAll(filter, pageable);
+        return ResponseEntity.ok(awards);
+    }
 
-	@GetMapping("/{id}")
-	public ResponseEntity<BestBandAwardDto> getBestBandAward(@PathVariable Long id) {
-		BestBandAwardDto bestBandAward = bestBandAwardService.get(id);
-		return ResponseEntity.ok(bestBandAward);
-	}
+    @GetMapping("/{id}")
+    public ResponseEntity<BestBandAwardDto> getBestBandAward(@PathVariable Long id) {
+        BestBandAwardDto bestBandAward = bestBandAwardService.get(id);
+        return ResponseEntity.ok(bestBandAward);
+    }
 
-	@PostMapping
-	public ResponseEntity<BestBandAwardDto> createBestBandAward(@Valid @RequestBody BestBandAwardRequest request) {
-		BestBandAwardDto createdBestBandAward = bestBandAwardService.create(request);
-		return ResponseEntity.status(HttpStatus.CREATED).body(createdBestBandAward);
-	}
+    @PostMapping
+    public ResponseEntity<BestBandAwardDto> createBestBandAward(@Valid @RequestBody BestBandAwardRequest request) {
+        BestBandAwardDto createdBestBandAward = bestBandAwardService.create(request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(createdBestBandAward);
+    }
 
-	@PutMapping("/{id}")
-	public ResponseEntity<BestBandAwardDto> updateBestBandAward(@PathVariable Long id, @Valid @RequestBody BestBandAwardRequest request) {
-		BestBandAwardDto updatedBestBandAward = bestBandAwardService.update(id, request);
-		return ResponseEntity.ok(updatedBestBandAward);
-	}
+    @PutMapping("/{id}")
+    public ResponseEntity<BestBandAwardDto> updateBestBandAward(@PathVariable Long id, @Valid @RequestBody BestBandAwardRequest request) {
+        BestBandAwardDto updatedBestBandAward = bestBandAwardService.update(id, request);
+        return ResponseEntity.ok(updatedBestBandAward);
+    }
 
-	@DeleteMapping("/{id}")
-	public ResponseEntity<BestBandAwardDto> deleteBestBandAward(@PathVariable Long id) {
-		BestBandAwardDto deletedBestBandAward = bestBandAwardService.delete(id);
-		return ResponseEntity.ok(deletedBestBandAward);
-	}
+    @DeleteMapping("/{id}")
+    public ResponseEntity<BestBandAwardDto> deleteBestBandAward(@PathVariable Long id) {
+        BestBandAwardDto deletedBestBandAward = bestBandAwardService.delete(id);
+        return ResponseEntity.ok(deletedBestBandAward);
+    }
 
 }

@@ -24,35 +24,35 @@ import java.util.List;
 @RequiredArgsConstructor
 public class AlbumController {
 
-	private final AlbumService albumService;
+    private final AlbumService albumService;
 
-	@GetMapping
-	public ResponseEntity<List<AlbumDto>> getAllAlbums() {
-		return ResponseEntity.ok(albumService.getAll());
-	}
+    @GetMapping
+    public ResponseEntity<List<AlbumDto>> getAllAlbums() {
+        return ResponseEntity.ok(albumService.getAll());
+    }
 
-	@GetMapping("/{id}")
-	public ResponseEntity<AlbumDto> getAlbum(@PathVariable Long id) {
-		AlbumDto album = albumService.get(id);
-		return ResponseEntity.ok(album);
-	}
+    @GetMapping("/{id}")
+    public ResponseEntity<AlbumDto> getAlbum(@PathVariable Long id) {
+        AlbumDto album = albumService.get(id);
+        return ResponseEntity.ok(album);
+    }
 
-	@PostMapping
-	public ResponseEntity<AlbumDto> createAlbum(@Valid @RequestBody AlbumRequest request) {
-		AlbumDto createdAlbum = albumService.create(request);
-		return ResponseEntity.status(HttpStatus.CREATED).body(createdAlbum);
-	}
+    @PostMapping
+    public ResponseEntity<AlbumDto> createAlbum(@Valid @RequestBody AlbumRequest request) {
+        AlbumDto createdAlbum = albumService.create(request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(createdAlbum);
+    }
 
-	@PutMapping("/{id}")
-	public ResponseEntity<AlbumDto> updateAlbum(@PathVariable Long id, @Valid @RequestBody AlbumRequest request) {
-		AlbumDto updatedAlbum = albumService.update(id, request);
-		return ResponseEntity.ok(updatedAlbum);
-	}
+    @PutMapping("/{id}")
+    public ResponseEntity<AlbumDto> updateAlbum(@PathVariable Long id, @Valid @RequestBody AlbumRequest request) {
+        AlbumDto updatedAlbum = albumService.update(id, request);
+        return ResponseEntity.ok(updatedAlbum);
+    }
 
-	@DeleteMapping("/{id}")
-	public ResponseEntity<AlbumDto> deleteAlbum(@PathVariable Long id) {
-		AlbumDto deletedAlbum = albumService.delete(id);
-		return ResponseEntity.ok(deletedAlbum);
-	}
+    @DeleteMapping("/{id}")
+    public ResponseEntity<AlbumDto> deleteAlbum(@PathVariable Long id) {
+        AlbumDto deletedAlbum = albumService.delete(id);
+        return ResponseEntity.ok(deletedAlbum);
+    }
 
 }

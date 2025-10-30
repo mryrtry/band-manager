@@ -7,21 +7,24 @@ import org.springframework.http.HttpStatus;
 @Getter
 public enum ServiceErrorMessage implements ErrorMessage {
 
-	MUST_BE_NOT_NULL(HttpStatus.BAD_REQUEST, "Ресурс '%s' не может быть пустым"), SOURCE_NOT_FOUND(HttpStatus.NOT_FOUND, "Ресурс '%s' с ID: '%s' не был найден"), CANNOT_REMOVE_LAST_PARTICIPANT(HttpStatus.BAD_REQUEST, "Невозможно удалить участника - в группе должен остаться хотя бы 1 участник"), ENTITY_IN_USE(HttpStatus.BAD_REQUEST, "Невозможно удалить ресурс '%s' с ID: '%s', так как он связан с другим ресурсом '%s'");
+    MUST_BE_NOT_NULL(HttpStatus.BAD_REQUEST, "Ресурс '%s' не может быть пустым"),
+    SOURCE_NOT_FOUND(HttpStatus.NOT_FOUND, "Ресурс '%s' с ID: '%s' не был найден"),
+    CANNOT_REMOVE_LAST_PARTICIPANT(HttpStatus.BAD_REQUEST, "Невозможно удалить участника - в группе должен остаться хотя бы 1 участник"),
+    ENTITY_IN_USE(HttpStatus.BAD_REQUEST, "Невозможно удалить ресурс '%s' с ID: '%s', так как он связан с другим ресурсом '%s'");
 
 
-	private final HttpStatus httpStatus;
+    private final HttpStatus httpStatus;
 
-	private final String messageTemplate;
+    private final String messageTemplate;
 
-	ServiceErrorMessage(HttpStatus httpStatus, String messageTemplate) {
-		this.httpStatus = httpStatus;
-		this.messageTemplate = messageTemplate;
-	}
+    ServiceErrorMessage(HttpStatus httpStatus, String messageTemplate) {
+        this.httpStatus = httpStatus;
+        this.messageTemplate = messageTemplate;
+    }
 
-	@Override
-	public String getFormattedMessage(Object... args) {
-		return messageTemplate.formatted(args);
-	}
+    @Override
+    public String getFormattedMessage(Object... args) {
+        return messageTemplate.formatted(args);
+    }
 
 }

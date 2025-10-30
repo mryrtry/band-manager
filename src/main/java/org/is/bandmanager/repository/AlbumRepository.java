@@ -11,7 +11,7 @@ import java.util.List;
 @Repository
 public interface AlbumRepository extends JpaRepository<Album, Long> {
 
-	@Query("SELECT p FROM Album p WHERE NOT EXISTS (SELECT 1 FROM MusicBand m WHERE m.bestAlbum.id = p.id)")
-	List<Album> findUnusedAlbum();
+    @Query("SELECT p FROM Album p WHERE NOT EXISTS (SELECT 1 FROM MusicBand m WHERE m.bestAlbum.id = p.id)")
+    List<Album> findUnusedAlbum();
 
 }

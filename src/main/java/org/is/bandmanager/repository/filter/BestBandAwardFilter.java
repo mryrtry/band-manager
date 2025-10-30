@@ -10,18 +10,18 @@ import java.time.LocalDateTime;
 @Data
 public class BestBandAwardFilter implements EntityFilter {
 
-	private MusicGenre genre;
+    private MusicGenre genre;
 
-	private String bandName;
+    private String bandName;
 
-	private Long bandId;
+    private Long bandId;
 
-	@DateTimeFormat(pattern = "yyyy-MM-dd")
-	private LocalDateTime createdAtAfter;
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
+    private LocalDateTime createdAtAfter;
 
-	@DateTimeFormat(pattern = "yyyy-MM-dd")
-	private LocalDateTime createdAtBefore;
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
+    private LocalDateTime createdAtBefore;
 
-	private String bandNameContains;
+    private String bandNameContains;
 
 }

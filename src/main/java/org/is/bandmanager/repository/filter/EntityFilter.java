@@ -1,3 +1,4 @@
 package org.is.bandmanager.repository.filter;
 
-public interface EntityFilter {}
+public interface EntityFilter {
+}

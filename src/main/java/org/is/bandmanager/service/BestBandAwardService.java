@@ -12,16 +12,16 @@ import java.util.List;
 
 public interface BestBandAwardService {
 
-	BestBandAwardDto create(@Valid BestBandAwardRequest request);
+    BestBandAwardDto create(@Valid BestBandAwardRequest request);
 
-	Page<BestBandAwardDto> getAll(BestBandAwardFilter filter, Pageable pageable);
+    Page<BestBandAwardDto> getAll(BestBandAwardFilter filter, Pageable pageable);
 
-	BestBandAwardDto get(Long id);
+    BestBandAwardDto get(Long id);
 
-	BestBandAwardDto update(Long id, @Valid BestBandAwardRequest request);
+    BestBandAwardDto update(Long id, @Valid BestBandAwardRequest request);
 
-	BestBandAwardDto delete(Long id);
+    BestBandAwardDto delete(Long id);
 
-	List<BestBandAwardDto> delete(List<Long> ids);
+    List<BestBandAwardDto> delete(List<Long> ids);
 
 }

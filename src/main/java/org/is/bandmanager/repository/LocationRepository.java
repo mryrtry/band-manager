@@ -11,7 +11,7 @@ import java.util.List;
 @Repository
 public interface LocationRepository extends JpaRepository<Location, Long> {
 
-	@Query("SELECT p FROM Location p WHERE NOT EXISTS (SELECT 1 FROM Person m WHERE m.location.id = p.id)")
-	List<Location> findUnusedLocations();
+    @Query("SELECT p FROM Location p WHERE NOT EXISTS (SELECT 1 FROM Person m WHERE m.location.id = p.id)")
+    List<Location> findUnusedLocations();
 
 }

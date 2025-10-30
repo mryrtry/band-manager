@@ -24,35 +24,35 @@ import java.util.List;
 @RequiredArgsConstructor
 public class LocationController {
 
-	private final LocationService locationService;
+    private final LocationService locationService;
 
-	@GetMapping
-	public ResponseEntity<List<LocationDto>> getAllLocations() {
-		return ResponseEntity.ok(locationService.getAll());
-	}
+    @GetMapping
+    public ResponseEntity<List<LocationDto>> getAllLocations() {
+        return ResponseEntity.ok(locationService.getAll());
+    }
 
-	@GetMapping("/{id}")
-	public ResponseEntity<LocationDto> getLocation(@PathVariable Long id) {
-		LocationDto location = locationService.get(id);
-		return ResponseEntity.ok(location);
-	}
+    @GetMapping("/{id}")
+    public ResponseEntity<LocationDto> getLocation(@PathVariable Long id) {
+        LocationDto location = locationService.get(id);
+        return ResponseEntity.ok(location);
+    }
 
-	@PostMapping
-	public ResponseEntity<LocationDto> createLocation(@Valid @RequestBody LocationRequest request) {
-		LocationDto createdLocation = locationService.create(request);
-		return ResponseEntity.status(HttpStatus.CREATED).body(createdLocation);
-	}
+    @PostMapping
+    public ResponseEntity<LocationDto> createLocation(@Valid @RequestBody LocationRequest request) {
+        LocationDto createdLocation = locationService.create(request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(createdLocation);
+    }
 
-	@PutMapping("/{id}")
-	public ResponseEntity<LocationDto> updateLocation(@PathVariable Long id, @Valid @RequestBody LocationRequest request) {
-		LocationDto updatedLocation = locationService.update(id, request);
-		return ResponseEntity.ok(updatedLocation);
-	}
+    @PutMapping("/{id}")
+    public ResponseEntity<LocationDto> updateLocation(@PathVariable Long id, @Valid @RequestBody LocationRequest request) {
+        LocationDto updatedLocation = locationService.update(id, request);
+        return ResponseEntity.ok(updatedLocation);
+    }
 
-	@DeleteMapping("/{id}")
-	public ResponseEntity<LocationDto> deleteLocation(@PathVariable Long id) {
-		LocationDto deletedLocation = locationService.delete(id);
-		return ResponseEntity.ok(deletedLocation);
-	}
+    @DeleteMapping("/{id}")
+    public ResponseEntity<LocationDto> deleteLocation(@PathVariable Long id) {
+        LocationDto deletedLocation = locationService.delete(id);
+        return ResponseEntity.ok(deletedLocation);
+    }
 
 }

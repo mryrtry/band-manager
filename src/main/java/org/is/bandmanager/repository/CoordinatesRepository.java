@@ -11,7 +11,7 @@ import java.util.List;
 @Repository
 public interface CoordinatesRepository extends JpaRepository<Coordinates, Long> {
 
-	@Query("SELECT p FROM Coordinates p WHERE NOT EXISTS (SELECT 1 FROM MusicBand m WHERE m.coordinates.id = p.id)")
-	List<Coordinates> findUnusedCoordinates();
+    @Query("SELECT p FROM Coordinates p WHERE NOT EXISTS (SELECT 1 FROM MusicBand m WHERE m.coordinates.id = p.id)")
+    List<Coordinates> findUnusedCoordinates();
 
 }

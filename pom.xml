@@ -26,6 +26,7 @@
         <testcontainers.version>1.19.0</testcontainers.version>
         <checkstyle.version>10.12.1</checkstyle.version>
         <maven-checkstyle-plugin.version>3.3.0</maven-checkstyle-plugin.version>
+        <antlr4.version>4.13.0</antlr4.version>
     </properties>
 
     <profiles>
@@ -37,8 +38,24 @@
         </profile>
     </profiles>
 
-    <dependencies>
+    <dependencyManagement>
+        <dependencies>
+            <!-- Принудительно используем актуальную версию ANTLR -->
+            <dependency>
+                <groupId>org.antlr</groupId>
+                <artifactId>antlr4-runtime</artifactId>
+                <version>${antlr4.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.antlr</groupId>
+                <artifactId>antlr4</artifactId>
+                <version>${antlr4.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 
+    <dependencies>
+        <!-- Ваши текущие зависимости остаются без изменений -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
@@ -133,7 +150,6 @@
             <artifactId>checkstyle</artifactId>
             <version>${checkstyle.version}</version>
         </dependency>
-
     </dependencies>
 
     <build>
@@ -196,8 +212,7 @@
                     </execution>
                 </executions>
             </plugin>
-
         </plugins>
     </build>
-
+    
 </project>

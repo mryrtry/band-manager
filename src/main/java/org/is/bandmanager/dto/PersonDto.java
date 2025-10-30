@@ -14,18 +14,18 @@ import org.is.bandmanager.model.Country;
 @AllArgsConstructor
 public class PersonDto {
 
-	private Long id;
+    private Long id;
 
-	private String name;
+    private String name;
 
-	private Color eyeColor;
+    private Color eyeColor;
 
-	private Color hairColor;
+    private Color hairColor;
 
-	private LocationDto location;
+    private LocationDto location;
 
-	private Float weight;
+    private Float weight;
 
-	private Country nationality;
+    private Country nationality;
 
 }

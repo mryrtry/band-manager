@@ -31,82 +31,82 @@ import static org.is.bandmanager.exception.message.ServiceErrorMessage.SOURCE_NO
 @RequiredArgsConstructor
 public class AlbumServiceImpl implements AlbumService {
 
-	private final AlbumRepository albumRepository;
+    private final AlbumRepository albumRepository;
 
-	private final MusicBandRepository musicBandRepository;
+    private final MusicBandRepository musicBandRepository;
 
-	private final ApplicationEventPublisher eventPublisher;
+    private final ApplicationEventPublisher eventPublisher;
 
-	private final AlbumMapper mapper;
+    private final AlbumMapper mapper;
 
-	private Album findById(Long id) {
-		if (id == null) {
-			throw new ServiceException(MUST_BE_NOT_NULL, "Album.id");
-		}
-		return albumRepository.findById(id).orElseThrow(() -> new ServiceException(SOURCE_NOT_FOUND, "Album", id));
-	}
+    private Album findById(Long id) {
+        if (id == null) {
+            throw new ServiceException(MUST_BE_NOT_NULL, "Album.id");
+        }
+        return albumRepository.findById(id).orElseThrow(() -> new ServiceException(SOURCE_NOT_FOUND, "Album", id));
+    }
 
-	@Transactional
-	protected void checkDependencies(Album album) {
-		Long albumId = album.getId();
-		if (musicBandRepository.existsByBestAlbumId(albumId)) {
-			throw new ServiceException(ENTITY_IN_USE, "Album", albumId, "MusicBand");
-		}
-	}
+    @Transactional
+    protected void checkDependencies(Album album) {
+        Long albumId = album.getId();
+        if (musicBandRepository.existsByBestAlbumId(albumId)) {
+            throw new ServiceException(ENTITY_IN_USE, "Album", albumId, "MusicBand");
+        }
+    }
 
-	@Override
-	@Transactional
-	public AlbumDto create(AlbumRequest request) {
-		Album album = mapper.toEntity(request);
-		AlbumDto createdAlbum = mapper.toDto(albumRepository.save(album));
-		eventPublisher.publishEvent(new EntityEvent<>(CREATED, createdAlbum));
-		return createdAlbum;
-	}
+    @Override
+    @Transactional
+    public AlbumDto create(AlbumRequest request) {
+        Album album = mapper.toEntity(request);
+        AlbumDto createdAlbum = mapper.toDto(albumRepository.save(album));
+        eventPublisher.publishEvent(new EntityEvent<>(CREATED, createdAlbum));
+        return createdAlbum;
+    }
 
-	@Override
-	public List<AlbumDto> getAll() {
-		return albumRepository.findAll().stream().map(mapper::toDto).toList();
-	}
+    @Override
+    public List<AlbumDto> getAll() {
+        return albumRepository.findAll().stream().map(mapper::toDto).toList();
+    }
 
-	@Override
-	public AlbumDto get(Long id) {
-		return mapper.toDto(findById(id));
-	}
+    @Override
+    public AlbumDto get(Long id) {
+        return mapper.toDto(findById(id));
+    }
 
-	@Override
-	public Album getEntity(Long id) {
-		return findById(id);
-	}
+    @Override
+    public Album getEntity(Long id) {
+        return findById(id);
+    }
 
-	@Override
-	@Transactional
-	public AlbumDto update(Long id, AlbumRequest request) {
-		Album updatingAlbum = findById(id);
-		mapper.updateEntityFromRequest(request, updatingAlbum);
-		AlbumDto updatedAlbum = mapper.toDto(albumRepository.save(updatingAlbum));
-		eventPublisher.publishEvent(new EntityEvent<>(UPDATED, updatedAlbum));
-		return updatedAlbum;
-	}
+    @Override
+    @Transactional
+    public AlbumDto update(Long id, AlbumRequest request) {
+        Album updatingAlbum = findById(id);
+        mapper.updateEntityFromRequest(request, updatingAlbum);
+        AlbumDto updatedAlbum = mapper.toDto(albumRepository.save(updatingAlbum));
+        eventPublisher.publishEvent(new EntityEvent<>(UPDATED, updatedAlbum));
+        return updatedAlbum;
+    }
 
-	@Override
-	@Transactional
-	public AlbumDto delete(Long id) {
-		Album album = findById(id);
-		checkDependencies(album);
-		albumRepository.delete(album);
-		AlbumDto deletedAlbum = mapper.toDto(album);
-		eventPublisher.publishEvent(new EntityEvent<>(DELETED, deletedAlbum));
-		return deletedAlbum;
-	}
+    @Override
+    @Transactional
+    public AlbumDto delete(Long id) {
+        Album album = findById(id);
+        checkDependencies(album);
+        albumRepository.delete(album);
+        AlbumDto deletedAlbum = mapper.toDto(album);
+        eventPublisher.publishEvent(new EntityEvent<>(DELETED, deletedAlbum));
+        return deletedAlbum;
+    }
 
-	@Transactional
-	@Scheduled(cron = "${band-manager.clean-up-interval}")
-	public void cleanupUnusedAlbums() {
-		List<Album> unusedAlbums = albumRepository.findUnusedAlbum();
-		if (!unusedAlbums.isEmpty()) {
-			albumRepository.deleteAll(unusedAlbums);
-			eventPublisher.publishEvent(new EntityEvent<>(BULK_DELETED, unusedAlbums.stream().map(mapper::toDto).toList()));
-		}
-	}
+    @Transactional
+    @Scheduled(cron = "${band-manager.clean-up-interval}")
+    public void cleanupUnusedAlbums() {
+        List<Album> unusedAlbums = albumRepository.findUnusedAlbum();
+        if (!unusedAlbums.isEmpty()) {
+            albumRepository.deleteAll(unusedAlbums);
+            eventPublisher.publishEvent(new EntityEvent<>(BULK_DELETED, unusedAlbums.stream().map(mapper::toDto).toList()));
+        }
+    }
 
 }

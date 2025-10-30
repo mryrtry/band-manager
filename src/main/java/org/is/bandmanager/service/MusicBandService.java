@@ -14,26 +14,26 @@ import java.util.List;
 
 public interface MusicBandService {
 
-	MusicBandDto create(@Valid MusicBandRequest request);
+    MusicBandDto create(@Valid MusicBandRequest request);
 
-	Page<MusicBandDto> getAll(@Valid MusicBandFilter filter, Pageable pageable);
+    Page<MusicBandDto> getAll(@Valid MusicBandFilter filter, Pageable pageable);
 
-	MusicBandDto get(Integer id);
+    MusicBandDto get(Integer id);
 
-	MusicBand getEntity(Integer id);
+    MusicBand getEntity(Integer id);
 
-	MusicBandDto getWithMaxCoordinates();
+    MusicBandDto getWithMaxCoordinates();
 
-	List<MusicBandDto> getByEstablishmentDateBefore(Date date);
+    List<MusicBandDto> getByEstablishmentDateBefore(Date date);
 
-	List<Long> getDistinctAlbumsCount();
+    List<Long> getDistinctAlbumsCount();
 
-	MusicBandDto update(Integer id, @Valid MusicBandRequest request);
+    MusicBandDto update(Integer id, @Valid MusicBandRequest request);
 
-	MusicBandDto delete(Integer id);
+    MusicBandDto delete(Integer id);
 
-	List<MusicBandDto> delete(List<Integer> ids);
+    List<MusicBandDto> delete(List<Integer> ids);
 
-	MusicBandDto removeParticipant(Integer id);
+    MusicBandDto removeParticipant(Integer id);
 
 }
