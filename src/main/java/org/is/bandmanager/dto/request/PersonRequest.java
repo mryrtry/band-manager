@@ -8,6 +8,7 @@ import lombok.Data;
 import org.is.bandmanager.model.Color;
 import org.is.bandmanager.model.Country;
 
+
 @Builder
 @Data
 public class PersonRequest {

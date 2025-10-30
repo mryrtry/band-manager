@@ -1,4 +1,4 @@
-package org.is.bandmanager.service;
+package org.is.bandmanager.service.person;
 
 import jakarta.validation.Valid;
 import org.is.bandmanager.dto.PersonDto;
@@ -6,6 +6,7 @@ import org.is.bandmanager.dto.request.PersonRequest;
 import org.is.bandmanager.model.Person;
 
 import java.util.List;
+
 
 public interface PersonService {
 

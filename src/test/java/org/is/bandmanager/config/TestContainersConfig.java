@@ -10,11 +10,7 @@ public class TestContainersConfig {
 
     @Bean
     public PostgreSQLContainer<?> postgreSQLContainer() {
-        PostgreSQLContainer<?> container = new PostgreSQLContainer<>(DockerImageName.parse("postgres:15-alpine"))
-                .withDatabaseName("band_manager_test")
-                .withUsername("test_user")
-                .withPassword("test_password")
-                .withReuse(true);
+        PostgreSQLContainer<?> container = new PostgreSQLContainer<>(DockerImageName.parse("postgres:15-alpine")).withDatabaseName("band_manager_test").withUsername("test_user").withPassword("test_password").withReuse(true);
         container.start();
         return container;
     }

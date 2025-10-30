@@ -1,4 +1,4 @@
-package org.is.bandmanager.service;
+package org.is.bandmanager.service.coordinates;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -10,41 +10,47 @@ import org.is.bandmanager.exception.ServiceException;
 import org.is.bandmanager.model.Coordinates;
 import org.is.bandmanager.repository.CoordinatesRepository;
 import org.is.bandmanager.repository.MusicBandRepository;
+import org.is.bandmanager.service.cleanup.CleanupStrategy;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.scheduling.annotation.Async;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 
 import java.util.List;
 
-import static org.is.bandmanager.event.EventType.*;
-import static org.is.bandmanager.exception.message.ServiceErrorMessage.*;
+import static org.is.bandmanager.event.EventType.CREATED;
+import static org.is.bandmanager.event.EventType.DELETED;
+import static org.is.bandmanager.event.EventType.UPDATED;
+import static org.is.bandmanager.exception.message.ServiceErrorMessage.ENTITY_IN_USE;
+import static org.is.bandmanager.exception.message.ServiceErrorMessage.MUST_BE_NOT_NULL;
+import static org.is.bandmanager.exception.message.ServiceErrorMessage.SOURCE_NOT_FOUND;
+
 
 @Service
 @Validated
 @RequiredArgsConstructor
-public class CoordinatesServiceImpl implements CoordinatesService {
+public class CoordinatesServiceImpl implements CoordinatesService, CleanupStrategy<Coordinates, CoordinatesDto> {
 
     private final CoordinatesRepository coordinatesRepository;
+
     private final MusicBandRepository musicBandRepository;
 
     private final ApplicationEventPublisher eventPublisher;
+
     private final CoordinatesMapper mapper;
 
     private Coordinates findById(Long id) {
         if (id == null) {
             throw new ServiceException(MUST_BE_NOT_NULL, "Coordinates.id");
         }
-        return coordinatesRepository.findById(id)
-                .orElseThrow(() -> new ServiceException(SOURCE_NOT_FOUND, "Coordinates", id));
+        return coordinatesRepository.findById(id).orElseThrow(() -> new ServiceException(SOURCE_NOT_FOUND, "Coordinates", id));
     }
 
     @Transactional
     protected void checkDependencies(Coordinates coordinates) {
         Long coordinatesId = coordinates.getId();
-        if (musicBandRepository.existsByCoordinatesId(coordinatesId))
+        if (musicBandRepository.existsByCoordinatesId(coordinatesId)) {
             throw new ServiceException(ENTITY_IN_USE, "Coordinates", coordinatesId, "MusicBand");
+        }
     }
 
     @Override
@@ -92,15 +98,24 @@ public class CoordinatesServiceImpl implements CoordinatesService {
         return deletedCoordinates;
     }
 
-    @Async("cleanupTaskExecutor")
-    @Scheduled(fixedDelay = 300000)
-    @Transactional
-    public void cleanupUnusedCoordinates() {
-        List<Coordinates> unusedCoordinates = coordinatesRepository.findUnusedCoordinates();
-        if (!unusedCoordinates.isEmpty()) {
-            coordinatesRepository.deleteAll(unusedCoordinates);
-            eventPublisher.publishEvent(new EntityEvent<>(BULK_DELETED, unusedCoordinates.stream().map(mapper::toDto).toList()));
-        }
+    @Override
+    public List<Coordinates> findUnusedEntities() {
+        return coordinatesRepository.findUnusedCoordinates();
+    }
+
+    @Override
+    public void deleteEntities(List<Coordinates> entities) {
+        coordinatesRepository.deleteAll(entities);
+    }
+
+    @Override
+    public List<CoordinatesDto> convertToDto(List<Coordinates> entities) {
+        return entities.stream().map(mapper::toDto).toList();
+    }
+
+    @Override
+    public String getEntityName() {
+        return "Coordinates";
     }
 
 }

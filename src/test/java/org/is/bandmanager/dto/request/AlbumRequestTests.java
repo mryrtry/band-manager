@@ -25,11 +25,7 @@ class AlbumRequestTests {
     @Test
     void shouldCreateValidAlbumRequest() {
         // Given
-        AlbumRequest request = AlbumRequest.builder()
-                .name("Test Album")
-                .tracks(10L)
-                .sales(50000)
-                .build();
+        AlbumRequest request = AlbumRequest.builder().name("Test Album").tracks(10L).sales(50000).build();
 
         // When
         Set<ConstraintViolation<AlbumRequest>> violations = validator.validate(request);
@@ -41,11 +37,7 @@ class AlbumRequestTests {
     @Test
     void shouldFailWhenNameIsNull() {
         // Given
-        AlbumRequest request = AlbumRequest.builder()
-                .name(null)
-                .tracks(10L)
-                .sales(50000)
-                .build();
+        AlbumRequest request = AlbumRequest.builder().name(null).tracks(10L).sales(50000).build();
 
         // When
         Set<ConstraintViolation<AlbumRequest>> violations = validator.validate(request);
@@ -60,11 +52,7 @@ class AlbumRequestTests {
     @Test
     void shouldFailWhenNameIsBlank() {
         // Given
-        AlbumRequest request = AlbumRequest.builder()
-                .name("   ")
-                .tracks(10L)
-                .sales(50000)
-                .build();
+        AlbumRequest request = AlbumRequest.builder().name("   ").tracks(10L).sales(50000).build();
 
         // When
         Set<ConstraintViolation<AlbumRequest>> violations = validator.validate(request);
@@ -79,11 +67,7 @@ class AlbumRequestTests {
     @Test
     void shouldFailWhenNameIsEmpty() {
         // Given
-        AlbumRequest request = AlbumRequest.builder()
-                .name("")
-                .tracks(10L)
-                .sales(50000)
-                .build();
+        AlbumRequest request = AlbumRequest.builder().name("").tracks(10L).sales(50000).build();
 
         // When
         Set<ConstraintViolation<AlbumRequest>> violations = validator.validate(request);
@@ -98,11 +82,7 @@ class AlbumRequestTests {
     @Test
     void shouldFailWhenTracksIsNull() {
         // Given
-        AlbumRequest request = AlbumRequest.builder()
-                .name("Test Album")
-                .tracks(null)
-                .sales(50000)
-                .build();
+        AlbumRequest request = AlbumRequest.builder().name("Test Album").tracks(null).sales(50000).build();
 
         // When
         Set<ConstraintViolation<AlbumRequest>> violations = validator.validate(request);
@@ -117,11 +97,7 @@ class AlbumRequestTests {
     @Test
     void shouldFailWhenTracksIsZero() {
         // Given
-        AlbumRequest request = AlbumRequest.builder()
-                .name("Test Album")
-                .tracks(0L)
-                .sales(50000)
-                .build();
+        AlbumRequest request = AlbumRequest.builder().name("Test Album").tracks(0L).sales(50000).build();
 
         // When
         Set<ConstraintViolation<AlbumRequest>> violations = validator.validate(request);
@@ -136,11 +112,7 @@ class AlbumRequestTests {
     @Test
     void shouldFailWhenTracksIsNegative() {
         // Given
-        AlbumRequest request = AlbumRequest.builder()
-                .name("Test Album")
-                .tracks(-5L)
-                .sales(50000)
-                .build();
+        AlbumRequest request = AlbumRequest.builder().name("Test Album").tracks(-5L).sales(50000).build();
 
         // When
         Set<ConstraintViolation<AlbumRequest>> violations = validator.validate(request);
@@ -155,11 +127,7 @@ class AlbumRequestTests {
     @Test
     void shouldFailWhenSalesIsZero() {
         // Given
-        AlbumRequest request = AlbumRequest.builder()
-                .name("Test Album")
-                .tracks(10L)
-                .sales(0)
-                .build();
+        AlbumRequest request = AlbumRequest.builder().name("Test Album").tracks(10L).sales(0).build();
 
         // When
         Set<ConstraintViolation<AlbumRequest>> violations = validator.validate(request);
@@ -174,11 +142,7 @@ class AlbumRequestTests {
     @Test
     void shouldFailWhenSalesIsNegative() {
         // Given
-        AlbumRequest request = AlbumRequest.builder()
-                .name("Test Album")
-                .tracks(10L)
-                .sales(-100)
-                .build();
+        AlbumRequest request = AlbumRequest.builder().name("Test Album").tracks(10L).sales(-100).build();
 
         // When
         Set<ConstraintViolation<AlbumRequest>> violations = validator.validate(request);
@@ -193,11 +157,7 @@ class AlbumRequestTests {
     @Test
     void shouldBeValidWhenSalesIsNull() {
         // Given
-        AlbumRequest request = AlbumRequest.builder()
-                .name("Test Album")
-                .tracks(10L)
-                .sales(null)
-                .build();
+        AlbumRequest request = AlbumRequest.builder().name("Test Album").tracks(10L).sales(null).build();
 
         // When
         Set<ConstraintViolation<AlbumRequest>> violations = validator.validate(request);
@@ -209,21 +169,14 @@ class AlbumRequestTests {
     @Test
     void shouldFailWithMultipleViolations() {
         // Given
-        AlbumRequest request = AlbumRequest.builder()
-                .name("")
-                .tracks(0L)
-                .sales(0)
-                .build();
+        AlbumRequest request = AlbumRequest.builder().name("").tracks(0L).sales(0).build();
 
         // When
         Set<ConstraintViolation<AlbumRequest>> violations = validator.validate(request);
 
         // Then
         assertThat(violations).hasSize(3);
-        assertThat(violations)
-                .extracting(ConstraintViolation::getPropertyPath)
-                .extracting(Object::toString)
-                .containsExactlyInAnyOrder("name", "tracks", "sales");
+        assertThat(violations).extracting(ConstraintViolation::getPropertyPath).extracting(Object::toString).containsExactlyInAnyOrder("name", "tracks", "sales");
     }
 
 }

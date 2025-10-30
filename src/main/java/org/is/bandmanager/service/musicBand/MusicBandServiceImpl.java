@@ -1,29 +1,39 @@
-package org.is.bandmanager.service;
+package org.is.bandmanager.service.musicBand;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.is.bandmanager.dto.MusicBandDto;
 import org.is.bandmanager.dto.MusicBandMapper;
-import org.is.bandmanager.dto.request.MusicBandFilter;
+import org.is.bandmanager.repository.filter.MusicBandFilter;
 import org.is.bandmanager.dto.request.MusicBandRequest;
 import org.is.bandmanager.event.EntityEvent;
 import org.is.bandmanager.exception.ServiceException;
 import org.is.bandmanager.model.MusicBand;
 import org.is.bandmanager.repository.BestBandAwardRepository;
 import org.is.bandmanager.repository.MusicBandRepository;
-import org.is.bandmanager.service.pageable.PageableConfig;
-import org.is.bandmanager.service.pageable.PageableUtil;
+import org.is.bandmanager.service.person.PersonService;
+import org.is.bandmanager.service.album.AlbumService;
+import org.is.bandmanager.service.coordinates.CoordinatesService;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
+import org.is.bandmanager.util.pageable.PageableConfig;
+import org.is.bandmanager.util.pageable.PageableCreator;
+import org.is.bandmanager.util.pageable.PageableType;
 
 import java.util.Date;
 import java.util.List;
 
-import static org.is.bandmanager.event.EventType.*;
-import static org.is.bandmanager.exception.message.ServiceErrorMessage.*;
+import static org.is.bandmanager.event.EventType.BULK_DELETED;
+import static org.is.bandmanager.event.EventType.CREATED;
+import static org.is.bandmanager.event.EventType.DELETED;
+import static org.is.bandmanager.event.EventType.UPDATED;
+import static org.is.bandmanager.exception.message.ServiceErrorMessage.CANNOT_REMOVE_LAST_PARTICIPANT;
+import static org.is.bandmanager.exception.message.ServiceErrorMessage.MUST_BE_NOT_NULL;
+import static org.is.bandmanager.exception.message.ServiceErrorMessage.SOURCE_NOT_FOUND;
+
 
 @Service
 @Validated
@@ -31,21 +41,24 @@ import static org.is.bandmanager.exception.message.ServiceErrorMessage.*;
 public class MusicBandServiceImpl implements MusicBandService {
 
     private final MusicBandRepository musicBandRepository;
+
     private final BestBandAwardRepository bestBandAwardRepository;
 
     private final PersonService personService;
+
     private final AlbumService albumService;
+
     private final CoordinatesService coordinatesService;
 
     private final ApplicationEventPublisher eventPublisher;
+
     private final MusicBandMapper mapper;
 
     private MusicBand findById(Integer id) {
         if (id == null) {
             throw new ServiceException(MUST_BE_NOT_NULL, "MusicBand.id");
         }
-        return musicBandRepository.findById(id)
-                .orElseThrow(() -> new ServiceException(SOURCE_NOT_FOUND, "MusicBand", id));
+        return musicBandRepository.findById(id).orElseThrow(() -> new ServiceException(SOURCE_NOT_FOUND, "MusicBand", id));
     }
 
     @Transactional
@@ -73,7 +86,7 @@ public class MusicBandServiceImpl implements MusicBandService {
 
     @Override
     public Page<MusicBandDto> getAll(MusicBandFilter filter, PageableConfig config) {
-        Pageable pageable = PageableUtil.createMusicBandPageable(config);
+        Pageable pageable = PageableCreator.create(config, PageableType.MUSIC_BANDS);
         Page<MusicBand> bands = musicBandRepository.findWithFilter(filter, pageable);
         return bands.map(mapper::toDto);
     }
@@ -90,8 +103,7 @@ public class MusicBandServiceImpl implements MusicBandService {
 
     @Override
     public MusicBandDto getWithMaxCoordinates() {
-        MusicBand band = musicBandRepository.findBandWithMaxCoordinates()
-                .orElseThrow(() -> new ServiceException(SOURCE_NOT_FOUND, "MusicBand.MaxCoordinates"));
+        MusicBand band = musicBandRepository.findBandWithMaxCoordinates().orElseThrow(() -> new ServiceException(SOURCE_NOT_FOUND, "MusicBand.MaxCoordinates"));
         return mapper.toDto(band);
     }
 
@@ -130,7 +142,9 @@ public class MusicBandServiceImpl implements MusicBandService {
     @Override
     @Transactional
     public List<MusicBandDto> delete(List<Integer> ids) {
-        if (ids == null || ids.isEmpty()) return List.of();
+        if (ids == null || ids.isEmpty()) {
+            return List.of();
+        }
         List<MusicBand> bands = musicBandRepository.findAllById(ids);
         checkDependencies(bands);
         musicBandRepository.deleteAll(bands);

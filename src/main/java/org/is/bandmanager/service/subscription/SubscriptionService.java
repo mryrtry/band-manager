@@ -15,10 +15,10 @@ public interface SubscriptionService {
 
     void cancelAllPrincipalSubscriptions(String principalId);
 
-    void cancelDeadSubscriptions();
-
-    void handleEntityEvent(EntityEvent<?> entityEvent);
-
     void notifySubscription(UUID subscriptionId);
+
+    void handleEntityEventInternal(EntityEvent<?> entityEvent);
+
+    void cleanupDeadSubscriptionsInternal();
 
 }

@@ -1,4 +1,4 @@
-package org.is.bandmanager.service;
+package org.is.bandmanager.service.album;
 
 import jakarta.validation.Valid;
 import org.is.bandmanager.dto.AlbumDto;
@@ -6,6 +6,7 @@ import org.is.bandmanager.dto.request.AlbumRequest;
 import org.is.bandmanager.model.Album;
 
 import java.util.List;
+
 
 public interface AlbumService {
 

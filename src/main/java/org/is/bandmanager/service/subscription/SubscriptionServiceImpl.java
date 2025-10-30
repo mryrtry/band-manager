@@ -1,23 +1,19 @@
 package org.is.bandmanager.service.subscription;
 
 import lombok.RequiredArgsConstructor;
-import org.is.bandmanager.dto.BestBandAwardDto;
-import org.is.bandmanager.dto.MusicBandDto;
-import org.is.bandmanager.dto.request.BestBandAwardFilter;
-import org.is.bandmanager.dto.request.MusicBandFilter;
+import org.is.bandmanager.repository.filter.BestBandAwardFilter;
 import org.is.bandmanager.event.EntityEvent;
 import org.is.bandmanager.exception.ServiceException;
-import org.is.bandmanager.repository.specifications.EntityFilter;
-import org.is.bandmanager.service.BestBandAwardService;
-import org.is.bandmanager.service.MusicBandService;
+import org.is.bandmanager.repository.filter.EntityFilter;
+import org.is.bandmanager.repository.filter.MusicBandFilter;
+import org.is.bandmanager.service.bestBandAward.BestBandAwardService;
+import org.is.bandmanager.service.musicBand.MusicBandService;
 import org.is.bandmanager.service.subscription.model.Subscription;
 import org.is.bandmanager.service.subscription.model.request.SubscriptionRequest;
 import org.is.bandmanager.service.subscription.notifier.SubscriptionNotifier;
 import org.is.bandmanager.service.subscription.storage.SubscriptionStorage;
-import org.springframework.context.event.EventListener;
 import org.springframework.data.domain.Page;
 import org.springframework.scheduling.annotation.Async;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -32,20 +28,12 @@ import static org.is.bandmanager.exception.message.ServiceErrorMessage.SOURCE_NO
 public class SubscriptionServiceImpl implements SubscriptionService {
 
     private final SubscriptionStorage storage;
+
     private final SubscriptionNotifier notifier;
 
     private final MusicBandService musicBandService;
+
     private final BestBandAwardService bestBandAwardService;
-
-    private Subscription<?> getSubscription(UUID id) {
-        return storage.getSubscription(id)
-                .orElseThrow(() -> new ServiceException(SOURCE_NOT_FOUND, "Subscription", id));
-    }
-
-    private void assertSessionEquals(String principalId, Subscription<?> subscription) {
-        if (!Objects.equals(subscription.getPrincipalId(), principalId))
-            throw new ServiceException(CANNOT_ACCESS_SOURCE, "Subscription", subscription.getSubscriptionId());
-    }
 
     @Override
     public void createSubscription(String principalId, SubscriptionRequest<?> subscriptionRequest) {
@@ -75,29 +63,34 @@ public class SubscriptionServiceImpl implements SubscriptionService {
 
     @Override
     @Async("subscriptionTaskExecutor")
-    @Scheduled(fixedRate = 1800000)
-    public void cancelDeadSubscriptions() {
-        storage.deleteDeadSubscriptions();
+    public void notifySubscription(UUID subscriptionId) {
+        sendSubscriptionData(getSubscription(subscriptionId));
     }
 
-    @Override
-    @Async("subscriptionTaskExecutor")
-    @EventListener(EntityEvent.class)
-    public void handleEntityEvent(EntityEvent<?> entityEvent) {
+    public void handleEntityEventInternal(EntityEvent<?> entityEvent) {
         if (entityEvent.getEntities().isEmpty()) return;
-        if (entityEvent.getEntities().get(0).getClass().equals(MusicBandDto.class)) {
+
+        if (entityEvent.getEntities().get(0).getClass().equals(org.is.bandmanager.dto.MusicBandDto.class)) {
             List<Subscription<MusicBandFilter>> subscriptions = storage.getSubscriptionsByType(MusicBandFilter.class);
             subscriptions.forEach(this::sendSubscriptionData);
-        } else if (entityEvent.getEntities().get(0).getClass().equals(BestBandAwardDto.class)) {
+        } else if (entityEvent.getEntities().get(0).getClass().equals(org.is.bandmanager.dto.BestBandAwardDto.class)) {
             List<Subscription<BestBandAwardFilter>> subscriptions = storage.getSubscriptionsByType(BestBandAwardFilter.class);
             subscriptions.forEach(this::sendSubscriptionData);
         }
     }
 
-    @Override
-    @Async("subscriptionTaskExecutor")
-    public void notifySubscription(UUID subscriptionId) {
-        sendSubscriptionData(getSubscription(subscriptionId));
+    public void cleanupDeadSubscriptionsInternal() {
+        storage.deleteDeadSubscriptions();
+    }
+
+    private Subscription<?> getSubscription(UUID id) {
+        return storage.getSubscription(id)
+                .orElseThrow(() -> new ServiceException(SOURCE_NOT_FOUND, "Subscription", id));
+    }
+
+    private void assertSessionEquals(String principalId, Subscription<?> subscription) {
+        if (!Objects.equals(subscription.getPrincipalId(), principalId))
+            throw new ServiceException(CANNOT_ACCESS_SOURCE, "Subscription", subscription.getSubscriptionId());
     }
 
     private void sendSubscriptionData(Subscription<?> subscription) {

@@ -1,4 +1,4 @@
-package org.is.bandmanager.service;
+package org.is.bandmanager.service.location;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -10,41 +10,47 @@ import org.is.bandmanager.exception.ServiceException;
 import org.is.bandmanager.model.Location;
 import org.is.bandmanager.repository.LocationRepository;
 import org.is.bandmanager.repository.PersonRepository;
+import org.is.bandmanager.service.cleanup.CleanupStrategy;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.scheduling.annotation.Async;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 
 import java.util.List;
 
-import static org.is.bandmanager.event.EventType.*;
-import static org.is.bandmanager.exception.message.ServiceErrorMessage.*;
+import static org.is.bandmanager.event.EventType.CREATED;
+import static org.is.bandmanager.event.EventType.DELETED;
+import static org.is.bandmanager.event.EventType.UPDATED;
+import static org.is.bandmanager.exception.message.ServiceErrorMessage.ENTITY_IN_USE;
+import static org.is.bandmanager.exception.message.ServiceErrorMessage.MUST_BE_NOT_NULL;
+import static org.is.bandmanager.exception.message.ServiceErrorMessage.SOURCE_NOT_FOUND;
+
 
 @Service
 @Validated
 @RequiredArgsConstructor
-public class LocationServiceImpl implements LocationService {
+public class LocationServiceImpl implements LocationService, CleanupStrategy<Location, LocationDto> {
 
     private final LocationRepository locationRepository;
+
     private final PersonRepository personRepository;
 
     private final ApplicationEventPublisher eventPublisher;
+
     private final LocationMapper mapper;
 
     private Location findById(Long id) {
         if (id == null) {
             throw new ServiceException(MUST_BE_NOT_NULL, "Location.id");
         }
-        return locationRepository.findById(id)
-                .orElseThrow(() -> new ServiceException(SOURCE_NOT_FOUND, "Location", id));
+        return locationRepository.findById(id).orElseThrow(() -> new ServiceException(SOURCE_NOT_FOUND, "Location", id));
     }
 
     @Transactional
     protected void checkDependencies(Location location) {
         Long locationId = location.getId();
-        if (personRepository.existsByLocationId(locationId))
+        if (personRepository.existsByLocationId(locationId)) {
             throw new ServiceException(ENTITY_IN_USE, "Location", locationId, "Person");
+        }
     }
 
     @Override
@@ -92,15 +98,24 @@ public class LocationServiceImpl implements LocationService {
         return deletedLocation;
     }
 
-    @Async("cleanupTaskExecutor")
-    @Scheduled(fixedDelay = 300000)
-    @Transactional
-    public void cleanupUnusedLocations() {
-        List<Location> unusedLocations = locationRepository.findUnusedLocations();
-        if (!unusedLocations.isEmpty()) {
-            locationRepository.deleteAll(unusedLocations);
-            eventPublisher.publishEvent(new EntityEvent<>(BULK_DELETED, unusedLocations.stream().map(mapper::toDto).toList()));
-        }
+    @Override
+    public List<Location> findUnusedEntities() {
+        return locationRepository.findUnusedLocations();
+    }
+
+    @Override
+    public void deleteEntities(List<Location> entities) {
+        locationRepository.deleteAll(entities);
+    }
+
+    @Override
+    public List<LocationDto> convertToDto(List<Location> entities) {
+        return entities.stream().map(mapper::toDto).toList();
+    }
+
+    @Override
+    public String getEntityName() {
+        return "Location";
     }
 
 }

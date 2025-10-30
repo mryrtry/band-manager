@@ -2,11 +2,15 @@ package org.is.bandmanager.dto;
 
 import org.is.bandmanager.dto.request.MusicBandRequest;
 import org.is.bandmanager.model.MusicBand;
-import org.mapstruct.*;
+import org.mapstruct.BeanMapping;
+import org.mapstruct.InjectionStrategy;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.MappingTarget;
+import org.mapstruct.NullValuePropertyMappingStrategy;
 
-@Mapper(componentModel = "spring",
-        uses = {AlbumMapper.class, PersonMapper.class, CoordinatesMapper.class},
-        injectionStrategy = InjectionStrategy.CONSTRUCTOR)
+
+@Mapper(componentModel = "spring", uses = {AlbumMapper.class, PersonMapper.class, CoordinatesMapper.class}, injectionStrategy = InjectionStrategy.CONSTRUCTOR)
 public interface MusicBandMapper {
 
     @Mapping(target = "coordinates", source = "coordinates")

@@ -1,10 +1,10 @@
 package org.is.bandmanager.repository.specifications;
 
-import org.is.bandmanager.dto.request.BestBandAwardFilter;
+import org.is.bandmanager.repository.filter.BestBandAwardFilter;
 import org.is.bandmanager.model.BestBandAward;
 import org.springframework.data.jpa.domain.Specification;
 
-public class BestBandAwardSpecifications {
+public final class BestBandAwardSpecifications {
 
     public static Specification<BestBandAward> withFilter(BestBandAwardFilter filter) {
         if (filter == null) return null;

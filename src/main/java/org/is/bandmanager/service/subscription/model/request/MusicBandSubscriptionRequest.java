@@ -1,7 +1,7 @@
 package org.is.bandmanager.service.subscription.model.request;
 
-import org.is.bandmanager.dto.request.MusicBandFilter;
-import org.is.bandmanager.service.pageable.PageableConfig;
+import org.is.bandmanager.repository.filter.MusicBandFilter;
+import org.is.bandmanager.util.pageable.PageableConfig;
 
 import java.util.UUID;
 

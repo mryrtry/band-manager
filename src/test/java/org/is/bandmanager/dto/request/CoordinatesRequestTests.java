@@ -25,10 +25,7 @@ class CoordinatesRequestTests {
     @Test
     void shouldCreateValidCoordinatesRequest() {
         // Given
-        CoordinatesRequest request = CoordinatesRequest.builder()
-                .x(100)
-                .y(50.5f)
-                .build();
+        CoordinatesRequest request = CoordinatesRequest.builder().x(100).y(50.5f).build();
 
         // When
         Set<ConstraintViolation<CoordinatesRequest>> violations = validator.validate(request);
@@ -40,10 +37,7 @@ class CoordinatesRequestTests {
     @Test
     void shouldCreateValidCoordinatesRequestWithNullY() {
         // Given
-        CoordinatesRequest request = CoordinatesRequest.builder()
-                .x(100)
-                .y(null)
-                .build();
+        CoordinatesRequest request = CoordinatesRequest.builder().x(100).y(null).build();
 
         // When
         Set<ConstraintViolation<CoordinatesRequest>> violations = validator.validate(request);
@@ -55,10 +49,7 @@ class CoordinatesRequestTests {
     @Test
     void shouldFailWhenXIsNull() {
         // Given
-        CoordinatesRequest request = CoordinatesRequest.builder()
-                .x(null)
-                .y(50.5f)
-                .build();
+        CoordinatesRequest request = CoordinatesRequest.builder().x(null).y(50.5f).build();
 
         // When
         Set<ConstraintViolation<CoordinatesRequest>> violations = validator.validate(request);
@@ -73,10 +64,7 @@ class CoordinatesRequestTests {
     @Test
     void shouldFailWhenXIsEqualToMinus147() {
         // Given
-        CoordinatesRequest request = CoordinatesRequest.builder()
-                .x(-147)
-                .y(50.5f)
-                .build();
+        CoordinatesRequest request = CoordinatesRequest.builder().x(-147).y(50.5f).build();
 
         // When
         Set<ConstraintViolation<CoordinatesRequest>> violations = validator.validate(request);
@@ -91,10 +79,7 @@ class CoordinatesRequestTests {
     @Test
     void shouldFailWhenXIsLessThanMinus147() {
         // Given
-        CoordinatesRequest request = CoordinatesRequest.builder()
-                .x(-148)
-                .y(50.5f)
-                .build();
+        CoordinatesRequest request = CoordinatesRequest.builder().x(-148).y(50.5f).build();
 
         // When
         Set<ConstraintViolation<CoordinatesRequest>> violations = validator.validate(request);
@@ -109,10 +94,7 @@ class CoordinatesRequestTests {
     @Test
     void shouldBeValidWhenXIsGreaterThanMinus147() {
         // Given
-        CoordinatesRequest request = CoordinatesRequest.builder()
-                .x(-146)
-                .y(50.5f)
-                .build();
+        CoordinatesRequest request = CoordinatesRequest.builder().x(-146).y(50.5f).build();
 
         // When
         Set<ConstraintViolation<CoordinatesRequest>> violations = validator.validate(request);
@@ -124,10 +106,7 @@ class CoordinatesRequestTests {
     @Test
     void shouldBeValidWhenXIsPositive() {
         // Given
-        CoordinatesRequest request = CoordinatesRequest.builder()
-                .x(1000)
-                .y(50.5f)
-                .build();
+        CoordinatesRequest request = CoordinatesRequest.builder().x(1000).y(50.5f).build();
 
         // When
         Set<ConstraintViolation<CoordinatesRequest>> violations = validator.validate(request);
@@ -139,10 +118,7 @@ class CoordinatesRequestTests {
     @Test
     void shouldBeValidWhenXIsZero() {
         // Given
-        CoordinatesRequest request = CoordinatesRequest.builder()
-                .x(0)
-                .y(50.5f)
-                .build();
+        CoordinatesRequest request = CoordinatesRequest.builder().x(0).y(50.5f).build();
 
         // When
         Set<ConstraintViolation<CoordinatesRequest>> violations = validator.validate(request);
@@ -154,10 +130,7 @@ class CoordinatesRequestTests {
     @Test
     void shouldBeValidWhenXIsMinus146() {
         // Given
-        CoordinatesRequest request = CoordinatesRequest.builder()
-                .x(-146)
-                .y(50.5f)
-                .build();
+        CoordinatesRequest request = CoordinatesRequest.builder().x(-146).y(50.5f).build();
 
         // When
         Set<ConstraintViolation<CoordinatesRequest>> violations = validator.validate(request);
@@ -169,10 +142,7 @@ class CoordinatesRequestTests {
     @Test
     void shouldBeValidWithAllFieldsNullExceptX() {
         // Given
-        CoordinatesRequest request = CoordinatesRequest.builder()
-                .x(100)
-                .y(null)
-                .build();
+        CoordinatesRequest request = CoordinatesRequest.builder().x(100).y(null).build();
 
         // When
         Set<ConstraintViolation<CoordinatesRequest>> violations = validator.validate(request);
@@ -184,10 +154,7 @@ class CoordinatesRequestTests {
     @Test
     void shouldFailWithMultipleViolations() {
         // Given
-        CoordinatesRequest request = CoordinatesRequest.builder()
-                .x(-147)
-                .y(null)
-                .build();
+        CoordinatesRequest request = CoordinatesRequest.builder().x(-147).y(null).build();
 
         // When
         Set<ConstraintViolation<CoordinatesRequest>> violations = validator.validate(request);

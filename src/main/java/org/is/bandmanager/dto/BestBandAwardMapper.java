@@ -2,10 +2,15 @@ package org.is.bandmanager.dto;
 
 import org.is.bandmanager.dto.request.BestBandAwardRequest;
 import org.is.bandmanager.model.BestBandAward;
-import org.mapstruct.*;
+import org.mapstruct.BeanMapping;
+import org.mapstruct.InjectionStrategy;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.MappingTarget;
+import org.mapstruct.NullValuePropertyMappingStrategy;
 
-@Mapper(componentModel = "spring",
-        injectionStrategy = InjectionStrategy.CONSTRUCTOR)
+
+@Mapper(componentModel = "spring", injectionStrategy = InjectionStrategy.CONSTRUCTOR)
 public interface BestBandAwardMapper {
 
     @Mapping(target = "bandId", source = "band.id")

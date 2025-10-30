@@ -1,6 +1,6 @@
 package org.is.bandmanager.repository;
 
-import org.is.bandmanager.dto.request.MusicBandFilter;
+import org.is.bandmanager.repository.filter.MusicBandFilter;
 import org.is.bandmanager.model.MusicBand;
 import org.is.bandmanager.repository.specifications.MusicBandSpecifications;
 import org.springframework.data.domain.Page;

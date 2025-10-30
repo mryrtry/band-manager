@@ -4,7 +4,11 @@ import org.is.bandmanager.config.IntegrationTest;
 import org.is.bandmanager.dto.request.LocationRequest;
 import org.is.bandmanager.model.Location;
 import org.is.bandmanager.repository.LocationRepository;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.http.MediaType;
@@ -28,9 +32,7 @@ class LocationControllerTest extends AbstractIntegrationTest {
 
     @BeforeAll
     void setClient() {
-        this.webTestClient = WebTestClient.bindToServer()
-                .baseUrl("http://localhost:" + port)
-                .build();
+        this.webTestClient = WebTestClient.bindToServer().baseUrl("http://localhost:" + port).build();
     }
 
     @BeforeEach
@@ -46,24 +48,10 @@ class LocationControllerTest extends AbstractIntegrationTest {
     @Test
     void shouldCreateLocationSuccessfully() {
         // Given
-        LocationRequest request = LocationRequest.builder()
-                .x(10)
-                .y(20L)
-                .z(30L)
-                .build();
+        LocationRequest request = LocationRequest.builder().x(10).y(20L).z(30L).build();
 
         // When & Then
-        webTestClient.post()
-                .uri("/locations")
-                .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue(request)
-                .exchange()
-                .expectStatus().isCreated()
-                .expectBody()
-                .jsonPath("$.id").exists()
-                .jsonPath("$.x").isEqualTo(10)
-                .jsonPath("$.y").isEqualTo(20)
-                .jsonPath("$.z").isEqualTo(30);
+        webTestClient.post().uri("/locations").contentType(MediaType.APPLICATION_JSON).bodyValue(request).exchange().expectStatus().isCreated().expectBody().jsonPath("$.id").exists().jsonPath("$.x").isEqualTo(10).jsonPath("$.y").isEqualTo(20).jsonPath("$.z").isEqualTo(30);
 
         // Verify database
         List<Location> locations = locationRepository.findAll();
@@ -76,169 +64,73 @@ class LocationControllerTest extends AbstractIntegrationTest {
     @Test
     void shouldReturnBadRequestWhenCreatingLocationWithNullY() {
         // Given
-        LocationRequest request = LocationRequest.builder()
-                .x(10)
-                .y(null) // Invalid - null
-                .z(30L)
-                .build();
+        LocationRequest request = LocationRequest.builder().x(10).y(null) // Invalid - null
+                .z(30L).build();
 
         // When & Then
-        webTestClient.post()
-                .uri("/locations")
-                .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue(request)
-                .exchange()
-                .expectStatus().isBadRequest()
-                .expectBody()
-                .jsonPath("$.status").isEqualTo(400)
-                .jsonPath("$.message").isEqualTo("Ошибка валидации данных")
-                .jsonPath("$.details[0].field").isEqualTo("y")
-                .jsonPath("$.details[0].message").isEqualTo("Location.Y не может быть пустым")
-                .jsonPath("$.details[0].errorType").isEqualTo("VALIDATION_ERROR");
+        webTestClient.post().uri("/locations").contentType(MediaType.APPLICATION_JSON).bodyValue(request).exchange().expectStatus().isBadRequest().expectBody().jsonPath("$.status").isEqualTo(400).jsonPath("$.message").isEqualTo("Ошибка валидации данных").jsonPath("$.details[0].field").isEqualTo("y").jsonPath("$.details[0].message").isEqualTo("Location.Y не может быть пустым").jsonPath("$.details[0].errorType").isEqualTo("VALIDATION_ERROR");
     }
 
     @Test
     void shouldReturnBadRequestWhenCreatingLocationWithNullZ() {
         // Given
-        LocationRequest request = LocationRequest.builder()
-                .x(10)
-                .y(20L)
-                .z(null) // Invalid - null
+        LocationRequest request = LocationRequest.builder().x(10).y(20L).z(null) // Invalid - null
                 .build();
 
         // When & Then
-        webTestClient.post()
-                .uri("/locations")
-                .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue(request)
-                .exchange()
-                .expectStatus().isBadRequest()
-                .expectBody()
-                .jsonPath("$.status").isEqualTo(400)
-                .jsonPath("$.message").isEqualTo("Ошибка валидации данных")
-                .jsonPath("$.details[0].field").isEqualTo("z")
-                .jsonPath("$.details[0].message").isEqualTo("Location.Z не может быть пустым")
-                .jsonPath("$.details[0].errorType").isEqualTo("VALIDATION_ERROR");
+        webTestClient.post().uri("/locations").contentType(MediaType.APPLICATION_JSON).bodyValue(request).exchange().expectStatus().isBadRequest().expectBody().jsonPath("$.status").isEqualTo(400).jsonPath("$.message").isEqualTo("Ошибка валидации данных").jsonPath("$.details[0].field").isEqualTo("z").jsonPath("$.details[0].message").isEqualTo("Location.Z не может быть пустым").jsonPath("$.details[0].errorType").isEqualTo("VALIDATION_ERROR");
     }
 
     @Test
     void shouldReturnBadRequestWhenCreatingLocationWithMultipleErrors() {
         // Given
-        LocationRequest request = LocationRequest.builder()
-                .x(10)
-                .y(null) // Invalid
+        LocationRequest request = LocationRequest.builder().x(10).y(null) // Invalid
                 .z(null) // Invalid
                 .build();
 
         // When & Then
-        webTestClient.post()
-                .uri("/locations")
-                .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue(request)
-                .exchange()
-                .expectStatus().isBadRequest()
-                .expectBody()
-                .jsonPath("$.status").isEqualTo(400)
-                .jsonPath("$.message").isEqualTo("Ошибка валидации данных")
-                .jsonPath("$.details.length()").isEqualTo(2);
+        webTestClient.post().uri("/locations").contentType(MediaType.APPLICATION_JSON).bodyValue(request).exchange().expectStatus().isBadRequest().expectBody().jsonPath("$.status").isEqualTo(400).jsonPath("$.message").isEqualTo("Ошибка валидации данных").jsonPath("$.details.length()").isEqualTo(2);
     }
 
     @Test
     void shouldGetAllLocations() {
         // Given
-        Location location1 = Location.builder()
-                .x(1)
-                .y(10L)
-                .z(100L)
-                .build();
+        Location location1 = Location.builder().x(1).y(10L).z(100L).build();
 
-        Location location2 = Location.builder()
-                .x(2)
-                .y(20L)
-                .z(200L)
-                .build();
+        Location location2 = Location.builder().x(2).y(20L).z(200L).build();
 
         locationRepository.saveAll(List.of(location1, location2));
 
         // When & Then
-        webTestClient.get()
-                .uri("/locations")
-                .exchange()
-                .expectStatus().isOk()
-                .expectBody()
-                .jsonPath("$.length()").isEqualTo(2)
-                .jsonPath("$[0].x").isEqualTo(1)
-                .jsonPath("$[0].y").isEqualTo(10)
-                .jsonPath("$[0].z").isEqualTo(100)
-                .jsonPath("$[1].x").isEqualTo(2)
-                .jsonPath("$[1].y").isEqualTo(20)
-                .jsonPath("$[1].z").isEqualTo(200);
+        webTestClient.get().uri("/locations").exchange().expectStatus().isOk().expectBody().jsonPath("$.length()").isEqualTo(2).jsonPath("$[0].x").isEqualTo(1).jsonPath("$[0].y").isEqualTo(10).jsonPath("$[0].z").isEqualTo(100).jsonPath("$[1].x").isEqualTo(2).jsonPath("$[1].y").isEqualTo(20).jsonPath("$[1].z").isEqualTo(200);
     }
 
     @Test
     void shouldGetLocationById() {
         // Given
-        Location location = Location.builder()
-                .x(5)
-                .y(50L)
-                .z(500L)
-                .build();
+        Location location = Location.builder().x(5).y(50L).z(500L).build();
         Location savedLocation = locationRepository.save(location);
 
         // When & Then
-        webTestClient.get()
-                .uri("/locations/{id}", savedLocation.getId())
-                .exchange()
-                .expectStatus().isOk()
-                .expectBody()
-                .jsonPath("$.id").isEqualTo(savedLocation.getId())
-                .jsonPath("$.x").isEqualTo(5)
-                .jsonPath("$.y").isEqualTo(50)
-                .jsonPath("$.z").isEqualTo(500);
+        webTestClient.get().uri("/locations/{id}", savedLocation.getId()).exchange().expectStatus().isOk().expectBody().jsonPath("$.id").isEqualTo(savedLocation.getId()).jsonPath("$.x").isEqualTo(5).jsonPath("$.y").isEqualTo(50).jsonPath("$.z").isEqualTo(500);
     }
 
     @Test
     void shouldReturnNotFoundWhenGettingNonExistentLocation() {
         // When & Then
-        webTestClient.get()
-                .uri("/locations/{id}", 999L)
-                .exchange()
-                .expectStatus().isNotFound()
-                .expectBody()
-                .jsonPath("$.status").isEqualTo(404)
-                .jsonPath("$.message").isEqualTo("Ошибка выполнения операции")
-                .jsonPath("$.details[0].field").isEqualTo("service")
-                .jsonPath("$.details[0].errorType").isEqualTo("SERVICE_ERROR");
+        webTestClient.get().uri("/locations/{id}", 999L).exchange().expectStatus().isNotFound().expectBody().jsonPath("$.status").isEqualTo(404).jsonPath("$.message").isEqualTo("Ошибка выполнения операции").jsonPath("$.details[0].field").isEqualTo("service").jsonPath("$.details[0].errorType").isEqualTo("SERVICE_ERROR");
     }
 
     @Test
     void shouldUpdateLocationSuccessfully() {
         // Given
-        Location location = Location.builder()
-                .x(1)
-                .y(10L)
-                .z(100L)
-                .build();
+        Location location = Location.builder().x(1).y(10L).z(100L).build();
         Location savedLocation = locationRepository.save(location);
 
-        LocationRequest updateRequest = LocationRequest.builder()
-                .x(99)
-                .y(999L)
-                .z(9999L)
-                .build();
+        LocationRequest updateRequest = LocationRequest.builder().x(99).y(999L).z(9999L).build();
 
         // When & Then
-        webTestClient.put()
-                .uri("/locations/{id}", savedLocation.getId())
-                .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue(updateRequest)
-                .exchange()
-                .expectStatus().isOk()
-                .expectBody()
-                .jsonPath("$.id").isEqualTo(savedLocation.getId())
-                .jsonPath("$.x").isEqualTo(99)
-                .jsonPath("$.y").isEqualTo(999)
-                .jsonPath("$.z").isEqualTo(9999);
+        webTestClient.put().uri("/locations/{id}", savedLocation.getId()).contentType(MediaType.APPLICATION_JSON).bodyValue(updateRequest).exchange().expectStatus().isOk().expectBody().jsonPath("$.id").isEqualTo(savedLocation.getId()).jsonPath("$.x").isEqualTo(99).jsonPath("$.y").isEqualTo(999).jsonPath("$.z").isEqualTo(9999);
 
         // Verify database update
         Location updatedLocation = locationRepository.findById(savedLocation.getId()).orElseThrow();
@@ -250,75 +142,34 @@ class LocationControllerTest extends AbstractIntegrationTest {
     @Test
     void shouldReturnNotFoundWhenUpdatingNonExistentLocation() {
         // Given
-        LocationRequest updateRequest = LocationRequest.builder()
-                .x(99)
-                .y(999L)
-                .z(9999L)
-                .build();
+        LocationRequest updateRequest = LocationRequest.builder().x(99).y(999L).z(9999L).build();
 
         // When & Then
-        webTestClient.put()
-                .uri("/locations/{id}", 999L)
-                .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue(updateRequest)
-                .exchange()
-                .expectStatus().isNotFound()
-                .expectBody()
-                .jsonPath("$.status").isEqualTo(404)
-                .jsonPath("$.message").isEqualTo("Ошибка выполнения операции")
-                .jsonPath("$.details[0].field").isEqualTo("service")
-                .jsonPath("$.details[0].errorType").isEqualTo("SERVICE_ERROR");
+        webTestClient.put().uri("/locations/{id}", 999L).contentType(MediaType.APPLICATION_JSON).bodyValue(updateRequest).exchange().expectStatus().isNotFound().expectBody().jsonPath("$.status").isEqualTo(404).jsonPath("$.message").isEqualTo("Ошибка выполнения операции").jsonPath("$.details[0].field").isEqualTo("service").jsonPath("$.details[0].errorType").isEqualTo("SERVICE_ERROR");
     }
 
     @Test
     void shouldReturnBadRequestWhenUpdatingWithInvalidData() {
         // Given
-        Location location = Location.builder()
-                .x(1)
-                .y(10L)
-                .z(100L)
-                .build();
+        Location location = Location.builder().x(1).y(10L).z(100L).build();
         Location savedLocation = locationRepository.save(location);
 
-        LocationRequest invalidUpdate = LocationRequest.builder()
-                .x(10)
-                .y(null) // Invalid
+        LocationRequest invalidUpdate = LocationRequest.builder().x(10).y(null) // Invalid
                 .z(null) // Invalid
                 .build();
 
         // When & Then
-        webTestClient.put()
-                .uri("/locations/{id}", savedLocation.getId())
-                .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue(invalidUpdate)
-                .exchange()
-                .expectStatus().isBadRequest()
-                .expectBody()
-                .jsonPath("$.status").isEqualTo(400)
-                .jsonPath("$.message").isEqualTo("Ошибка валидации данных")
-                .jsonPath("$.details.length()").isEqualTo(2);
+        webTestClient.put().uri("/locations/{id}", savedLocation.getId()).contentType(MediaType.APPLICATION_JSON).bodyValue(invalidUpdate).exchange().expectStatus().isBadRequest().expectBody().jsonPath("$.status").isEqualTo(400).jsonPath("$.message").isEqualTo("Ошибка валидации данных").jsonPath("$.details.length()").isEqualTo(2);
     }
 
     @Test
     void shouldDeleteLocationSuccessfully() {
         // Given
-        Location location = Location.builder()
-                .x(1)
-                .y(10L)
-                .z(100L)
-                .build();
+        Location location = Location.builder().x(1).y(10L).z(100L).build();
         Location savedLocation = locationRepository.save(location);
 
         // When & Then
-        webTestClient.delete()
-                .uri("/locations/{id}", savedLocation.getId())
-                .exchange()
-                .expectStatus().isOk()
-                .expectBody()
-                .jsonPath("$.id").isEqualTo(savedLocation.getId())
-                .jsonPath("$.x").isEqualTo(1)
-                .jsonPath("$.y").isEqualTo(10)
-                .jsonPath("$.z").isEqualTo(100);
+        webTestClient.delete().uri("/locations/{id}", savedLocation.getId()).exchange().expectStatus().isOk().expectBody().jsonPath("$.id").isEqualTo(savedLocation.getId()).jsonPath("$.x").isEqualTo(1).jsonPath("$.y").isEqualTo(10).jsonPath("$.z").isEqualTo(100);
 
         // Verify database deletion
         assertThat(locationRepository.existsById(savedLocation.getId())).isFalse();
@@ -327,52 +178,23 @@ class LocationControllerTest extends AbstractIntegrationTest {
     @Test
     void shouldReturnNotFoundWhenDeletingNonExistentLocation() {
         // When & Then
-        webTestClient.delete()
-                .uri("/locations/{id}", 999L)
-                .exchange()
-                .expectStatus().isNotFound()
-                .expectBody()
-                .jsonPath("$.status").isEqualTo(404)
-                .jsonPath("$.message").isEqualTo("Ошибка выполнения операции")
-                .jsonPath("$.details[0].field").isEqualTo("service")
-                .jsonPath("$.details[0].errorType").isEqualTo("SERVICE_ERROR");
+        webTestClient.delete().uri("/locations/{id}", 999L).exchange().expectStatus().isNotFound().expectBody().jsonPath("$.status").isEqualTo(404).jsonPath("$.message").isEqualTo("Ошибка выполнения операции").jsonPath("$.details[0].field").isEqualTo("service").jsonPath("$.details[0].errorType").isEqualTo("SERVICE_ERROR");
     }
 
     @Test
     void shouldCreateLocationWithNullX() {
         // Given - X can be null according to your model
-        LocationRequest request = LocationRequest.builder()
-                .x(null) // This is allowed
-                .y(20L)
-                .z(30L)
-                .build();
+        LocationRequest request = LocationRequest.builder().x(null) // This is allowed
+                .y(20L).z(30L).build();
 
         // When & Then
-        webTestClient.post()
-                .uri("/locations")
-                .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue(request)
-                .exchange()
-                .expectStatus().isCreated()
-                .expectBody()
-                .jsonPath("$.id").exists()
-                .jsonPath("$.x").isEmpty()
-                .jsonPath("$.y").isEqualTo(20)
-                .jsonPath("$.z").isEqualTo(30);
+        webTestClient.post().uri("/locations").contentType(MediaType.APPLICATION_JSON).bodyValue(request).exchange().expectStatus().isCreated().expectBody().jsonPath("$.id").exists().jsonPath("$.x").isEmpty().jsonPath("$.y").isEqualTo(20).jsonPath("$.z").isEqualTo(30);
     }
 
     @Test
     void shouldReturnBadRequestWhenCreatingWithMissingRequestBody() {
-        webTestClient.post()
-                .uri("/locations")
-                .contentType(MediaType.APPLICATION_JSON)
-                .exchange() // Нет bodyValue()
-                .expectStatus().isBadRequest()
-                .expectBody()
-                .jsonPath("$.status").isEqualTo(400)
-                .jsonPath("$.message").isEqualTo("Отсутствует тело запроса")
-                .jsonPath("$.details[0].field").isEqualTo("requestBody")
-                .jsonPath("$.details[0].errorType").isEqualTo("INVALID_JSON");
+        webTestClient.post().uri("/locations").contentType(MediaType.APPLICATION_JSON).exchange() // Нет bodyValue()
+                .expectStatus().isBadRequest().expectBody().jsonPath("$.status").isEqualTo(400).jsonPath("$.message").isEqualTo("Отсутствует тело запроса").jsonPath("$.details[0].field").isEqualTo("requestBody").jsonPath("$.details[0].errorType").isEqualTo("INVALID_JSON");
     }
 
 }

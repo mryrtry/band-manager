@@ -1,12 +1,12 @@
-package org.is.bandmanager.service;
+package org.is.bandmanager.service.coordinates;
 
 import jakarta.validation.Valid;
 import org.is.bandmanager.dto.CoordinatesDto;
 import org.is.bandmanager.dto.request.CoordinatesRequest;
 import org.is.bandmanager.model.Coordinates;
-import org.is.bandmanager.model.Location;
 
 import java.util.List;
+
 
 public interface CoordinatesService {
 

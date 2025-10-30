@@ -1,8 +1,10 @@
 package org.is.bandmanager.service.subscription.model.request;
 
-import lombok.*;
-import org.is.bandmanager.repository.specifications.EntityFilter;
-import org.is.bandmanager.service.pageable.PageableConfig;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import org.is.bandmanager.repository.filter.EntityFilter;
+import org.is.bandmanager.util.pageable.PageableConfig;
 
 import java.util.UUID;
 

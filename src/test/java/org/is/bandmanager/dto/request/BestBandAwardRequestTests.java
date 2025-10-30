@@ -26,10 +26,7 @@ class BestBandAwardRequestTests {
     @Test
     void shouldCreateValidBestBandAwardRequest() {
         // Given
-        BestBandAwardRequest request = BestBandAwardRequest.builder()
-                .musicBandId(1)
-                .genre(MusicGenre.ROCK)
-                .build();
+        BestBandAwardRequest request = BestBandAwardRequest.builder().musicBandId(1).genre(MusicGenre.ROCK).build();
 
         // When
         Set<ConstraintViolation<BestBandAwardRequest>> violations = validator.validate(request);
@@ -41,10 +38,7 @@ class BestBandAwardRequestTests {
     @Test
     void shouldFailWhenMusicBandIdIsNull() {
         // Given
-        BestBandAwardRequest request = BestBandAwardRequest.builder()
-                .musicBandId(null)
-                .genre(MusicGenre.ROCK)
-                .build();
+        BestBandAwardRequest request = BestBandAwardRequest.builder().musicBandId(null).genre(MusicGenre.ROCK).build();
 
         // When
         Set<ConstraintViolation<BestBandAwardRequest>> violations = validator.validate(request);
@@ -59,10 +53,7 @@ class BestBandAwardRequestTests {
     @Test
     void shouldFailWhenGenreIsNull() {
         // Given
-        BestBandAwardRequest request = BestBandAwardRequest.builder()
-                .musicBandId(1)
-                .genre(null)
-                .build();
+        BestBandAwardRequest request = BestBandAwardRequest.builder().musicBandId(1).genre(null).build();
 
         // When
         Set<ConstraintViolation<BestBandAwardRequest>> violations = validator.validate(request);
@@ -77,10 +68,7 @@ class BestBandAwardRequestTests {
     @Test
     void shouldFailWhenBothFieldsAreNull() {
         // Given
-        BestBandAwardRequest request = BestBandAwardRequest.builder()
-                .musicBandId(null)
-                .genre(null)
-                .build();
+        BestBandAwardRequest request = BestBandAwardRequest.builder().musicBandId(null).genre(null).build();
 
         // When
         Set<ConstraintViolation<BestBandAwardRequest>> violations = validator.validate(request);
@@ -90,10 +78,7 @@ class BestBandAwardRequestTests {
 
         // Проверяем, что обе ошибки присутствуют
         Set<String> propertyPaths = Set.of("musicBandId", "genre");
-        Set<String> messages = Set.of(
-                "BestBandAward.MusicBandId не может быть пустым",
-                "BestBandAward.MusicGenre не может быть пустым"
-        );
+        Set<String> messages = Set.of("BestBandAward.MusicBandId не может быть пустым", "BestBandAward.MusicGenre не может быть пустым");
 
         for (ConstraintViolation<BestBandAwardRequest> violation : violations) {
             assertThat(propertyPaths).contains(violation.getPropertyPath().toString());
@@ -106,10 +91,7 @@ class BestBandAwardRequestTests {
         // Test all available MusicGenre values
         for (MusicGenre genre : MusicGenre.values()) {
             // Given
-            BestBandAwardRequest request = BestBandAwardRequest.builder()
-                    .musicBandId(1)
-                    .genre(genre)
-                    .build();
+            BestBandAwardRequest request = BestBandAwardRequest.builder().musicBandId(1).genre(genre).build();
 
             // When
             Set<ConstraintViolation<BestBandAwardRequest>> violations = validator.validate(request);
@@ -126,10 +108,7 @@ class BestBandAwardRequestTests {
 
         for (Integer bandId : validBandIds) {
             // Given
-            BestBandAwardRequest request = BestBandAwardRequest.builder()
-                    .musicBandId(bandId)
-                    .genre(MusicGenre.ROCK)
-                    .build();
+            BestBandAwardRequest request = BestBandAwardRequest.builder().musicBandId(bandId).genre(MusicGenre.ROCK).build();
 
             // When
             Set<ConstraintViolation<BestBandAwardRequest>> violations = validator.validate(request);
@@ -142,10 +121,7 @@ class BestBandAwardRequestTests {
     @Test
     void shouldBeValidWithZeroBandId() {
         // Given
-        BestBandAwardRequest request = BestBandAwardRequest.builder()
-                .musicBandId(0)
-                .genre(MusicGenre.ROCK)
-                .build();
+        BestBandAwardRequest request = BestBandAwardRequest.builder().musicBandId(0).genre(MusicGenre.ROCK).build();
 
         // When
         Set<ConstraintViolation<BestBandAwardRequest>> violations = validator.validate(request);
@@ -157,10 +133,7 @@ class BestBandAwardRequestTests {
     @Test
     void shouldBeValidWithNegativeBandId() {
         // Given
-        BestBandAwardRequest request = BestBandAwardRequest.builder()
-                .musicBandId(-1)
-                .genre(MusicGenre.ROCK)
-                .build();
+        BestBandAwardRequest request = BestBandAwardRequest.builder().musicBandId(-1).genre(MusicGenre.ROCK).build();
 
         // When
         Set<ConstraintViolation<BestBandAwardRequest>> violations = validator.validate(request);
@@ -172,10 +145,7 @@ class BestBandAwardRequestTests {
     @Test
     void shouldCreateValidRequestWithMinimumData() {
         // Given
-        BestBandAwardRequest request = BestBandAwardRequest.builder()
-                .musicBandId(1)
-                .genre(MusicGenre.PROGRESSIVE_ROCK)
-                .build();
+        BestBandAwardRequest request = BestBandAwardRequest.builder().musicBandId(1).genre(MusicGenre.PROGRESSIVE_ROCK).build();
 
         // When
         Set<ConstraintViolation<BestBandAwardRequest>> violations = validator.validate(request);
@@ -187,10 +157,7 @@ class BestBandAwardRequestTests {
     @Test
     void shouldHandleEdgeCaseWithMaxIntegerBandId() {
         // Given
-        BestBandAwardRequest request = BestBandAwardRequest.builder()
-                .musicBandId(Integer.MAX_VALUE)
-                .genre(MusicGenre.POST_PUNK)
-                .build();
+        BestBandAwardRequest request = BestBandAwardRequest.builder().musicBandId(Integer.MAX_VALUE).genre(MusicGenre.POST_PUNK).build();
 
         // When
         Set<ConstraintViolation<BestBandAwardRequest>> violations = validator.validate(request);
@@ -202,10 +169,7 @@ class BestBandAwardRequestTests {
     @Test
     void shouldHandleEdgeCaseWithMinIntegerBandId() {
         // Given
-        BestBandAwardRequest request = BestBandAwardRequest.builder()
-                .musicBandId(Integer.MIN_VALUE)
-                .genre(MusicGenre.POST_PUNK)
-                .build();
+        BestBandAwardRequest request = BestBandAwardRequest.builder().musicBandId(Integer.MIN_VALUE).genre(MusicGenre.POST_PUNK).build();
 
         // When
         Set<ConstraintViolation<BestBandAwardRequest>> violations = validator.validate(request);

@@ -4,13 +4,21 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.is.bandmanager.dto.BestBandAwardDto;
 import org.is.bandmanager.dto.request.BestBandAwardRequest;
-import org.is.bandmanager.dto.request.BestBandAwardFilter;
-import org.is.bandmanager.service.BestBandAwardService;
-import org.is.bandmanager.service.pageable.PageableConfig;
+import org.is.bandmanager.repository.filter.BestBandAwardFilter;
+import org.is.bandmanager.service.bestBandAward.BestBandAwardService;
+import org.is.bandmanager.util.pageable.PageableConfig;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/best-band-awards")

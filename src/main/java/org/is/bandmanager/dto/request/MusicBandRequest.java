@@ -11,6 +11,7 @@ import org.is.bandmanager.model.MusicGenre;
 
 import java.util.Date;
 
+
 @Builder
 @Data
 public class MusicBandRequest {

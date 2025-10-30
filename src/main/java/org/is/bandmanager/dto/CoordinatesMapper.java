@@ -2,7 +2,12 @@ package org.is.bandmanager.dto;
 
 import org.is.bandmanager.dto.request.CoordinatesRequest;
 import org.is.bandmanager.model.Coordinates;
-import org.mapstruct.*;
+import org.mapstruct.BeanMapping;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.MappingTarget;
+import org.mapstruct.NullValuePropertyMappingStrategy;
+
 
 @Mapper(componentModel = "spring")
 public interface CoordinatesMapper {

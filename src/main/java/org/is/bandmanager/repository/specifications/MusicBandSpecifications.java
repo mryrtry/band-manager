@@ -2,14 +2,14 @@ package org.is.bandmanager.repository.specifications;
 
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.JoinType;
-import org.is.bandmanager.dto.request.MusicBandFilter;
+import org.is.bandmanager.repository.filter.MusicBandFilter;
 import org.is.bandmanager.model.Album;
 import org.is.bandmanager.model.Coordinates;
 import org.is.bandmanager.model.MusicBand;
 import org.is.bandmanager.model.Person;
 import org.springframework.data.jpa.domain.Specification;
 
-public class MusicBandSpecifications {
+public final class MusicBandSpecifications {
 
     public static Specification<MusicBand> withFilter(MusicBandFilter filter) {
         if (filter == null) return null;

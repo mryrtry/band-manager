@@ -23,6 +23,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
+
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
@@ -30,27 +31,12 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleValidationExceptions(MethodArgumentNotValidException ex) {
         List<String> fieldOrder = getFieldOrderFromClass(ex.getParameter());
 
-        List<ErrorResponse.ErrorDetail> errorDetails = ex.getBindingResult()
-                .getFieldErrors()
-                .stream()
-                .sorted(Comparator.comparing(error -> {
-                    int index = fieldOrder.indexOf(error.getField());
-                    return index != -1 ? index : Integer.MAX_VALUE;
-                }))
-                .map(error -> ErrorResponse.ErrorDetail.builder()
-                        .field(error.getField())
-                        .message(error.getDefaultMessage())
-                        .rejectedValue(error.getRejectedValue())
-                        .errorType("VALIDATION_ERROR")
-                        .build())
-                .collect(Collectors.toList());
+        List<ErrorResponse.ErrorDetail> errorDetails = ex.getBindingResult().getFieldErrors().stream().sorted(Comparator.comparing(error -> {
+            int index = fieldOrder.indexOf(error.getField());
+            return index != -1 ? index : Integer.MAX_VALUE;
+        })).map(error -> ErrorResponse.ErrorDetail.builder().field(error.getField()).message(error.getDefaultMessage()).rejectedValue(error.getRejectedValue()).errorType("VALIDATION_ERROR").build()).collect(Collectors.toList());
 
-        ErrorResponse errorResponse = ErrorResponse.builder()
-                .status(HttpStatus.BAD_REQUEST.value())
-                .message("Ошибка валидации данных")
-                .details(errorDetails)
-                .timestamp(LocalDateTime.now())
-                .build();
+        ErrorResponse errorResponse = ErrorResponse.builder().status(HttpStatus.BAD_REQUEST.value()).message("Ошибка валидации данных").details(errorDetails).timestamp(LocalDateTime.now()).build();
 
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
@@ -58,85 +44,36 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(ServiceException.class)
     public ResponseEntity<ErrorResponse> handleServiceException(ServiceException ex) {
-        List<ErrorResponse.ErrorDetail> errorDetails = Collections.singletonList(
-                ErrorResponse.ErrorDetail.builder()
-                        .field("service")
-                        .message(ex.getMessage())
-                        .rejectedValue(null)
-                        .errorType("SERVICE_ERROR")
-                        .build()
-        );
+        List<ErrorResponse.ErrorDetail> errorDetails = Collections.singletonList(ErrorResponse.ErrorDetail.builder().field("service").message(ex.getMessage()).rejectedValue(null).errorType("SERVICE_ERROR").build());
 
-        ErrorResponse errorResponse = ErrorResponse.builder()
-                .status(ex.getHttpStatus().value())
-                .message("Ошибка выполнения операции")
-                .details(errorDetails)
-                .timestamp(LocalDateTime.now())
-                .build();
+        ErrorResponse errorResponse = ErrorResponse.builder().status(ex.getHttpStatus().value()).message("Ошибка выполнения операции").details(errorDetails).timestamp(LocalDateTime.now()).build();
 
         return new ResponseEntity<>(errorResponse, ex.getHttpStatus());
     }
 
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
     public ResponseEntity<ErrorResponse> handleTypeMismatch(MethodArgumentTypeMismatchException ex) {
-        List<ErrorResponse.ErrorDetail> errorDetails = Collections.singletonList(
-                ErrorResponse.ErrorDetail.builder()
-                        .field(ex.getName())
-                        .message(String.format("Некорректный тип параметра. Ожидается: %s",
-                                ex.getRequiredType() != null ? ex.getRequiredType().getSimpleName() : "unknown"))
-                        .rejectedValue(ex.getValue())
-                        .errorType("TYPE_MISMATCH")
-                        .build()
-        );
+        List<ErrorResponse.ErrorDetail> errorDetails = Collections.singletonList(ErrorResponse.ErrorDetail.builder().field(ex.getName()).message(String.format("Некорректный тип параметра. Ожидается: %s", ex.getRequiredType() != null ? ex.getRequiredType().getSimpleName() : "unknown")).rejectedValue(ex.getValue()).errorType("TYPE_MISMATCH").build());
 
-        ErrorResponse errorResponse = ErrorResponse.builder()
-                .status(HttpStatus.BAD_REQUEST.value())
-                .message("Ошибка в параметрах запроса")
-                .details(errorDetails)
-                .timestamp(LocalDateTime.now())
-                .build();
+        ErrorResponse errorResponse = ErrorResponse.builder().status(HttpStatus.BAD_REQUEST.value()).message("Ошибка в параметрах запроса").details(errorDetails).timestamp(LocalDateTime.now()).build();
 
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(MissingServletRequestParameterException.class)
     public ResponseEntity<ErrorResponse> handleMissingParams(MissingServletRequestParameterException ex) {
-        List<ErrorResponse.ErrorDetail> errorDetails = Collections.singletonList(
-                ErrorResponse.ErrorDetail.builder()
-                        .field(ex.getParameterName())
-                        .message("Обязательный параметр отсутствует")
-                        .rejectedValue(null)
-                        .errorType("MISSING_PARAMETER")
-                        .build()
-        );
+        List<ErrorResponse.ErrorDetail> errorDetails = Collections.singletonList(ErrorResponse.ErrorDetail.builder().field(ex.getParameterName()).message("Обязательный параметр отсутствует").rejectedValue(null).errorType("MISSING_PARAMETER").build());
 
-        ErrorResponse errorResponse = ErrorResponse.builder()
-                .status(HttpStatus.BAD_REQUEST.value())
-                .message("Отсутствуют обязательные параметры")
-                .details(errorDetails)
-                .timestamp(LocalDateTime.now())
-                .build();
+        ErrorResponse errorResponse = ErrorResponse.builder().status(HttpStatus.BAD_REQUEST.value()).message("Отсутствуют обязательные параметры").details(errorDetails).timestamp(LocalDateTime.now()).build();
 
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGenericException(Exception ex) {
-        List<ErrorResponse.ErrorDetail> errorDetails = Collections.singletonList(
-                ErrorResponse.ErrorDetail.builder()
-                        .field("system")
-                        .message("Внутренняя ошибка сервера")
-                        .rejectedValue(ex.getMessage())
-                        .errorType("INTERNAL_ERROR")
-                        .build()
-        );
+        List<ErrorResponse.ErrorDetail> errorDetails = Collections.singletonList(ErrorResponse.ErrorDetail.builder().field("system").message("Внутренняя ошибка сервера").rejectedValue(ex.getMessage()).errorType("INTERNAL_ERROR").build());
 
-        ErrorResponse errorResponse = ErrorResponse.builder()
-                .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
-                .message("Произошла непредвиденная ошибка")
-                .details(errorDetails)
-                .timestamp(LocalDateTime.now())
-                .build();
+        ErrorResponse errorResponse = ErrorResponse.builder().status(HttpStatus.INTERNAL_SERVER_ERROR.value()).message("Произошла непредвиденная ошибка").details(errorDetails).timestamp(LocalDateTime.now()).build();
 
         return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
     }
@@ -154,9 +91,7 @@ public class GlobalExceptionHandler {
 
         } else if (cause instanceof InvalidFormatException invalidFormat) {
             message = "Неверный формат данных";
-            details = String.format("Поле '%s': неверный формат. Ожидается: %s",
-                    invalidFormat.getPath().get(0).getFieldName(),
-                    invalidFormat.getTargetType().getSimpleName());
+            details = String.format("Поле '%s': неверный формат. Ожидается: %s", invalidFormat.getPath().get(0).getFieldName(), invalidFormat.getTargetType().getSimpleName());
 
         } else if (cause instanceof JsonMappingException) {
             message = "Ошибка маппинга JSON";
@@ -167,21 +102,9 @@ public class GlobalExceptionHandler {
             details = "Запрос должен содержать тело в формате JSON";
         }
 
-        List<ErrorResponse.ErrorDetail> errorDetails = Collections.singletonList(
-                ErrorResponse.ErrorDetail.builder()
-                        .field("requestBody")
-                        .message(details)
-                        .rejectedValue(null)
-                        .errorType("INVALID_JSON")
-                        .build()
-        );
+        List<ErrorResponse.ErrorDetail> errorDetails = Collections.singletonList(ErrorResponse.ErrorDetail.builder().field("requestBody").message(details).rejectedValue(null).errorType("INVALID_JSON").build());
 
-        ErrorResponse errorResponse = ErrorResponse.builder()
-                .status(HttpStatus.BAD_REQUEST.value())
-                .message(message)
-                .details(errorDetails)
-                .timestamp(LocalDateTime.now())
-                .build();
+        ErrorResponse errorResponse = ErrorResponse.builder().status(HttpStatus.BAD_REQUEST.value()).message(message).details(errorDetails).timestamp(LocalDateTime.now()).build();
 
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
@@ -194,9 +117,7 @@ public class GlobalExceptionHandler {
         }
 
         Class<?> targetClass = parameter.getParameterType();
-        return Arrays.stream(targetClass.getDeclaredFields())
-                .map(Field::getName)
-                .collect(Collectors.toList());
+        return Arrays.stream(targetClass.getDeclaredFields()).map(Field::getName).collect(Collectors.toList());
     }
 
 }

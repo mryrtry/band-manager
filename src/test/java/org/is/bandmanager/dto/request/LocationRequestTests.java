@@ -25,11 +25,7 @@ class LocationRequestTests {
     @Test
     void shouldCreateValidLocationRequest() {
         // Given
-        LocationRequest request = LocationRequest.builder()
-                .x(100)
-                .y(200L)
-                .z(300L)
-                .build();
+        LocationRequest request = LocationRequest.builder().x(100).y(200L).z(300L).build();
 
         // When
         Set<ConstraintViolation<LocationRequest>> violations = validator.validate(request);
@@ -41,11 +37,7 @@ class LocationRequestTests {
     @Test
     void shouldCreateValidLocationRequestWithNullX() {
         // Given
-        LocationRequest request = LocationRequest.builder()
-                .x(null)
-                .y(200L)
-                .z(300L)
-                .build();
+        LocationRequest request = LocationRequest.builder().x(null).y(200L).z(300L).build();
 
         // When
         Set<ConstraintViolation<LocationRequest>> violations = validator.validate(request);
@@ -57,11 +49,7 @@ class LocationRequestTests {
     @Test
     void shouldFailWhenYIsNull() {
         // Given
-        LocationRequest request = LocationRequest.builder()
-                .x(100)
-                .y(null)
-                .z(300L)
-                .build();
+        LocationRequest request = LocationRequest.builder().x(100).y(null).z(300L).build();
 
         // When
         Set<ConstraintViolation<LocationRequest>> violations = validator.validate(request);
@@ -76,11 +64,7 @@ class LocationRequestTests {
     @Test
     void shouldFailWhenZIsNull() {
         // Given
-        LocationRequest request = LocationRequest.builder()
-                .x(100)
-                .y(200L)
-                .z(null)
-                .build();
+        LocationRequest request = LocationRequest.builder().x(100).y(200L).z(null).build();
 
         // When
         Set<ConstraintViolation<LocationRequest>> violations = validator.validate(request);
@@ -95,50 +79,33 @@ class LocationRequestTests {
     @Test
     void shouldFailWhenBothYAndZAreNull() {
         // Given
-        LocationRequest request = LocationRequest.builder()
-                .x(100)
-                .y(null)
-                .z(null)
-                .build();
+        LocationRequest request = LocationRequest.builder().x(100).y(null).z(null).build();
 
         // When
         Set<ConstraintViolation<LocationRequest>> violations = validator.validate(request);
 
         // Then
         assertThat(violations).hasSize(2);
-        assertThat(violations)
-                .extracting(ConstraintViolation::getPropertyPath)
-                .extracting(Object::toString)
-                .containsExactlyInAnyOrder("y", "z");
+        assertThat(violations).extracting(ConstraintViolation::getPropertyPath).extracting(Object::toString).containsExactlyInAnyOrder("y", "z");
     }
 
     @Test
     void shouldFailWhenAllFieldsAreNull() {
         // Given
-        LocationRequest request = LocationRequest.builder()
-                .x(null)
-                .y(null)
-                .z(null)
-                .build();
+        LocationRequest request = LocationRequest.builder().x(null).y(null).z(null).build();
 
         // When
         Set<ConstraintViolation<LocationRequest>> violations = validator.validate(request);
 
         // Then
         assertThat(violations).hasSize(2);
-        assertThat(violations)
-                .extracting(ConstraintViolation::getPropertyPath)
-                .extracting(Object::toString)
-                .containsExactlyInAnyOrder("y", "z");
+        assertThat(violations).extracting(ConstraintViolation::getPropertyPath).extracting(Object::toString).containsExactlyInAnyOrder("y", "z");
     }
 
     @Test
     void shouldBeValidWithOnlyRequiredFields() {
         // Given
-        LocationRequest request = LocationRequest.builder()
-                .y(200L)
-                .z(300L)
-                .build();
+        LocationRequest request = LocationRequest.builder().y(200L).z(300L).build();
 
         // When
         Set<ConstraintViolation<LocationRequest>> violations = validator.validate(request);
@@ -150,11 +117,7 @@ class LocationRequestTests {
     @Test
     void shouldBeValidWithZeroValues() {
         // Given
-        LocationRequest request = LocationRequest.builder()
-                .x(0)
-                .y(0L)
-                .z(0L)
-                .build();
+        LocationRequest request = LocationRequest.builder().x(0).y(0L).z(0L).build();
 
         // When
         Set<ConstraintViolation<LocationRequest>> violations = validator.validate(request);
@@ -166,11 +129,7 @@ class LocationRequestTests {
     @Test
     void shouldBeValidWithNegativeValues() {
         // Given
-        LocationRequest request = LocationRequest.builder()
-                .x(-100)
-                .y(-200L)
-                .z(-300L)
-                .build();
+        LocationRequest request = LocationRequest.builder().x(-100).y(-200L).z(-300L).build();
 
         // When
         Set<ConstraintViolation<LocationRequest>> violations = validator.validate(request);
@@ -182,11 +141,7 @@ class LocationRequestTests {
     @Test
     void shouldBeValidWithLargeValues() {
         // Given
-        LocationRequest request = LocationRequest.builder()
-                .x(Integer.MAX_VALUE)
-                .y(Long.MAX_VALUE)
-                .z(Long.MAX_VALUE)
-                .build();
+        LocationRequest request = LocationRequest.builder().x(Integer.MAX_VALUE).y(Long.MAX_VALUE).z(Long.MAX_VALUE).build();
 
         // When
         Set<ConstraintViolation<LocationRequest>> violations = validator.validate(request);
@@ -198,11 +153,7 @@ class LocationRequestTests {
     @Test
     void shouldFailWithMultipleViolationsForYAndZ() {
         // Given
-        LocationRequest request = LocationRequest.builder()
-                .x(100)
-                .y(null)
-                .z(null)
-                .build();
+        LocationRequest request = LocationRequest.builder().x(100).y(null).z(null).build();
 
         // When
         Set<ConstraintViolation<LocationRequest>> violations = validator.validate(request);
@@ -210,17 +161,9 @@ class LocationRequestTests {
         // Then
         assertThat(violations).hasSize(2);
 
-        assertThat(violations)
-                .extracting(ConstraintViolation::getPropertyPath)
-                .extracting(Object::toString)
-                .containsExactlyInAnyOrder("y", "z");
+        assertThat(violations).extracting(ConstraintViolation::getPropertyPath).extracting(Object::toString).containsExactlyInAnyOrder("y", "z");
 
-        assertThat(violations)
-                .extracting(ConstraintViolation::getMessage)
-                .containsExactlyInAnyOrder(
-                        "Location.Y не может быть пустым",
-                        "Location.Z не может быть пустым"
-                );
+        assertThat(violations).extracting(ConstraintViolation::getMessage).containsExactlyInAnyOrder("Location.Y не может быть пустым", "Location.Z не может быть пустым");
     }
 
 }

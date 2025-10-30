@@ -1,4 +1,4 @@
-package org.is.bandmanager.service;
+package org.is.bandmanager.service.location;
 
 import jakarta.validation.Valid;
 import org.is.bandmanager.dto.LocationDto;
@@ -6,6 +6,7 @@ import org.is.bandmanager.dto.request.LocationRequest;
 import org.is.bandmanager.model.Location;
 
 import java.util.List;
+
 
 public interface LocationService {
 
