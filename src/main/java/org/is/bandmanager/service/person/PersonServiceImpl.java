@@ -1,4 +1,4 @@
-package org.is.bandmanager.service;
+package org.is.bandmanager.service.person;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -9,14 +9,14 @@ import org.is.bandmanager.event.EntityEvent;
 import org.is.bandmanager.exception.ServiceException;
 import org.is.bandmanager.model.Person;
 import org.is.bandmanager.repository.PersonRepository;
+import org.is.bandmanager.service.cleanup.CleanupStrategy;
+import org.is.bandmanager.service.location.LocationService;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 
 import java.util.List;
 
-import static org.is.bandmanager.event.EventType.BULK_DELETED;
 import static org.is.bandmanager.event.EventType.CREATED;
 import static org.is.bandmanager.event.EventType.DELETED;
 import static org.is.bandmanager.event.EventType.UPDATED;
@@ -27,7 +27,7 @@ import static org.is.bandmanager.exception.message.ServiceErrorMessage.SOURCE_NO
 @Service
 @Validated
 @RequiredArgsConstructor
-public class PersonServiceImpl implements PersonService {
+public class PersonServiceImpl implements PersonService, CleanupStrategy<Person, PersonDto> {
 
     private final PersonRepository personRepository;
 
@@ -95,14 +95,24 @@ public class PersonServiceImpl implements PersonService {
         return deletedPerson;
     }
 
-    @Scheduled(cron = "${band-manager.clean-up-interval}")
-    @Transactional
-    public void cleanupUnusedPersons() {
-        List<Person> unusedFrontMen = personRepository.findUnusedPersons();
-        if (!unusedFrontMen.isEmpty()) {
-            personRepository.deleteAll(unusedFrontMen);
-            eventPublisher.publishEvent(new EntityEvent<>(BULK_DELETED, unusedFrontMen.stream().map(mapper::toDto).toList()));
-        }
+    @Override
+    public List<Person> findUnusedEntities() {
+        return personRepository.findUnusedPersons();
+    }
+
+    @Override
+    public void deleteEntities(List<Person> entities) {
+        personRepository.deleteAll(entities);
+    }
+
+    @Override
+    public List<PersonDto> convertToDto(List<Person> entities) {
+        return entities.stream().map(mapper::toDto).toList();
+    }
+
+    @Override
+    public String getEntityName() {
+        return "Person";
     }
 
 }

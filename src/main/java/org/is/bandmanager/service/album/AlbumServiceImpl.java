@@ -1,4 +1,4 @@
-package org.is.bandmanager.service;
+package org.is.bandmanager.service.album;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -10,14 +10,13 @@ import org.is.bandmanager.exception.ServiceException;
 import org.is.bandmanager.model.Album;
 import org.is.bandmanager.repository.AlbumRepository;
 import org.is.bandmanager.repository.MusicBandRepository;
+import org.is.bandmanager.service.cleanup.CleanupStrategy;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 
 import java.util.List;
 
-import static org.is.bandmanager.event.EventType.BULK_DELETED;
 import static org.is.bandmanager.event.EventType.CREATED;
 import static org.is.bandmanager.event.EventType.DELETED;
 import static org.is.bandmanager.event.EventType.UPDATED;
@@ -29,7 +28,7 @@ import static org.is.bandmanager.exception.message.ServiceErrorMessage.SOURCE_NO
 @Service
 @Validated
 @RequiredArgsConstructor
-public class AlbumServiceImpl implements AlbumService {
+public class AlbumServiceImpl implements AlbumService, CleanupStrategy<Album, AlbumDto> {
 
     private final AlbumRepository albumRepository;
 
@@ -99,14 +98,25 @@ public class AlbumServiceImpl implements AlbumService {
         return deletedAlbum;
     }
 
-    @Transactional
-    @Scheduled(cron = "${band-manager.clean-up-interval}")
-    public void cleanupUnusedAlbums() {
-        List<Album> unusedAlbums = albumRepository.findUnusedAlbum();
-        if (!unusedAlbums.isEmpty()) {
-            albumRepository.deleteAll(unusedAlbums);
-            eventPublisher.publishEvent(new EntityEvent<>(BULK_DELETED, unusedAlbums.stream().map(mapper::toDto).toList()));
-        }
+
+    @Override
+    public List<Album> findUnusedEntities() {
+        return albumRepository.findUnusedAlbum();
+    }
+
+    @Override
+    public void deleteEntities(List<Album> entities) {
+        albumRepository.deleteAll(entities);
+    }
+
+    @Override
+    public List<AlbumDto> convertToDto(List<Album> entities) {
+        return entities.stream().map(mapper::toDto).toList();
+    }
+
+    @Override
+    public String getEntityName() {
+        return "Album";
     }
 
 }

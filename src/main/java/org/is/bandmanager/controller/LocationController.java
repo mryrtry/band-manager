@@ -4,7 +4,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.is.bandmanager.dto.LocationDto;
 import org.is.bandmanager.dto.request.LocationRequest;
-import org.is.bandmanager.service.LocationService;
+import org.is.bandmanager.service.location.LocationService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;

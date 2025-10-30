@@ -1,22 +1,24 @@
-package org.is.bandmanager.service;
+package org.is.bandmanager.service.bestBandAward;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.is.bandmanager.dto.BestBandAwardDto;
 import org.is.bandmanager.dto.BestBandAwardMapper;
-import org.is.bandmanager.dto.request.BestBandAwardFilter;
+import org.is.bandmanager.repository.filter.BestBandAwardFilter;
 import org.is.bandmanager.dto.request.BestBandAwardRequest;
 import org.is.bandmanager.event.EntityEvent;
 import org.is.bandmanager.exception.ServiceException;
 import org.is.bandmanager.model.BestBandAward;
 import org.is.bandmanager.repository.BestBandAwardRepository;
-import org.is.bandmanager.service.pageable.PageableConfig;
-import org.is.bandmanager.service.pageable.PageableUtil;
+import org.is.bandmanager.service.musicBand.MusicBandService;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
+import org.is.bandmanager.util.pageable.PageableConfig;
+import org.is.bandmanager.util.pageable.PageableCreator;
+import org.is.bandmanager.util.pageable.PageableType;
 
 import java.util.List;
 
@@ -63,7 +65,7 @@ public class BestBandAwardServiceImpl implements BestBandAwardService {
 
     @Override
     public Page<BestBandAwardDto> getAll(BestBandAwardFilter filter, PageableConfig config) {
-        Pageable pageable = PageableUtil.createBestBandAwardPageable(config);
+        Pageable pageable = PageableCreator.create(config, PageableType.BEST_BAND_AWARDS);
         Page<BestBandAward> awards = bestBandAwardRepository.findWithFilter(filter, pageable);
         return awards.map(mapper::toDto);
     }

@@ -1,4 +1,4 @@
-package org.is.bandmanager.service;
+package org.is.bandmanager.service.location;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -10,14 +10,13 @@ import org.is.bandmanager.exception.ServiceException;
 import org.is.bandmanager.model.Location;
 import org.is.bandmanager.repository.LocationRepository;
 import org.is.bandmanager.repository.PersonRepository;
+import org.is.bandmanager.service.cleanup.CleanupStrategy;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 
 import java.util.List;
 
-import static org.is.bandmanager.event.EventType.BULK_DELETED;
 import static org.is.bandmanager.event.EventType.CREATED;
 import static org.is.bandmanager.event.EventType.DELETED;
 import static org.is.bandmanager.event.EventType.UPDATED;
@@ -29,7 +28,7 @@ import static org.is.bandmanager.exception.message.ServiceErrorMessage.SOURCE_NO
 @Service
 @Validated
 @RequiredArgsConstructor
-public class LocationServiceImpl implements LocationService {
+public class LocationServiceImpl implements LocationService, CleanupStrategy<Location, LocationDto> {
 
     private final LocationRepository locationRepository;
 
@@ -99,14 +98,24 @@ public class LocationServiceImpl implements LocationService {
         return deletedLocation;
     }
 
-    @Scheduled(cron = "${band-manager.clean-up-interval}")
-    @Transactional
-    public void cleanupUnusedLocations() {
-        List<Location> unusedLocations = locationRepository.findUnusedLocations();
-        if (!unusedLocations.isEmpty()) {
-            locationRepository.deleteAll(unusedLocations);
-            eventPublisher.publishEvent(new EntityEvent<>(BULK_DELETED, unusedLocations.stream().map(mapper::toDto).toList()));
-        }
+    @Override
+    public List<Location> findUnusedEntities() {
+        return locationRepository.findUnusedLocations();
+    }
+
+    @Override
+    public void deleteEntities(List<Location> entities) {
+        locationRepository.deleteAll(entities);
+    }
+
+    @Override
+    public List<LocationDto> convertToDto(List<Location> entities) {
+        return entities.stream().map(mapper::toDto).toList();
+    }
+
+    @Override
+    public String getEntityName() {
+        return "Location";
     }
 
 }

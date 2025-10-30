@@ -4,7 +4,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.is.bandmanager.dto.AlbumDto;
 import org.is.bandmanager.dto.request.AlbumRequest;
-import org.is.bandmanager.service.AlbumService;
+import org.is.bandmanager.service.album.AlbumService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;

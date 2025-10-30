@@ -1,10 +1,10 @@
-package org.is.bandmanager.service;
+package org.is.bandmanager.service.bestBandAward;
 
 import jakarta.validation.Valid;
 import org.is.bandmanager.dto.BestBandAwardDto;
 import org.is.bandmanager.dto.request.BestBandAwardRequest;
-import org.is.bandmanager.dto.request.BestBandAwardFilter;
-import org.is.bandmanager.service.pageable.PageableConfig;
+import org.is.bandmanager.repository.filter.BestBandAwardFilter;
+import org.is.bandmanager.util.pageable.PageableConfig;
 import org.springframework.data.domain.Page;
 
 import java.util.List;

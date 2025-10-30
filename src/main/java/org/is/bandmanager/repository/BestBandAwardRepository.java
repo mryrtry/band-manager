@@ -1,6 +1,6 @@
 package org.is.bandmanager.repository;
 
-import org.is.bandmanager.dto.request.BestBandAwardFilter;
+import org.is.bandmanager.repository.filter.BestBandAwardFilter;
 import org.is.bandmanager.model.BestBandAward;
 import org.is.bandmanager.repository.specifications.BestBandAwardSpecifications;
 import org.springframework.data.domain.Page;

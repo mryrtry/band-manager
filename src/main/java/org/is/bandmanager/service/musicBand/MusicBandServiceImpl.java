@@ -1,23 +1,27 @@
-package org.is.bandmanager.service;
+package org.is.bandmanager.service.musicBand;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.is.bandmanager.dto.MusicBandDto;
 import org.is.bandmanager.dto.MusicBandMapper;
-import org.is.bandmanager.dto.request.MusicBandFilter;
+import org.is.bandmanager.repository.filter.MusicBandFilter;
 import org.is.bandmanager.dto.request.MusicBandRequest;
 import org.is.bandmanager.event.EntityEvent;
 import org.is.bandmanager.exception.ServiceException;
 import org.is.bandmanager.model.MusicBand;
 import org.is.bandmanager.repository.BestBandAwardRepository;
 import org.is.bandmanager.repository.MusicBandRepository;
-import org.is.bandmanager.service.pageable.PageableConfig;
-import org.is.bandmanager.service.pageable.PageableUtil;
+import org.is.bandmanager.service.person.PersonService;
+import org.is.bandmanager.service.album.AlbumService;
+import org.is.bandmanager.service.coordinates.CoordinatesService;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
+import org.is.bandmanager.util.pageable.PageableConfig;
+import org.is.bandmanager.util.pageable.PageableCreator;
+import org.is.bandmanager.util.pageable.PageableType;
 
 import java.util.Date;
 import java.util.List;
@@ -82,7 +86,7 @@ public class MusicBandServiceImpl implements MusicBandService {
 
     @Override
     public Page<MusicBandDto> getAll(MusicBandFilter filter, PageableConfig config) {
-        Pageable pageable = PageableUtil.createMusicBandPageable(config);
+        Pageable pageable = PageableCreator.create(config, PageableType.MUSIC_BANDS);
         Page<MusicBand> bands = musicBandRepository.findWithFilter(filter, pageable);
         return bands.map(mapper::toDto);
     }

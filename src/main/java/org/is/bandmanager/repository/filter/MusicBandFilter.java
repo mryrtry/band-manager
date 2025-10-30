@@ -1,9 +1,8 @@
-package org.is.bandmanager.dto.request;
+package org.is.bandmanager.repository.filter;
 
 import jakarta.validation.constraints.DecimalMin;
 import lombok.Data;
 import org.is.bandmanager.model.MusicGenre;
-import org.is.bandmanager.repository.specifications.EntityFilter;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.util.Date;

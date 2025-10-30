@@ -1,6 +1,6 @@
 package org.is.bandmanager.service.subscription.storage;
 
-import org.is.bandmanager.repository.specifications.EntityFilter;
+import org.is.bandmanager.repository.filter.EntityFilter;
 import org.is.bandmanager.service.subscription.model.Subscription;
 import org.is.bandmanager.service.subscription.model.request.SubscriptionRequest;
 

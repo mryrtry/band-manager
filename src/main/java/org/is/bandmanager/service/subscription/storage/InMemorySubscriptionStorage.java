@@ -1,15 +1,23 @@
 package org.is.bandmanager.service.subscription.storage;
 
 import lombok.RequiredArgsConstructor;
+import org.is.bandmanager.constants.SubscriptionsConstants;
 import org.is.bandmanager.exception.ServiceException;
-import org.is.bandmanager.repository.specifications.EntityFilter;
-import org.is.bandmanager.service.pageable.PageableConfig;
+import org.is.bandmanager.repository.filter.EntityFilter;
 import org.is.bandmanager.service.subscription.model.Subscription;
 import org.is.bandmanager.service.subscription.model.request.SubscriptionRequest;
 import org.springframework.stereotype.Service;
+import org.is.bandmanager.util.pageable.PageableConfig;
 
 import java.time.Instant;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Collectors;
@@ -118,7 +126,7 @@ public class InMemorySubscriptionStorage implements SubscriptionStorage {
 
     @Override
     public List<UUID> deleteDeadSubscriptions() {
-        Instant threshold = Instant.now().minusSeconds(3600);
+        Instant threshold = Instant.now().minusSeconds(SubscriptionsConstants.DEAD_SUBSCRIPTION_LIMIT_SECONDS);
         List<UUID> removed = new ArrayList<>();
         for (Map.Entry<UUID, Subscription<? extends EntityFilter>> entry : subscriptions.entrySet()) {
             if (entry.getValue().getTouchedAt().isBefore(threshold)) {

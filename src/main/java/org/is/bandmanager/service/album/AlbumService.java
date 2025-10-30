@@ -1,4 +1,4 @@
-package org.is.bandmanager.service;
+package org.is.bandmanager.service.album;
 
 import jakarta.validation.Valid;
 import org.is.bandmanager.dto.AlbumDto;
