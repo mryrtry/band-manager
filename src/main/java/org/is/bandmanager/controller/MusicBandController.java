@@ -5,29 +5,18 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PastOrPresent;
 import lombok.RequiredArgsConstructor;
 import org.is.bandmanager.dto.MusicBandDto;
+import org.is.bandmanager.dto.request.MusicBandFilter;
 import org.is.bandmanager.dto.request.MusicBandRequest;
-import org.is.bandmanager.repository.filter.MusicBandFilter;
-import org.is.bandmanager.repository.util.PageableUtil;
 import org.is.bandmanager.service.MusicBandService;
+import org.is.bandmanager.service.pageable.PageableConfig;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Date;
 import java.util.List;
-
 
 @RestController
 @RequestMapping("/music-bands")
@@ -37,9 +26,10 @@ public class MusicBandController {
     private final MusicBandService musicBandService;
 
     @GetMapping()
-    public ResponseEntity<Page<MusicBandDto>> getAllMusicBands(@ModelAttribute @Valid MusicBandFilter filter, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size, @RequestParam(defaultValue = "id") List<String> sort, @RequestParam(defaultValue = "asc") String direction) {
-        Pageable pageable = PageableUtil.createMusicBandPageable(page, size, sort, direction);
-        Page<MusicBandDto> bands = musicBandService.getAll(filter, pageable);
+    public ResponseEntity<Page<MusicBandDto>> getAllMusicBands(
+            @ModelAttribute @Valid MusicBandFilter filter,
+            @ModelAttribute PageableConfig config) {
+        Page<MusicBandDto> bands = musicBandService.getAll(filter, config);
         return ResponseEntity.ok(bands);
     }
 
@@ -56,7 +46,12 @@ public class MusicBandController {
     }
 
     @GetMapping("/established-before")
-    public ResponseEntity<List<MusicBandDto>> getBandsEstablishedBefore(@RequestParam @NotNull(message = "Date parameter is required") @DateTimeFormat(pattern = "yyyy-MM-dd") @PastOrPresent(message = "Date cannot be in the future") Date date) {
+    public ResponseEntity<List<MusicBandDto>> getBandsEstablishedBefore(
+            @RequestParam
+            @NotNull(message = "Date parameter is required")
+            @DateTimeFormat(pattern = "yyyy-MM-dd")
+            @PastOrPresent(message = "Date cannot be in the future")
+            Date date) {
 
         List<MusicBandDto> bands = musicBandService.getByEstablishmentDateBefore(date);
         return ResponseEntity.ok(bands);
@@ -75,7 +70,9 @@ public class MusicBandController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<MusicBandDto> updateMusicBand(@PathVariable Integer id, @Valid @RequestBody MusicBandRequest request) {
+    public ResponseEntity<MusicBandDto> updateMusicBand(
+            @PathVariable Integer id,
+            @Valid @RequestBody MusicBandRequest request) {
         MusicBandDto updatedMusicBand = musicBandService.update(id, request);
         return ResponseEntity.ok(updatedMusicBand);
     }
