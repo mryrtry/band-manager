@@ -2,8 +2,6 @@ package org.is.auth.constants;
 
 public final class UserConstants {
 
-    public static final String DEFAULT_USERNAME = "user#%s";
-
     public static final int USERNAME_MIN_LENGTH = 3;
 
     public static final int USERNAME_MAX_LENGTH = 50;
