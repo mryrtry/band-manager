@@ -1,4 +1,4 @@
-package org.is.bandmanager;
+package org.is;
 
 import org.is.bandmanager.config.IntegrationTest;
 import org.is.bandmanager.controller.AbstractIntegrationTest;

@@ -1,4 +1,4 @@
-package org.is.bandmanager;
+package org.is;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
