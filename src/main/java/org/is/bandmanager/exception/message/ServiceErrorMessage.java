@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatus;
 public enum ServiceErrorMessage implements ErrorMessage {
 
     MUST_BE_NOT_NULL(HttpStatus.BAD_REQUEST, "Ресурс '%s' не может быть пустым"),
+    ID_MUST_BE_POSITIVE(HttpStatus.BAD_REQUEST, "Идентификатор ресурса '%s' должен быть положительным"),
     SOURCE_NOT_FOUND(HttpStatus.NOT_FOUND, "Ресурс '%s' с ID: '%s' не был найден"),
     CANNOT_ACCESS_SOURCE(HttpStatus.UNAUTHORIZED, "Ресурс '%s' с ID: '%s' не может быть удалён или изменён вами"),
     CANNOT_REMOVE_LAST_PARTICIPANT(HttpStatus.BAD_REQUEST, "Невозможно удалить участника - в группе должен остаться хотя бы 1 участник"),

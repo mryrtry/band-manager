@@ -2,29 +2,30 @@ package org.is.bandmanager.controller;
 
 import org.is.bandmanager.config.IntegrationTest;
 import org.is.bandmanager.dto.request.PersonRequest;
+import org.is.bandmanager.model.Color;
+import org.is.bandmanager.model.Country;
 import org.is.bandmanager.model.Location;
 import org.is.bandmanager.model.Person;
 import org.is.bandmanager.repository.LocationRepository;
 import org.is.bandmanager.repository.PersonRepository;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.web.server.LocalServerPort;
-import org.springframework.http.MediaType;
-import org.springframework.test.web.reactive.server.WebTestClient;
 
 import java.util.List;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.is.bandmanager.model.Color.BLACK;
-import static org.is.bandmanager.model.Color.BLUE;
-import static org.is.bandmanager.model.Country.USA;
+import static org.is.bandmanager.util.IntegrationTestUtil.performDelete;
+import static org.is.bandmanager.util.IntegrationTestUtil.performGet;
+import static org.is.bandmanager.util.IntegrationTestUtil.performPost;
+import static org.is.bandmanager.util.IntegrationTestUtil.performPutWithBody;
 
 @IntegrationTest
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class PersonControllerTest extends AbstractIntegrationTest {
 
     @Autowired
@@ -33,164 +34,235 @@ class PersonControllerTest extends AbstractIntegrationTest {
     @Autowired
     private LocationRepository locationRepository;
 
-    @LocalServerPort
-    private int port;
+    private static Stream<Arguments> provideInvalidPersonRequests() {
+        return Stream.of(
+                Arguments.of("Blank name",
+                        createPersonRequest("", Color.BLUE, Color.BROWN, 75.5f, Country.USA, 1L), "name"),
+                Arguments.of("Null eye color",
+                        createPersonRequest("John Doe", null, Color.BROWN, 75.5f, Country.USA, 1L), "eyeColor"),
+                Arguments.of("Null hair color",
+                        createPersonRequest("John Doe", Color.BLUE, null, 75.5f, Country.USA, 1L), "hairColor"),
+                Arguments.of("Null location id",
+                        createPersonRequest("John Doe", Color.BLUE, Color.BROWN, 75.5f, Country.USA, null), "locationId"),
+                Arguments.of("Null weight",
+                        createPersonRequest("John Doe", Color.BLUE, Color.BROWN, null, Country.USA, 1L), "weight"),
+                Arguments.of("Zero weight",
+                        createPersonRequest("John Doe", Color.BLUE, Color.BROWN, 0f, Country.USA, 1L), "weight"),
+                Arguments.of("Negative weight",
+                        createPersonRequest("John Doe", Color.BLUE, Color.BROWN, -5f, Country.USA, 1L), "weight"),
+                Arguments.of("Null nationality",
+                        createPersonRequest("John Doe", Color.BLUE, Color.BROWN, 75.5f, null, 1L), "nationality")
+        );
+    }
 
-    private WebTestClient webTestClient;
-
-    private Location savedLocation;
-
-    @BeforeAll
-    void setClient() {
-        this.webTestClient = WebTestClient.bindToServer().baseUrl("http://localhost:" + port).build();
+    private static PersonRequest createPersonRequest(String name, Color eyeColor, Color hairColor,
+                                                     Float weight, Country nationality, Long locationId) {
+        return PersonRequest.builder()
+                .name(name)
+                .eyeColor(eyeColor)
+                .hairColor(hairColor)
+                .weight(weight)
+                .nationality(nationality)
+                .locationId(locationId)
+                .build();
     }
 
     @BeforeEach
-    void setUp() {
+    @AfterEach
+    void cleanDatabase() {
         personRepository.deleteAll();
         locationRepository.deleteAll();
-
-        // Создаем тестовую локацию для использования в тестах
-        savedLocation = locationRepository.save(Location.builder().x(10).y(20L).z(30L).build());
-    }
-
-    @AfterAll
-    void cleanUp() {
-        personRepository.deleteAll();
-        locationRepository.deleteAll();
-    }
-
-    private PersonRequest createSamplePersonRequest() {
-        return PersonRequest.builder().name("John Doe").eyeColor(BLUE).hairColor(BLACK).locationId(savedLocation.getId()) // Используем ID существующей локации
-                .weight(70f).nationality(USA).build();
     }
 
     @Test
     void shouldCreatePersonSuccessfully() {
-        PersonRequest request = createSamplePersonRequest();
+        // Given
+        Location location = locationRepository.save(createLocation());
+        PersonRequest request = createValidPersonRequest(location.getId());
 
-        webTestClient.post().uri("/persons").contentType(MediaType.APPLICATION_JSON).bodyValue(request).exchange().expectStatus().isCreated().expectBody().jsonPath("$.id").exists().jsonPath("$.name").isEqualTo("John Doe").jsonPath("$.location.y").isEqualTo(20).jsonPath("$.weight").isEqualTo(70);
+        // When & Then
+        performPost(webTestClient, "/persons", request)
+                .expectStatus().isCreated()
+                .expectBody()
+                .jsonPath("$.id").exists()
+                .jsonPath("$.name").isEqualTo("John Doe")
+                .jsonPath("$.eyeColor").isEqualTo("BLUE")
+                .jsonPath("$.hairColor").isEqualTo("BROWN")
+                .jsonPath("$.weight").isEqualTo(75.5)
+                .jsonPath("$.nationality").isEqualTo("USA");
 
-        List<Person> persons = personRepository.findAll();
-        assertThat(persons).hasSize(1);
-        assertThat(persons.get(0).getLocation().getId()).isEqualTo(savedLocation.getId());
-        assertThat(persons.get(0).getLocation().getY()).isEqualTo(20L);
-    }
-
-    @Test
-    void shouldReturnBadRequestWhenNameIsBlank() {
-        PersonRequest request = createSamplePersonRequest();
-        request.setName("");
-
-        webTestClient.post().uri("/persons").contentType(MediaType.APPLICATION_JSON).bodyValue(request).exchange().expectStatus().isBadRequest().expectBody().jsonPath("$.status").isEqualTo(400).jsonPath("$.message").isEqualTo("Ошибка валидации данных").jsonPath("$.details[0].field").isEqualTo("name").jsonPath("$.details[0].message").isEqualTo("Person.Name не может быть пустым").jsonPath("$.details[0].errorType").isEqualTo("VALIDATION_ERROR");
-    }
-
-    @Test
-    void shouldReturnBadRequestWhenWeightIsNegative() {
-        PersonRequest request = createSamplePersonRequest();
-        request.setWeight(-5f);
-
-        webTestClient.post().uri("/persons").contentType(MediaType.APPLICATION_JSON).bodyValue(request).exchange().expectStatus().isBadRequest().expectBody().jsonPath("$.status").isEqualTo(400).jsonPath("$.message").isEqualTo("Ошибка валидации данных").jsonPath("$.details[0].field").isEqualTo("weight").jsonPath("$.details[0].message").isEqualTo("Person.Weight должно быть > 0").jsonPath("$.details[0].errorType").isEqualTo("VALIDATION_ERROR");
-    }
-
-    @Test
-    void shouldReturnBadRequestWhenLocationIdIsNull() {
-        PersonRequest request = createSamplePersonRequest();
-        request.setLocationId(null);
-
-        webTestClient.post().uri("/persons").contentType(MediaType.APPLICATION_JSON).bodyValue(request).exchange().expectStatus().isBadRequest().expectBody().jsonPath("$.status").isEqualTo(400).jsonPath("$.message").isEqualTo("Ошибка валидации данных").jsonPath("$.details[0].field").isEqualTo("locationId").jsonPath("$.details[0].message").isEqualTo("Person.LocationId не может быть пустым").jsonPath("$.details[0].errorType").isEqualTo("VALIDATION_ERROR");
-    }
-
-    @Test
-    void shouldReturnNotFoundWhenLocationIdDoesNotExist() {
-        PersonRequest request = createSamplePersonRequest();
-        request.setLocationId(999L); // Несуществующий ID
-
-        webTestClient.post().uri("/persons").contentType(MediaType.APPLICATION_JSON).bodyValue(request).exchange().expectStatus().isNotFound().expectBody().jsonPath("$.status").isEqualTo(404).jsonPath("$.message").isEqualTo("Ошибка выполнения операции");
-    }
-
-    @Test
-    void shouldReturnBadRequestWhenMultipleValidationErrors() {
-        PersonRequest request = createSamplePersonRequest();
-        request.setName("");
-        request.setWeight(-10f);
-        request.setLocationId(null);
-
-        webTestClient.post().uri("/persons").contentType(MediaType.APPLICATION_JSON).bodyValue(request).exchange().expectStatus().isBadRequest().expectBody().jsonPath("$.status").isEqualTo(400).jsonPath("$.message").isEqualTo("Ошибка валидации данных").jsonPath("$.details.length()").isEqualTo(3);
+        // Verify database
+        assertThat(personRepository.findAll()).hasSize(1);
     }
 
     @Test
     void shouldGetAllPersons() {
-        // Создаем несколько персон
-        Person person1 = personRepository.save(Person.builder().name("John Doe").eyeColor(BLUE).hairColor(BLACK).location(savedLocation).weight(70f).nationality(USA).build());
+        // Given
+        Location location = locationRepository.save(createLocation());
+        Person person1 = createPerson("Person 1", Color.BLUE, Color.BROWN, 70.0f, Country.USA, location);
+        Person person2 = createPerson("Person 2", Color.GREEN, Color.BLACK, 65.5f, Country.UK, location);
+        personRepository.saveAll(List.of(person1, person2));
 
-        Person person2 = personRepository.save(Person.builder().name("Jane Doe").eyeColor(BLACK).hairColor(BLUE).location(savedLocation).weight(65f).nationality(USA).build());
-
-        webTestClient.get().uri("/persons").exchange().expectStatus().isOk().expectBody().jsonPath("$.length()").isEqualTo(2).jsonPath("$[0].id").isEqualTo(person1.getId().intValue()).jsonPath("$[1].id").isEqualTo(person2.getId().intValue());
+        // When & Then
+        performGet(webTestClient, "/persons")
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.length()").isEqualTo(2)
+                .jsonPath("$[0].name").isEqualTo("Person 1")
+                .jsonPath("$[1].name").isEqualTo("Person 2");
     }
 
     @Test
     void shouldGetPersonById() {
-        Person savedPerson = personRepository.save(Person.builder().name("John Doe").eyeColor(BLUE).hairColor(BLACK).location(savedLocation).weight(70f).nationality(USA).build());
+        // Given
+        Location location = locationRepository.save(createLocation());
+        Person person = personRepository.save(createPerson("John Doe", Color.BLUE, Color.BROWN, 75.5f, Country.USA, location));
 
-        webTestClient.get().uri("/persons/{id}", savedPerson.getId()).exchange().expectStatus().isOk().expectBody().jsonPath("$.id").isEqualTo(savedPerson.getId()).jsonPath("$.name").isEqualTo("John Doe").jsonPath("$.location.y").isEqualTo(20);
-    }
-
-    @Test
-    void shouldReturnNotFoundWhenGettingNonExistentPerson() {
-        webTestClient.get().uri("/persons/{id}", 999L).exchange().expectStatus().isNotFound().expectBody().jsonPath("$.status").isEqualTo(404).jsonPath("$.message").isEqualTo("Ошибка выполнения операции").jsonPath("$.details[0].field").isEqualTo("service").jsonPath("$.details[0].errorType").isEqualTo("SERVICE_ERROR");
+        // When & Then
+        performGet(webTestClient, "/persons/{id}", person.getId())
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.id").isEqualTo(person.getId())
+                .jsonPath("$.name").isEqualTo("John Doe")
+                .jsonPath("$.eyeColor").isEqualTo("BLUE")
+                .jsonPath("$.hairColor").isEqualTo("BROWN")
+                .jsonPath("$.weight").isEqualTo(75.5)
+                .jsonPath("$.nationality").isEqualTo("USA");
     }
 
     @Test
     void shouldUpdatePersonSuccessfully() {
-        Person savedPerson = personRepository.save(Person.builder().name("John Doe").eyeColor(BLUE).hairColor(BLACK).location(savedLocation).weight(70f).nationality(USA).build());
+        // Given
+        Location location = locationRepository.save(createLocation());
+        Person person = personRepository.save(createPerson("Old Name", Color.BLUE, Color.BROWN, 70.0f, Country.USA, location));
+        PersonRequest updateRequest = createPersonRequest("Updated Name", Color.GREEN, Color.BLACK, 85.0f, Country.UK, location.getId());
 
-        // Создаем новую локацию для обновления
-        Location newLocation = locationRepository.save(Location.builder().x(100).y(200L).z(300L).build());
+        // When & Then
+        performPutWithBody(webTestClient, "/persons/{id}", updateRequest, person.getId())
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.id").isEqualTo(person.getId())
+                .jsonPath("$.name").isEqualTo("Updated Name")
+                .jsonPath("$.eyeColor").isEqualTo("GREEN")
+                .jsonPath("$.hairColor").isEqualTo("BLACK")
+                .jsonPath("$.weight").isEqualTo(85.0)
+                .jsonPath("$.nationality").isEqualTo("UK");
 
-        PersonRequest updateRequest = PersonRequest.builder().name("Updated Name").eyeColor(BLACK).hairColor(BLUE).locationId(newLocation.getId()).weight(75f).nationality(USA).build();
-
-        webTestClient.put().uri("/persons/{id}", savedPerson.getId()).contentType(MediaType.APPLICATION_JSON).bodyValue(updateRequest).exchange().expectStatus().isOk().expectBody().jsonPath("$.name").isEqualTo("Updated Name").jsonPath("$.location.y").isEqualTo(200);
-
-        Person updatedPerson = personRepository.findById(savedPerson.getId()).orElseThrow();
-        assertThat(updatedPerson.getName()).isEqualTo("Updated Name");
-        assertThat(updatedPerson.getLocation().getId()).isEqualTo(newLocation.getId());
-        assertThat(updatedPerson.getWeight()).isEqualTo(75f);
-    }
-
-    @Test
-    void shouldReturnNotFoundWhenUpdatingNonExistentPerson() {
-        PersonRequest updateRequest = createSamplePersonRequest();
-
-        webTestClient.put().uri("/persons/{id}", 999L).contentType(MediaType.APPLICATION_JSON).bodyValue(updateRequest).exchange().expectStatus().isNotFound().expectBody().jsonPath("$.status").isEqualTo(404).jsonPath("$.message").isEqualTo("Ошибка выполнения операции").jsonPath("$.details[0].field").isEqualTo("service").jsonPath("$.details[0].errorType").isEqualTo("SERVICE_ERROR");
-    }
-
-    @Test
-    void shouldReturnBadRequestWhenUpdatingWithInvalidData() {
-        Person savedPerson = personRepository.save(Person.builder().name("John Doe").eyeColor(BLUE).hairColor(BLACK).location(savedLocation).weight(70f).nationality(USA).build());
-
-        PersonRequest invalidUpdate = PersonRequest.builder().name("").eyeColor(BLUE).hairColor(BLACK).locationId(savedLocation.getId()).weight(-5f).nationality(USA).build();
-
-        webTestClient.put().uri("/persons/{id}", savedPerson.getId()).contentType(MediaType.APPLICATION_JSON).bodyValue(invalidUpdate).exchange().expectStatus().isBadRequest().expectBody().jsonPath("$.status").isEqualTo(400).jsonPath("$.message").isEqualTo("Ошибка валидации данных").jsonPath("$.details.length()").isEqualTo(2);
+        // Verify in DB
+        Person updated = personRepository.findById(person.getId()).orElseThrow();
+        assertThat(updated.getName()).isEqualTo("Updated Name");
+        assertThat(updated.getEyeColor()).isEqualTo(Color.GREEN);
+        assertThat(updated.getHairColor()).isEqualTo(Color.BLACK);
+        assertThat(updated.getWeight()).isEqualTo(85.0f);
+        assertThat(updated.getNationality()).isEqualTo(Country.UK);
     }
 
     @Test
     void shouldDeletePersonSuccessfully() {
-        Person savedPerson = personRepository.save(Person.builder().name("John Doe").eyeColor(BLUE).hairColor(BLACK).location(savedLocation).weight(70f).nationality(USA).build());
+        // Given
+        Location location = locationRepository.save(createLocation());
+        Person person = personRepository.save(createPerson("To Delete", Color.BLUE, Color.BROWN, 70.0f, Country.USA, location));
 
-        webTestClient.delete().uri("/persons/{id}", savedPerson.getId()).exchange().expectStatus().isOk().expectBody().jsonPath("$.id").isEqualTo(savedPerson.getId());
+        // When & Then
+        performDelete(webTestClient, "/persons/{id}", person.getId())
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.id").isEqualTo(person.getId())
+                .jsonPath("$.name").isEqualTo("To Delete");
 
-        assertThat(personRepository.existsById(savedPerson.getId())).isFalse();
+        // Verify DB deletion
+        assertThat(personRepository.existsById(person.getId())).isFalse();
+    }
+
+    @Test
+    void shouldReturnNotFoundWhenGettingNonExistentPerson() {
+        performGet(webTestClient, "/persons/{id}", 999L)
+                .expectStatus().isNotFound()
+                .expectBody()
+                .jsonPath("$.status").isEqualTo(404)
+                .jsonPath("$.message").isEqualTo("Ошибка выполнения операции")
+                .jsonPath("$.details[0].errorType").isEqualTo("SERVICE_ERROR");
+    }
+
+    @Test
+    void shouldReturnNotFoundWhenUpdatingNonExistentPerson() {
+        Location location = locationRepository.save(createLocation());
+        PersonRequest updateRequest = createValidPersonRequest(location.getId());
+
+        performPutWithBody(webTestClient, "/persons/{id}", updateRequest, 999L)
+                .expectStatus().isNotFound()
+                .expectBody()
+                .jsonPath("$.status").isEqualTo(404);
     }
 
     @Test
     void shouldReturnNotFoundWhenDeletingNonExistentPerson() {
-        webTestClient.delete().uri("/persons/{id}", 999L).exchange().expectStatus().isNotFound().expectBody().jsonPath("$.status").isEqualTo(404).jsonPath("$.message").isEqualTo("Ошибка выполнения операции").jsonPath("$.details[0].field").isEqualTo("service").jsonPath("$.details[0].errorType").isEqualTo("SERVICE_ERROR");
+        performDelete(webTestClient, "/persons/{id}", 999L)
+                .expectStatus().isNotFound()
+                .expectBody()
+                .jsonPath("$.status").isEqualTo(404);
+    }
+
+    @ParameterizedTest
+    @MethodSource("provideInvalidPersonRequests")
+    void shouldReturnBadRequestWhenCreatingPersonWithInvalidData(
+            String ignored, PersonRequest invalidRequest, String expectedErrorField) {
+
+        performPost(webTestClient, "/persons", invalidRequest)
+                .expectStatus().isBadRequest()
+                .expectBody()
+                .jsonPath("$.status").isEqualTo(400)
+                .jsonPath("$.message").isEqualTo("Ошибка валидации данных")
+                .jsonPath("$.details[0].field").isEqualTo(expectedErrorField);
+    }
+
+    @ParameterizedTest
+    @MethodSource("provideInvalidPersonRequests")
+    void shouldReturnBadRequestWhenUpdatingPersonWithInvalidData(
+            String ignored, PersonRequest invalidRequest, String expectedErrorField) {
+
+        Location location = locationRepository.save(createLocation());
+        Person person = personRepository.save(createPerson("Valid Person", Color.BLUE, Color.BROWN, 70.0f, Country.USA, location));
+
+        performPutWithBody(webTestClient, "/persons/{id}", invalidRequest, person.getId())
+                .expectStatus().isBadRequest()
+                .expectBody()
+                .jsonPath("$.status").isEqualTo(400)
+                .jsonPath("$.details[0].field").isEqualTo(expectedErrorField);
     }
 
     @Test
-    void shouldReturnBadRequestWhenCreatingWithMissingRequestBody() {
-        webTestClient.post().uri("/persons").contentType(MediaType.APPLICATION_JSON).exchange().expectStatus().isBadRequest().expectBody().jsonPath("$.status").isEqualTo(400).jsonPath("$.message").isEqualTo("Отсутствует тело запроса").jsonPath("$.details[0].field").isEqualTo("requestBody").jsonPath("$.details[0].errorType").isEqualTo("INVALID_JSON");
+    void shouldReturnBadRequestWhenCreatingPersonWithMultipleErrors() {
+        PersonRequest request = createPersonRequest("", null, null, -5f, null, null);
+
+        performPost(webTestClient, "/persons", request)
+                .expectStatus().isBadRequest()
+                .expectBody()
+                .jsonPath("$.status").isEqualTo(400)
+                .jsonPath("$.details.length()").isEqualTo(6);
+    }
+
+    private PersonRequest createValidPersonRequest(Long locationId) {
+        return createPersonRequest("John Doe", Color.BLUE, Color.BROWN, 75.5f, Country.USA, locationId);
+    }
+
+    private Person createPerson(String name, Color eyeColor, Color hairColor, Float weight, Country nationality, Location location) {
+        return Person.builder()
+                .name(name)
+                .eyeColor(eyeColor)
+                .hairColor(hairColor)
+                .location(location)
+                .weight(weight)
+                .nationality(nationality)
+                .build();
+    }
+
+    private Location createLocation() {
+        return Location.builder()
+                .x(1)
+                .y(1L)
+                .z(1L)
+                .build();
     }
 
 }

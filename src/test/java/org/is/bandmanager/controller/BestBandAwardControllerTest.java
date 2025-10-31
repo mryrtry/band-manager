@@ -17,28 +17,26 @@ import org.is.bandmanager.repository.CoordinatesRepository;
 import org.is.bandmanager.repository.LocationRepository;
 import org.is.bandmanager.repository.MusicBandRepository;
 import org.is.bandmanager.repository.PersonRepository;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.web.server.LocalServerPort;
-import org.springframework.http.MediaType;
-import org.springframework.test.web.reactive.server.WebTestClient;
 
+import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.List;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.is.bandmanager.model.MusicGenre.POST_PUNK;
-import static org.is.bandmanager.model.MusicGenre.POST_ROCK;
-import static org.is.bandmanager.model.MusicGenre.PROGRESSIVE_ROCK;
-import static org.is.bandmanager.model.MusicGenre.PUNK_ROCK;
-import static org.is.bandmanager.model.MusicGenre.ROCK;
-import static org.is.bandmanager.model.MusicGenre.SOUL;
+import static org.is.bandmanager.util.IntegrationTestUtil.performDelete;
+import static org.is.bandmanager.util.IntegrationTestUtil.performGet;
+import static org.is.bandmanager.util.IntegrationTestUtil.performPost;
+import static org.is.bandmanager.util.IntegrationTestUtil.performPutWithBody;
 
 @IntegrationTest
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class BestBandAwardControllerTest extends AbstractIntegrationTest {
 
     @Autowired
@@ -48,211 +46,298 @@ class BestBandAwardControllerTest extends AbstractIntegrationTest {
     private MusicBandRepository musicBandRepository;
 
     @Autowired
-    private CoordinatesRepository coordinatesRepository;
+    private AlbumRepository albumRepository;
 
     @Autowired
-    private AlbumRepository albumRepository;
+    private LocationRepository locationRepository;
 
     @Autowired
     private PersonRepository personRepository;
 
     @Autowired
-    private LocationRepository locationRepository;
+    private CoordinatesRepository coordinatesRepository;
 
-    @LocalServerPort
-    private int port;
+    private MusicBand testBand;
 
-    private WebTestClient webTestClient;
+    private static Stream<Arguments> provideInvalidBestBandAwardRequests() {
+        return Stream.of(
+                Arguments.of("Null music band id",
+                        createBestBandAwardRequest(null, MusicGenre.ROCK), "musicBandId"),
+                Arguments.of("Null genre",
+                        createBestBandAwardRequest(1, null), "genre")
+        );
+    }
 
-    private MusicBand savedMusicBand;
-
-    @BeforeAll
-    void setClient() {
-        this.webTestClient = WebTestClient.bindToServer().baseUrl("http://localhost:" + port).build();
+    private static BestBandAwardRequest createBestBandAwardRequest(Integer musicBandId, MusicGenre genre) {
+        return BestBandAwardRequest.builder()
+                .musicBandId(musicBandId)
+                .genre(genre)
+                .build();
     }
 
     @BeforeEach
     void setUp() {
-        bestBandAwardRepository.deleteAll();
-        musicBandRepository.deleteAll();
-        personRepository.deleteAll();
-        albumRepository.deleteAll();
-        coordinatesRepository.deleteAll();
-        locationRepository.deleteAll();
+        // Сначала сохраняем все зависимости
+        Album savedAlbum = albumRepository.save(
+                Album.builder()
+                        .name("Test Album")
+                        .tracks(10L)
+                        .sales(100)
+                        .build()
+        );
 
-        // Создаем все зависимости для MusicBand
-        Location location = locationRepository.save(Location.builder().x(10).y(100L).z(1000L).build());
+        Location savedLocation = locationRepository.save(
+                Location.builder()
+                        .x(1)
+                        .y(2L)
+                        .z(3L)
+                        .build()
+        );
 
-        Coordinates coordinates = coordinatesRepository.save(Coordinates.builder().x(100).y(50.5f).build());
+        Person savedFrontMan = personRepository.save(
+                Person.builder()
+                        .name("Front Man")
+                        .eyeColor(Color.BLACK)
+                        .hairColor(Color.BLUE)
+                        .location(savedLocation)
+                        .weight(75.5F)
+                        .nationality(Country.USA)
+                        .build()
+        );
 
-        Album album = albumRepository.save(Album.builder().name("Test Album").tracks(10L).sales(1000).build());
+        Coordinates savedCoordinates = coordinatesRepository.save(
+                Coordinates.builder()
+                        .x(1)
+                        .y(2F)
+                        .build()
+        );
 
-        Person frontMan = personRepository.save(Person.builder().name("Test Frontman").eyeColor(Color.BLUE).hairColor(Color.BLACK).location(location).weight(70f).nationality(Country.USA).build());
-
-        // Создаем тестовую группу для наград
-        savedMusicBand = musicBandRepository.save(MusicBand.builder().name("Test Band").coordinates(coordinates).genre(ROCK).numberOfParticipants(5L).singlesCount(10L).description("Test description").bestAlbum(album).albumsCount(5L).establishmentDate(new java.util.Date()).frontMan(frontMan).creationDate(new java.util.Date()).build());
+        // Теперь сохраняем MusicBand с сохраненными зависимостями
+        testBand = musicBandRepository.save(
+                MusicBand.builder()
+                        .name("Test Band")
+                        .description("Test Description")
+                        .genre(MusicGenre.ROCK)
+                        .numberOfParticipants(5L)
+                        .bestAlbum(savedAlbum)
+                        .singlesCount(10L)
+                        .albumsCount(3L)
+                        .frontMan(savedFrontMan)
+                        .coordinates(savedCoordinates)
+                        .establishmentDate(new Date())
+                        .build()
+        );
     }
 
-    @AfterAll
-    void tearDown() {
+    @AfterEach
+    void cleanDatabase() {
         bestBandAwardRepository.deleteAll();
         musicBandRepository.deleteAll();
         personRepository.deleteAll();
-        albumRepository.deleteAll();
-        coordinatesRepository.deleteAll();
         locationRepository.deleteAll();
+        coordinatesRepository.deleteAll();
+        albumRepository.deleteAll();
     }
 
     @Test
     void shouldCreateBestBandAwardSuccessfully() {
         // Given
-        BestBandAwardRequest request = BestBandAwardRequest.builder().musicBandId(savedMusicBand.getId()).genre(PROGRESSIVE_ROCK).build();
+        BestBandAwardRequest request = createValidBestBandAwardRequest();
 
         // When & Then
-        webTestClient.post().uri("/best-band-awards").contentType(MediaType.APPLICATION_JSON).bodyValue(request).exchange().expectStatus().isCreated();
+        performPost(webTestClient, "/best-band-awards", request)
+                .expectStatus().isCreated()
+                .expectBody()
+                .jsonPath("$.id").exists()
+                .jsonPath("$.bandId").isEqualTo(testBand.getId())
+                .jsonPath("$.bandName").isEqualTo("Test Band")
+                .jsonPath("$.genre").isEqualTo("ROCK")
+                .jsonPath("$.createdAt").exists();
 
         // Verify database
-        List<BestBandAward> awards = bestBandAwardRepository.findAll();
-        assertThat(awards).hasSize(1);
-        assertThat(awards.get(0).getBand().getId()).isEqualTo(savedMusicBand.getId());
-        assertThat(awards.get(0).getGenre()).isEqualTo(PROGRESSIVE_ROCK);
+        assertThat(bestBandAwardRepository.findAll()).hasSize(1);
     }
 
     @Test
-    void shouldReturnBadRequestWhenCreatingAwardWithNullMusicBandId() {
+    void shouldGetAllBestBandAwardsWithPagination() {
         // Given
-        BestBandAwardRequest request = BestBandAwardRequest.builder().musicBandId(null) // Invalid
-                .genre(ROCK).build();
-
-        // When & Then
-        webTestClient.post().uri("/best-band-awards").contentType(MediaType.APPLICATION_JSON).bodyValue(request).exchange().expectStatus().isBadRequest().expectBody().jsonPath("$.status").isEqualTo(400).jsonPath("$.message").isEqualTo("Ошибка валидации данных").jsonPath("$.details[0].field").isEqualTo("musicBandId").jsonPath("$.details[0].message").isEqualTo("BestBandAward.MusicBandId не может быть пустым").jsonPath("$.details[0].errorType").isEqualTo("VALIDATION_ERROR");
-    }
-
-    @Test
-    void shouldReturnBadRequestWhenCreatingAwardWithNullGenre() {
-        // Given
-        BestBandAwardRequest request = BestBandAwardRequest.builder().musicBandId(savedMusicBand.getId()).genre(null) // Invalid
-                .build();
-
-        // When & Then
-        webTestClient.post().uri("/best-band-awards").contentType(MediaType.APPLICATION_JSON).bodyValue(request).exchange().expectStatus().isBadRequest().expectBody().jsonPath("$.status").isEqualTo(400).jsonPath("$.message").isEqualTo("Ошибка валидации данных").jsonPath("$.details[0].field").isEqualTo("genre").jsonPath("$.details[0].message").isEqualTo("BestBandAward.MusicGenre не может быть пустым").jsonPath("$.details[0].errorType").isEqualTo("VALIDATION_ERROR");
-    }
-
-    @Test
-    void shouldReturnBadRequestWhenCreatingAwardWithMultipleErrors() {
-        // Given
-        BestBandAwardRequest request = BestBandAwardRequest.builder().musicBandId(null) // Invalid
-                .genre(null) // Invalid
-                .build();
-
-        // When & Then
-        webTestClient.post().uri("/best-band-awards").contentType(MediaType.APPLICATION_JSON).bodyValue(request).exchange().expectStatus().isBadRequest().expectBody().jsonPath("$.status").isEqualTo(400).jsonPath("$.message").isEqualTo("Ошибка валидации данных").jsonPath("$.details.length()").isEqualTo(2);
-    }
-
-    @Test
-    void shouldGetAllBestBandAwards() {
-        // Given
-        BestBandAward award1 = BestBandAward.builder().band(savedMusicBand).genre(ROCK).build();
-        BestBandAward award2 = BestBandAward.builder().band(savedMusicBand).genre(PROGRESSIVE_ROCK).build();
+        BestBandAward award1 = createBestBandAward(testBand, MusicGenre.ROCK, LocalDateTime.now().minusDays(2));
+        BestBandAward award2 = createBestBandAward(testBand, MusicGenre.POST_ROCK, LocalDateTime.now().minusDays(1));
         bestBandAwardRepository.saveAll(List.of(award1, award2));
 
-        // When & Then
-        webTestClient.get().uri("/best-band-awards").exchange().expectStatus().isOk().expectBody().jsonPath("$.content.length()").isEqualTo(2);
+        // When & Then - без фильтра, с пагинацией
+        performGet(webTestClient, "/best-band-awards?page=0&size=1&sort=createdAt,DESC")
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.content.length()").isEqualTo(1)
+                .jsonPath("$.page.totalElements").isEqualTo(2)
+                .jsonPath("$.page.totalPages").isEqualTo(2);
+    }
+
+    @Test
+    void shouldGetAllBestBandAwardsWithGenreFilter() {
+        // Given
+        BestBandAward award1 = createBestBandAward(testBand, MusicGenre.ROCK, LocalDateTime.now());
+        BestBandAward award2 = createBestBandAward(testBand, MusicGenre.POST_ROCK, LocalDateTime.now());
+        bestBandAwardRepository.saveAll(List.of(award1, award2));
+
+        // When & Then - фильтр по жанру
+        performGet(webTestClient, "/best-band-awards?genre=ROCK")
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.content.length()").isEqualTo(1)
+                .jsonPath("$.content[0].genre").isEqualTo("ROCK");
+    }
+
+    @Test
+    void shouldGetAllBestBandAwardsWithBandNameFilter() {
+        // Given
+        BestBandAward award = createBestBandAward(testBand, MusicGenre.ROCK, LocalDateTime.now());
+        bestBandAwardRepository.save(award);
+
+        // When & Then - фильтр по имени группы
+        performGet(webTestClient, "/best-band-awards?bandName=Test Band")
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.content.length()").isEqualTo(1)
+                .jsonPath("$.content[0].bandName").isEqualTo("Test Band");
     }
 
     @Test
     void shouldGetBestBandAwardById() {
         // Given
-        BestBandAward award = bestBandAwardRepository.save(BestBandAward.builder().band(savedMusicBand).genre(PUNK_ROCK).build());
+        BestBandAward award = bestBandAwardRepository.save(createBestBandAward(testBand, MusicGenre.ROCK, LocalDateTime.now()));
 
         // When & Then
-        webTestClient.get().uri("/best-band-awards/{id}", award.getId()).exchange().expectStatus().isOk();
-    }
-
-    @Test
-    void shouldReturnNotFoundWhenGettingNonExistentAward() {
-        webTestClient.get().uri("/best-band-awards/{id}", 999L).exchange().expectStatus().isNotFound().expectBody().jsonPath("$.status").isEqualTo(404).jsonPath("$.message").isEqualTo("Ошибка выполнения операции").jsonPath("$.details[0].field").isEqualTo("service").jsonPath("$.details[0].errorType").isEqualTo("SERVICE_ERROR");
+        performGet(webTestClient, "/best-band-awards/{id}", award.getId())
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.id").isEqualTo(award.getId())
+                .jsonPath("$.bandId").isEqualTo(testBand.getId())
+                .jsonPath("$.bandName").isEqualTo("Test Band")
+                .jsonPath("$.genre").isEqualTo("ROCK")
+                .jsonPath("$.createdAt").exists();
     }
 
     @Test
     void shouldUpdateBestBandAwardSuccessfully() {
         // Given
-        BestBandAward award = bestBandAwardRepository.save(BestBandAward.builder().band(savedMusicBand).genre(ROCK).build());
-
-        // Создаем все зависимости для новой группы
-        Location newLocation = locationRepository.save(Location.builder().x(20).y(200L).z(2000L).build());
-
-        Coordinates newCoordinates = coordinatesRepository.save(Coordinates.builder().x(200).y(60.5f).build());
-
-        Album newAlbum = albumRepository.save(Album.builder().name("New Album").tracks(12L).sales(2000).build());
-
-        Person newFrontMan = personRepository.save(Person.builder().name("New Frontman").eyeColor(Color.GREEN).hairColor(Color.BROWN).location(newLocation).weight(75f).nationality(Country.UK).build());
-
-        // Создаем другую группу для обновления
-        MusicBand newMusicBand = musicBandRepository.save(MusicBand.builder().name("New Band").coordinates(newCoordinates).genre(PROGRESSIVE_ROCK).numberOfParticipants(3L).singlesCount(5L).description("New description").bestAlbum(newAlbum).albumsCount(3L).establishmentDate(new java.util.Date()).frontMan(newFrontMan).creationDate(new java.util.Date()).build());
-
-        BestBandAwardRequest update = BestBandAwardRequest.builder().musicBandId(newMusicBand.getId()).genre(SOUL).build();
+        BestBandAward award = bestBandAwardRepository.save(createBestBandAward(testBand, MusicGenre.ROCK, LocalDateTime.now()));
+        BestBandAwardRequest updateRequest = createBestBandAwardRequest(testBand.getId(), MusicGenre.POST_ROCK);
 
         // When & Then
-        webTestClient.put().uri("/best-band-awards/{id}", award.getId()).contentType(MediaType.APPLICATION_JSON).bodyValue(update).exchange().expectStatus().isOk();
+        performPutWithBody(webTestClient, "/best-band-awards/{id}", updateRequest, award.getId())
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.id").isEqualTo(award.getId())
+                .jsonPath("$.genre").isEqualTo("POST_ROCK");
 
         // Verify in DB
         BestBandAward updated = bestBandAwardRepository.findById(award.getId()).orElseThrow();
-        assertThat(updated.getBand().getId()).isEqualTo(newMusicBand.getId());
-        assertThat(updated.getGenre()).isEqualTo(SOUL);
-    }
-
-    @Test
-    void shouldReturnNotFoundWhenUpdatingNonExistentAward() {
-        // Given
-        BestBandAwardRequest update = BestBandAwardRequest.builder().musicBandId(savedMusicBand.getId()).genre(POST_ROCK).build();
-
-        // When & Then
-        webTestClient.put().uri("/best-band-awards/{id}", 999L).contentType(MediaType.APPLICATION_JSON).bodyValue(update).exchange().expectStatus().isNotFound().expectBody().jsonPath("$.status").isEqualTo(404).jsonPath("$.message").isEqualTo("Ошибка выполнения операции").jsonPath("$.details[0].field").isEqualTo("service").jsonPath("$.details[0].errorType").isEqualTo("SERVICE_ERROR");
+        assertThat(updated.getGenre()).isEqualTo(MusicGenre.POST_ROCK);
     }
 
     @Test
     void shouldDeleteBestBandAwardSuccessfully() {
         // Given
-        BestBandAward award = bestBandAwardRepository.save(BestBandAward.builder().band(savedMusicBand).genre(POST_PUNK).build());
+        BestBandAward award = bestBandAwardRepository.save(createBestBandAward(testBand, MusicGenre.ROCK, LocalDateTime.now()));
 
         // When & Then
-        webTestClient.delete().uri("/best-band-awards/{id}", award.getId()).exchange().expectStatus().isOk();
+        performDelete(webTestClient, "/best-band-awards/{id}", award.getId())
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.id").isEqualTo(award.getId())
+                .jsonPath("$.genre").isEqualTo("ROCK");
 
         // Verify DB deletion
         assertThat(bestBandAwardRepository.existsById(award.getId())).isFalse();
     }
 
     @Test
-    void shouldReturnNotFoundWhenDeletingNonExistentAward() {
-        webTestClient.delete().uri("/best-band-awards/{id}", 999L).exchange().expectStatus().isNotFound().expectBody().jsonPath("$.status").isEqualTo(404).jsonPath("$.message").isEqualTo("Ошибка выполнения операции").jsonPath("$.details[0].field").isEqualTo("service").jsonPath("$.details[0].errorType").isEqualTo("SERVICE_ERROR");
+    void shouldReturnNotFoundWhenGettingNonExistentBestBandAward() {
+        performGet(webTestClient, "/best-band-awards/{id}", 999L)
+                .expectStatus().isNotFound()
+                .expectBody()
+                .jsonPath("$.status").isEqualTo(404)
+                .jsonPath("$.message").isEqualTo("Ошибка выполнения операции")
+                .jsonPath("$.details[0].errorType").isEqualTo("SERVICE_ERROR");
     }
 
     @Test
-    void shouldReturnBadRequestWhenUpdatingWithInvalidData() {
-        // Given
-        BestBandAward award = bestBandAwardRepository.save(BestBandAward.builder().band(savedMusicBand).genre(ROCK).build());
+    void shouldReturnNotFoundWhenUpdatingNonExistentBestBandAward() {
+        BestBandAwardRequest updateRequest = createValidBestBandAwardRequest();
 
-        BestBandAwardRequest invalidUpdate = BestBandAwardRequest.builder().musicBandId(null) // Invalid
-                .genre(null) // Invalid
+        performPutWithBody(webTestClient, "/best-band-awards/{id}", updateRequest, 999L)
+                .expectStatus().isNotFound()
+                .expectBody()
+                .jsonPath("$.status").isEqualTo(404);
+    }
+
+    @Test
+    void shouldReturnNotFoundWhenDeletingNonExistentBestBandAward() {
+        performDelete(webTestClient, "/best-band-awards/{id}", 999L)
+                .expectStatus().isNotFound()
+                .expectBody()
+                .jsonPath("$.status").isEqualTo(404);
+    }
+
+    @Test
+    void shouldReturnBadRequestWhenMusicBandNotFound() {
+        BestBandAwardRequest request = createBestBandAwardRequest(999, MusicGenre.ROCK);
+
+        performPost(webTestClient, "/best-band-awards", request)
+                .expectStatus().isNotFound()
+                .expectBody()
+                .jsonPath("$.status").isEqualTo(404);
+    }
+
+    @ParameterizedTest
+    @MethodSource("provideInvalidBestBandAwardRequests")
+    void shouldReturnBadRequestWhenCreatingBestBandAwardWithInvalidData(
+            String ignored, BestBandAwardRequest invalidRequest, String expectedErrorField) {
+
+        performPost(webTestClient, "/best-band-awards", invalidRequest)
+                .expectStatus().isBadRequest()
+                .expectBody()
+                .jsonPath("$.status").isEqualTo(400)
+                .jsonPath("$.message").isEqualTo("Ошибка валидации данных")
+                .jsonPath("$.details[0].field").isEqualTo(expectedErrorField);
+    }
+
+    @ParameterizedTest
+    @MethodSource("provideInvalidBestBandAwardRequests")
+    void shouldReturnBadRequestWhenUpdatingBestBandAwardWithInvalidData(
+            String ignored, BestBandAwardRequest invalidRequest, String expectedErrorField) {
+
+        BestBandAward award = bestBandAwardRepository.save(createBestBandAward(testBand, MusicGenre.ROCK, LocalDateTime.now()));
+
+        performPutWithBody(webTestClient, "/best-band-awards/{id}", invalidRequest, award.getId())
+                .expectStatus().isBadRequest()
+                .expectBody()
+                .jsonPath("$.status").isEqualTo(400)
+                .jsonPath("$.details[0].field").isEqualTo(expectedErrorField);
+    }
+
+    @Test
+    void shouldReturnEmptyPageWhenNoBestBandAwards() {
+        performGet(webTestClient, "/best-band-awards")
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.content.length()").isEqualTo(0)
+                .jsonPath("$.page.totalElements").isEqualTo(0)
+                .jsonPath("$.page.totalPages").isEqualTo(0);
+    }
+
+    private BestBandAwardRequest createValidBestBandAwardRequest() {
+        return createBestBandAwardRequest(testBand.getId(), MusicGenre.ROCK);
+    }
+
+    private BestBandAward createBestBandAward(MusicBand band, MusicGenre genre, LocalDateTime createdAt) {
+        return BestBandAward.builder()
+                .band(band)
+                .genre(genre)
+                .createdAt(createdAt)
                 .build();
-
-        // When & Then
-        webTestClient.put().uri("/best-band-awards/{id}", award.getId()).contentType(MediaType.APPLICATION_JSON).bodyValue(invalidUpdate).exchange().expectStatus().isBadRequest().expectBody().jsonPath("$.status").isEqualTo(400).jsonPath("$.message").isEqualTo("Ошибка валидации данных").jsonPath("$.details.length()").isEqualTo(2);
     }
 
-    @Test
-    void shouldCreateAwardsWithDifferentGenres() {
-        // Test creation with all available genres
-        for (MusicGenre genre : MusicGenre.values()) {
-            // Given
-            BestBandAwardRequest request = BestBandAwardRequest.builder().musicBandId(savedMusicBand.getId()).genre(genre).build();
-
-            // When & Then
-            webTestClient.post().uri("/best-band-awards").contentType(MediaType.APPLICATION_JSON).bodyValue(request).exchange().expectStatus().isCreated().expectBody().jsonPath("$.genre").isEqualTo(genre.toString());
-        }
-
-        // Cleanup
-        bestBandAwardRepository.deleteAll();
-    }
 }

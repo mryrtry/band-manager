@@ -25,6 +25,7 @@ import java.util.List;
 import static org.is.bandmanager.event.EventType.BULK_DELETED;
 import static org.is.bandmanager.event.EventType.CREATED;
 import static org.is.bandmanager.event.EventType.UPDATED;
+import static org.is.bandmanager.exception.message.ServiceErrorMessage.ID_MUST_BE_POSITIVE;
 import static org.is.bandmanager.exception.message.ServiceErrorMessage.MUST_BE_NOT_NULL;
 import static org.is.bandmanager.exception.message.ServiceErrorMessage.SOURCE_NOT_FOUND;
 
@@ -45,6 +46,9 @@ public class BestBandAwardServiceImpl implements BestBandAwardService {
     private BestBandAward findById(Long id) {
         if (id == null) {
             throw new ServiceException(MUST_BE_NOT_NULL, "BestBandAward.id");
+        }
+        if (id <= 0) {
+            throw new ServiceException(ID_MUST_BE_POSITIVE, "BestBandAward.id");
         }
         return bestBandAwardRepository.findById(id).orElseThrow(() -> new ServiceException(SOURCE_NOT_FOUND, "BestBandAward", id));
     }

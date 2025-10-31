@@ -4,138 +4,123 @@ import org.is.bandmanager.config.IntegrationTest;
 import org.is.bandmanager.dto.request.AlbumRequest;
 import org.is.bandmanager.model.Album;
 import org.is.bandmanager.repository.AlbumRepository;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.web.server.LocalServerPort;
-import org.springframework.http.MediaType;
-import org.springframework.test.web.reactive.server.WebTestClient;
 
 import java.util.List;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.is.bandmanager.util.IntegrationTestUtil.performDelete;
+import static org.is.bandmanager.util.IntegrationTestUtil.performGet;
+import static org.is.bandmanager.util.IntegrationTestUtil.performPost;
+import static org.is.bandmanager.util.IntegrationTestUtil.performPutWithBody;
 
 @IntegrationTest
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class AlbumControllerTest extends AbstractIntegrationTest {
 
     @Autowired
     private AlbumRepository albumRepository;
 
-    @LocalServerPort
-    private int port;
+    private static Stream<Arguments> provideInvalidAlbumRequests() {
+        return Stream.of(
+                Arguments.of("Blank name",
+                        createAlbumRequest("", 5L, 100), "name"),
+                Arguments.of("Null tracks",
+                        createAlbumRequest("Album 1", null, 100), "tracks"),
+                Arguments.of("Zero tracks",
+                        createAlbumRequest("Album 1", 0L, 100), "tracks"),
+                Arguments.of("Negative tracks",
+                        createAlbumRequest("Album 1", -5L, 100), "tracks"),
+                Arguments.of("Zero sales",
+                        createAlbumRequest("Album 1", 5L, 0), "sales"),
+                Arguments.of("Negative sales",
+                        createAlbumRequest("Album 1", 5L, -10), "sales")
+        );
+    }
 
-    private WebTestClient webTestClient;
-
-    @BeforeAll
-    void setClient() {
-        this.webTestClient = WebTestClient.bindToServer().baseUrl("http://localhost:" + port).build();
+    private static AlbumRequest createAlbumRequest(String name, Long tracks, Integer sales) {
+        return AlbumRequest.builder()
+                .name(name)
+                .tracks(tracks)
+                .sales(sales)
+                .build();
     }
 
     @BeforeEach
-    void setUp() {
-        albumRepository.deleteAll();
-    }
-
-    @AfterAll
-    void tearDown() {
+    @AfterEach
+    void cleanDatabase() {
         albumRepository.deleteAll();
     }
 
     @Test
     void shouldCreateAlbumSuccessfully() {
         // Given
-        AlbumRequest request = AlbumRequest.builder().name("Test Album").tracks(10L).sales(100).build();
+        AlbumRequest request = createValidAlbumRequest();
 
         // When & Then
-        webTestClient.post().uri("/albums").contentType(MediaType.APPLICATION_JSON).bodyValue(request).exchange().expectStatus().isCreated().expectBody().jsonPath("$.id").exists().jsonPath("$.name").isEqualTo("Test Album").jsonPath("$.tracks").isEqualTo(10).jsonPath("$.sales").isEqualTo(100);
+        performPost(webTestClient, "/albums", request)
+                .expectStatus().isCreated()
+                .expectBody()
+                .jsonPath("$.id").exists()
+                .jsonPath("$.name").isEqualTo("Test Album")
+                .jsonPath("$.tracks").isEqualTo(10)
+                .jsonPath("$.sales").isEqualTo(100);
 
         // Verify database
-        List<Album> albums = albumRepository.findAll();
-        assertThat(albums).hasSize(1);
-        assertThat(albums.get(0).getName()).isEqualTo("Test Album");
-        assertThat(albums.get(0).getTracks()).isEqualTo(10L);
-        assertThat(albums.get(0).getSales()).isEqualTo(100);
-    }
-
-    @Test
-    void shouldReturnBadRequestWhenCreatingAlbumWithBlankName() {
-        // Given
-        AlbumRequest request = AlbumRequest.builder().name("") // Invalid
-                .tracks(5L).sales(100).build();
-
-        // When & Then
-        webTestClient.post().uri("/albums").contentType(MediaType.APPLICATION_JSON).bodyValue(request).exchange().expectStatus().isBadRequest().expectBody().jsonPath("$.status").isEqualTo(400).jsonPath("$.message").isEqualTo("Ошибка валидации данных").jsonPath("$.details[0].field").isEqualTo("name").jsonPath("$.details[0].message").isEqualTo("Album.Name не может быть пустым").jsonPath("$.details[0].errorType").isEqualTo("VALIDATION_ERROR");
-    }
-
-    @Test
-    void shouldReturnBadRequestWhenCreatingAlbumWithNullTracks() {
-        // Given
-        AlbumRequest request = AlbumRequest.builder().name("Album 1").tracks(null) // Invalid
-                .sales(10).build();
-
-        // When & Then
-        webTestClient.post().uri("/albums").contentType(MediaType.APPLICATION_JSON).bodyValue(request).exchange().expectStatus().isBadRequest().expectBody().jsonPath("$.status").isEqualTo(400).jsonPath("$.message").isEqualTo("Ошибка валидации данных").jsonPath("$.details[0].field").isEqualTo("tracks").jsonPath("$.details[0].message").isEqualTo("Album.Tracks не может быть пустым").jsonPath("$.details[0].errorType").isEqualTo("VALIDATION_ERROR");
-    }
-
-    @Test
-    void shouldReturnBadRequestWhenCreatingAlbumWithNegativeSales() {
-        // Given
-        AlbumRequest request = AlbumRequest.builder().name("Album 1").tracks(5L).sales(-10).build();
-
-        // When & Then
-        webTestClient.post().uri("/albums").contentType(MediaType.APPLICATION_JSON).bodyValue(request).exchange().expectStatus().isBadRequest().expectBody().jsonPath("$.status").isEqualTo(400).jsonPath("$.message").isEqualTo("Ошибка валидации данных").jsonPath("$.details[0].field").isEqualTo("sales").jsonPath("$.details[0].message").isEqualTo("Album.Sales должно быть > 0").jsonPath("$.details[0].errorType").isEqualTo("VALIDATION_ERROR");
-    }
-
-    @Test
-    void shouldReturnBadRequestWhenCreatingAlbumWithMultipleErrors() {
-        // Given
-        AlbumRequest request = AlbumRequest.builder().name("") // Invalid
-                .tracks(null) // Invalid
-                .sales(-5) // Invalid
-                .build();
-
-        // When & Then
-        webTestClient.post().uri("/albums").contentType(MediaType.APPLICATION_JSON).bodyValue(request).exchange().expectStatus().isBadRequest().expectBody().jsonPath("$.status").isEqualTo(400).jsonPath("$.message").isEqualTo("Ошибка валидации данных").jsonPath("$.details.length()").isEqualTo(3);
+        assertThat(albumRepository.findAll()).hasSize(1);
     }
 
     @Test
     void shouldGetAllAlbums() {
         // Given
-        Album a1 = Album.builder().name("A1").tracks(5L).sales(10).build();
-        Album a2 = Album.builder().name("A2").tracks(7L).sales(20).build();
-        albumRepository.saveAll(List.of(a1, a2));
+        Album album1 = createAlbum("Album 1", 5L, 50);
+        Album album2 = createAlbum("Album 2", 8L, 80);
+        albumRepository.saveAll(List.of(album1, album2));
 
         // When & Then
-        webTestClient.get().uri("/albums").exchange().expectStatus().isOk().expectBody().jsonPath("$.length()").isEqualTo(2).jsonPath("$[0].name").isEqualTo("A1").jsonPath("$[1].name").isEqualTo("A2");
+        performGet(webTestClient, "/albums")
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.length()").isEqualTo(2)
+                .jsonPath("$[0].name").isEqualTo("Album 1")
+                .jsonPath("$[1].name").isEqualTo("Album 2");
     }
 
     @Test
     void shouldGetAlbumById() {
         // Given
-        Album album = albumRepository.save(Album.builder().name("Greatest Hits").tracks(15L).sales(500).build());
+        Album album = albumRepository.save(createAlbum("Greatest Hits", 15L, 500));
 
         // When & Then
-        webTestClient.get().uri("/albums/{id}", album.getId()).exchange().expectStatus().isOk().expectBody().jsonPath("$.id").isEqualTo(album.getId()).jsonPath("$.name").isEqualTo("Greatest Hits").jsonPath("$.tracks").isEqualTo(15).jsonPath("$.sales").isEqualTo(500);
-    }
-
-    @Test
-    void shouldReturnNotFoundWhenGettingNonExistentAlbum() {
-        webTestClient.get().uri("/albums/{id}", 999L).exchange().expectStatus().isNotFound().expectBody().jsonPath("$.status").isEqualTo(404).jsonPath("$.message").isEqualTo("Ошибка выполнения операции").jsonPath("$.details[0].field").isEqualTo("service").jsonPath("$.details[0].errorType").isEqualTo("SERVICE_ERROR");
+        performGet(webTestClient, "/albums/{id}", album.getId())
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.id").isEqualTo(album.getId())
+                .jsonPath("$.name").isEqualTo("Greatest Hits")
+                .jsonPath("$.tracks").isEqualTo(15)
+                .jsonPath("$.sales").isEqualTo(500);
     }
 
     @Test
     void shouldUpdateAlbumSuccessfully() {
         // Given
-        Album album = albumRepository.save(Album.builder().name("Old Name").tracks(3L).sales(10).build());
-
-        AlbumRequest update = AlbumRequest.builder().name("Updated Name").tracks(9L).sales(99).build();
+        Album album = albumRepository.save(createAlbum("Old Name", 3L, 10));
+        AlbumRequest updateRequest = createAlbumRequest("Updated Name", 9L, 99);
 
         // When & Then
-        webTestClient.put().uri("/albums/{id}", album.getId()).contentType(MediaType.APPLICATION_JSON).bodyValue(update).exchange().expectStatus().isOk().expectBody().jsonPath("$.id").isEqualTo(album.getId()).jsonPath("$.name").isEqualTo("Updated Name").jsonPath("$.tracks").isEqualTo(9).jsonPath("$.sales").isEqualTo(99);
+        performPutWithBody(webTestClient, "/albums/{id}", updateRequest, album.getId())
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.id").isEqualTo(album.getId())
+                .jsonPath("$.name").isEqualTo("Updated Name")
+                .jsonPath("$.tracks").isEqualTo(9)
+                .jsonPath("$.sales").isEqualTo(99);
 
         // Verify in DB
         Album updated = albumRepository.findById(album.getId()).orElseThrow();
@@ -145,42 +130,97 @@ class AlbumControllerTest extends AbstractIntegrationTest {
     }
 
     @Test
-    void shouldReturnNotFoundWhenUpdatingNonExistentAlbum() {
-        // Given
-        AlbumRequest update = AlbumRequest.builder().name("Does not exist").tracks(10L).sales(100).build();
-
-        // When & Then
-        webTestClient.put().uri("/albums/{id}", 999L).contentType(MediaType.APPLICATION_JSON).bodyValue(update).exchange().expectStatus().isNotFound().expectBody().jsonPath("$.status").isEqualTo(404).jsonPath("$.message").isEqualTo("Ошибка выполнения операции").jsonPath("$.details[0].field").isEqualTo("service").jsonPath("$.details[0].errorType").isEqualTo("SERVICE_ERROR");
-    }
-
-    @Test
     void shouldDeleteAlbumSuccessfully() {
         // Given
-        Album album = albumRepository.save(Album.builder().name("To Delete").tracks(5L).sales(50).build());
+        Album album = albumRepository.save(createAlbum("To Delete", 5L, 50));
 
         // When & Then
-        webTestClient.delete().uri("/albums/{id}", album.getId()).exchange().expectStatus().isOk().expectBody().jsonPath("$.id").isEqualTo(album.getId()).jsonPath("$.name").isEqualTo("To Delete");
+        performDelete(webTestClient, "/albums/{id}", album.getId())
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.id").isEqualTo(album.getId())
+                .jsonPath("$.name").isEqualTo("To Delete");
 
         // Verify DB deletion
         assertThat(albumRepository.existsById(album.getId())).isFalse();
     }
 
     @Test
-    void shouldReturnNotFoundWhenDeletingNonExistentAlbum() {
-        webTestClient.delete().uri("/albums/{id}", 999L).exchange().expectStatus().isNotFound().expectBody().jsonPath("$.status").isEqualTo(404).jsonPath("$.message").isEqualTo("Ошибка выполнения операции").jsonPath("$.details[0].field").isEqualTo("service").jsonPath("$.details[0].errorType").isEqualTo("SERVICE_ERROR");
+    void shouldReturnNotFoundWhenGettingNonExistentAlbum() {
+        performGet(webTestClient, "/albums/{id}", 999L)
+                .expectStatus().isNotFound()
+                .expectBody()
+                .jsonPath("$.status").isEqualTo(404)
+                .jsonPath("$.message").isEqualTo("Ошибка выполнения операции")
+                .jsonPath("$.details[0].errorType").isEqualTo("SERVICE_ERROR");
     }
 
     @Test
-    void shouldReturnBadRequestWhenUpdatingWithInvalidData() {
-        // Given
-        Album album = albumRepository.save(Album.builder().name("Valid Album").tracks(5L).sales(50).build());
+    void shouldReturnNotFoundWhenUpdatingNonExistentAlbum() {
+        AlbumRequest updateRequest = createValidAlbumRequest();
 
-        AlbumRequest invalidUpdate = AlbumRequest.builder().name("") // Invalid
-                .tracks(null) // Invalid
-                .sales(-10) // Invalid
-                .build();
-
-        // When & Then
-        webTestClient.put().uri("/albums/{id}", album.getId()).contentType(MediaType.APPLICATION_JSON).bodyValue(invalidUpdate).exchange().expectStatus().isBadRequest().expectBody().jsonPath("$.status").isEqualTo(400).jsonPath("$.message").isEqualTo("Ошибка валидации данных").jsonPath("$.details.length()").isEqualTo(3);
+        performPutWithBody(webTestClient, "/albums/{id}", updateRequest, 999L)
+                .expectStatus().isNotFound()
+                .expectBody()
+                .jsonPath("$.status").isEqualTo(404);
     }
+
+    @Test
+    void shouldReturnNotFoundWhenDeletingNonExistentAlbum() {
+        performDelete(webTestClient, "/albums/{id}", 999L)
+                .expectStatus().isNotFound()
+                .expectBody()
+                .jsonPath("$.status").isEqualTo(404);
+    }
+
+    @ParameterizedTest
+    @MethodSource("provideInvalidAlbumRequests")
+    void shouldReturnBadRequestWhenCreatingAlbumWithInvalidData(
+            String ignored, AlbumRequest invalidRequest, String expectedErrorField) {
+
+        performPost(webTestClient, "/albums", invalidRequest)
+                .expectStatus().isBadRequest()
+                .expectBody()
+                .jsonPath("$.status").isEqualTo(400)
+                .jsonPath("$.message").isEqualTo("Ошибка валидации данных")
+                .jsonPath("$.details[0].field").isEqualTo(expectedErrorField);
+    }
+
+    @ParameterizedTest
+    @MethodSource("provideInvalidAlbumRequests")
+    void shouldReturnBadRequestWhenUpdatingAlbumWithInvalidData(
+            String ignored, AlbumRequest invalidRequest, String expectedErrorField) {
+
+        Album album = albumRepository.save(createAlbum("Valid Album", 5L, 50));
+
+        performPutWithBody(webTestClient, "/albums/{id}", invalidRequest, album.getId())
+                .expectStatus().isBadRequest()
+                .expectBody()
+                .jsonPath("$.status").isEqualTo(400)
+                .jsonPath("$.details[0].field").isEqualTo(expectedErrorField);
+    }
+
+    @Test
+    void shouldReturnBadRequestWhenCreatingAlbumWithMultipleErrors() {
+        AlbumRequest request = createAlbumRequest("", null, -5);
+
+        performPost(webTestClient, "/albums", request)
+                .expectStatus().isBadRequest()
+                .expectBody()
+                .jsonPath("$.status").isEqualTo(400)
+                .jsonPath("$.details.length()").isEqualTo(3);
+    }
+
+    private AlbumRequest createValidAlbumRequest() {
+        return createAlbumRequest("Test Album", 10L, 100);
+    }
+
+    private Album createAlbum(String name, Long tracks, Integer sales) {
+        return Album.builder()
+                .name(name)
+                .tracks(tracks)
+                .sales(sales)
+                .build();
+    }
+
 }

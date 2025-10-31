@@ -20,6 +20,7 @@ import java.util.List;
 import static org.is.bandmanager.event.EventType.CREATED;
 import static org.is.bandmanager.event.EventType.DELETED;
 import static org.is.bandmanager.event.EventType.UPDATED;
+import static org.is.bandmanager.exception.message.ServiceErrorMessage.ID_MUST_BE_POSITIVE;
 import static org.is.bandmanager.exception.message.ServiceErrorMessage.MUST_BE_NOT_NULL;
 import static org.is.bandmanager.exception.message.ServiceErrorMessage.SOURCE_NOT_FOUND;
 
@@ -40,6 +41,9 @@ public class PersonServiceImpl implements PersonService, CleanupStrategy<Person,
     private Person findById(Long id) {
         if (id == null) {
             throw new ServiceException(MUST_BE_NOT_NULL, "Person.id");
+        }
+        if (id <= 0) {
+            throw new ServiceException(ID_MUST_BE_POSITIVE, "Person.id");
         }
         return personRepository.findById(id).orElseThrow(() -> new ServiceException(SOURCE_NOT_FOUND, "Person", id));
     }
@@ -80,7 +84,7 @@ public class PersonServiceImpl implements PersonService, CleanupStrategy<Person,
         Person updatingPerson = findById(id);
         mapper.updateEntityFromRequest(request, updatingPerson);
         handleDependencies(request, updatingPerson);
-        PersonDto updatedPerson = mapper.toDto(updatingPerson);
+        PersonDto updatedPerson = mapper.toDto(personRepository.save(updatingPerson));
         eventPublisher.publishEvent(new EntityEvent<>(UPDATED, updatedPerson));
         return updatedPerson;
     }

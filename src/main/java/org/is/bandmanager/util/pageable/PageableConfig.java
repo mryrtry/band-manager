@@ -1,13 +1,17 @@
 package org.is.bandmanager.util.pageable;
 
-import lombok.Data;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.is.bandmanager.constants.PageableConstants;
 
 import java.util.List;
 
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
+@AllArgsConstructor
 public class PageableConfig {
 
     private int page = PageableConstants.DEFAULT_PAGE;

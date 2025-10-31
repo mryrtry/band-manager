@@ -4,145 +4,258 @@ import org.is.bandmanager.config.IntegrationTest;
 import org.is.bandmanager.dto.request.CoordinatesRequest;
 import org.is.bandmanager.model.Coordinates;
 import org.is.bandmanager.repository.CoordinatesRepository;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
+import org.is.bandmanager.repository.MusicBandRepository;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.web.server.LocalServerPort;
-import org.springframework.http.MediaType;
-import org.springframework.test.web.reactive.server.WebTestClient;
 
 import java.util.List;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.is.bandmanager.util.IntegrationTestUtil.performDelete;
+import static org.is.bandmanager.util.IntegrationTestUtil.performGet;
+import static org.is.bandmanager.util.IntegrationTestUtil.performPost;
+import static org.is.bandmanager.util.IntegrationTestUtil.performPutWithBody;
 
 @IntegrationTest
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class CoordinatesControllerTest extends AbstractIntegrationTest {
 
     @Autowired
     private CoordinatesRepository coordinatesRepository;
 
-    @LocalServerPort
-    private int port;
+    @Autowired
+    private MusicBandRepository musicBandRepository;
 
-    private WebTestClient webTestClient;
+    private static Stream<Arguments> provideInvalidCoordinatesRequests() {
+        return Stream.of(
+                Arguments.of("Null X coordinate",
+                        createCoordinatesRequest(null, 15.5f), "x"),
+                Arguments.of("X equal to -147",
+                        createCoordinatesRequest(-147, 15.5f), "x"),
+                Arguments.of("X less than -147",
+                        createCoordinatesRequest(-148, 15.5f), "x")
+        );
+    }
 
-    @BeforeAll
-    void setClient() {
-        this.webTestClient = WebTestClient.bindToServer().baseUrl("http://localhost:" + port).build();
+    private static CoordinatesRequest createCoordinatesRequest(Integer x, Float y) {
+        return CoordinatesRequest.builder()
+                .x(x)
+                .y(y)
+                .build();
     }
 
     @BeforeEach
-    void setUp() {
-        coordinatesRepository.deleteAll();
-    }
-
-    @AfterAll
-    void tearDown() {
+    @AfterEach
+    void cleanDatabase() {
+        musicBandRepository.deleteAll();
         coordinatesRepository.deleteAll();
     }
 
     @Test
     void shouldCreateCoordinatesSuccessfully() {
-        CoordinatesRequest request = CoordinatesRequest.builder().x(10).y(20.5f).build();
+        // Given
+        CoordinatesRequest request = createValidCoordinatesRequest();
 
-        webTestClient.post().uri("/coordinates").contentType(MediaType.APPLICATION_JSON).bodyValue(request).exchange().expectStatus().isCreated().expectBody().jsonPath("$.id").exists().jsonPath("$.x").isEqualTo(10).jsonPath("$.y").isEqualTo(20.5);
+        // When & Then
+        performPost(webTestClient, "/coordinates", request)
+                .expectStatus().isCreated()
+                .expectBody()
+                .jsonPath("$.id").exists()
+                .jsonPath("$.x").isEqualTo(10)
+                .jsonPath("$.y").isEqualTo(15.5);
 
-        List<Coordinates> all = coordinatesRepository.findAll();
-        assertThat(all).hasSize(1);
-        assertThat(all.get(0).getX()).isEqualTo(10);
-        assertThat(all.get(0).getY()).isEqualTo(20.5f);
+        // Verify database
+        assertThat(coordinatesRepository.findAll()).hasSize(1);
     }
 
     @Test
-    void shouldReturnBadRequestWhenCreatingCoordinatesWithNullX() {
-        CoordinatesRequest request = CoordinatesRequest.builder().x(null).y(5f).build();
+    void shouldCreateCoordinatesWithNullY() {
+        // Given
+        CoordinatesRequest request = createCoordinatesRequest(10, null);
 
-        webTestClient.post().uri("/coordinates").contentType(MediaType.APPLICATION_JSON).bodyValue(request).exchange().expectStatus().isBadRequest().expectBody().jsonPath("$.status").isEqualTo(400).jsonPath("$.message").isEqualTo("Ошибка валидации данных").jsonPath("$.details[0].field").isEqualTo("x").jsonPath("$.details[0].message").isEqualTo("Coordinates.X не может быть пустым").jsonPath("$.details[0].errorType").isEqualTo("VALIDATION_ERROR");
-    }
-
-    @Test
-    void shouldReturnBadRequestWhenCreatingCoordinatesWithXTooSmall() {
-        CoordinatesRequest request = CoordinatesRequest.builder().x(-200).y(5f).build();
-
-        webTestClient.post().uri("/coordinates").contentType(MediaType.APPLICATION_JSON).bodyValue(request).exchange().expectStatus().isBadRequest().expectBody().jsonPath("$.status").isEqualTo(400).jsonPath("$.message").isEqualTo("Ошибка валидации данных").jsonPath("$.details[0].field").isEqualTo("x").jsonPath("$.details[0].message").isEqualTo("Coordinates.X должно быть больше -147").jsonPath("$.details[0].errorType").isEqualTo("VALIDATION_ERROR");
-    }
-
-    @Test
-    void shouldReturnBadRequestWhenCreatingCoordinatesWithMultipleErrors() {
-        CoordinatesRequest request = CoordinatesRequest.builder().x(null).y(null).build();
-
-        webTestClient.post().uri("/coordinates").contentType(MediaType.APPLICATION_JSON).bodyValue(request).exchange().expectStatus().isBadRequest().expectBody().jsonPath("$.status").isEqualTo(400).jsonPath("$.message").isEqualTo("Ошибка валидации данных").jsonPath("$.details.length()").isEqualTo(1).jsonPath("$.details[0].field").isEqualTo("x").jsonPath("$.details[0].message").isEqualTo("Coordinates.X не может быть пустым");
+        // When & Then
+        performPost(webTestClient, "/coordinates", request)
+                .expectStatus().isCreated()
+                .expectBody()
+                .jsonPath("$.id").exists()
+                .jsonPath("$.x").isEqualTo(10)
+                .jsonPath("$.y").isEmpty();
     }
 
     @Test
     void shouldGetAllCoordinates() {
-        Coordinates c1 = Coordinates.builder().x(1).y(1.1f).build();
-        Coordinates c2 = Coordinates.builder().x(2).y(2.2f).build();
-        coordinatesRepository.saveAll(List.of(c1, c2));
+        // Given
+        Coordinates coordinates1 = createCoordinates(10, 15.5f);
+        Coordinates coordinates2 = createCoordinates(20, 25.5f);
+        coordinatesRepository.saveAll(List.of(coordinates1, coordinates2));
 
-        webTestClient.get().uri("/coordinates").exchange().expectStatus().isOk().expectBody().jsonPath("$.length()").isEqualTo(2).jsonPath("$[0].x").isEqualTo(1).jsonPath("$[0].y").isEqualTo(1.1).jsonPath("$[1].x").isEqualTo(2).jsonPath("$[1].y").isEqualTo(2.2);
+        // When & Then
+        performGet(webTestClient, "/coordinates")
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.length()").isEqualTo(2)
+                .jsonPath("$[0].x").isEqualTo(10)
+                .jsonPath("$[1].x").isEqualTo(20);
     }
 
     @Test
     void shouldGetCoordinatesById() {
-        Coordinates coordinates = Coordinates.builder().x(5).y(5.5f).build();
-        Coordinates saved = coordinatesRepository.save(coordinates);
+        // Given
+        Coordinates coordinates = coordinatesRepository.save(createCoordinates(10, 15.5f));
 
-        webTestClient.get().uri("/coordinates/{id}", saved.getId()).exchange().expectStatus().isOk().expectBody().jsonPath("$.id").isEqualTo(saved.getId()).jsonPath("$.x").isEqualTo(5).jsonPath("$.y").isEqualTo(5.5);
-    }
-
-    @Test
-    void shouldReturnNotFoundWhenGettingNonExistentCoordinates() {
-        webTestClient.get().uri("/coordinates/{id}", 999L).exchange().expectStatus().isNotFound().expectBody().jsonPath("$.status").isEqualTo(404).jsonPath("$.message").isEqualTo("Ошибка выполнения операции").jsonPath("$.details[0].field").isEqualTo("service").jsonPath("$.details[0].errorType").isEqualTo("SERVICE_ERROR");
+        // When & Then
+        performGet(webTestClient, "/coordinates/{id}", coordinates.getId())
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.id").isEqualTo(coordinates.getId())
+                .jsonPath("$.x").isEqualTo(10)
+                .jsonPath("$.y").isEqualTo(15.5);
     }
 
     @Test
     void shouldUpdateCoordinatesSuccessfully() {
-        Coordinates c = Coordinates.builder().x(1).y(1.1f).build();
-        Coordinates saved = coordinatesRepository.save(c);
+        // Given
+        Coordinates coordinates = coordinatesRepository.save(createCoordinates(10, 15.5f));
+        CoordinatesRequest updateRequest = createCoordinatesRequest(50, 55.5f);
 
-        CoordinatesRequest updateRequest = CoordinatesRequest.builder().x(99).y(99.9f).build();
+        // When & Then
+        performPutWithBody(webTestClient, "/coordinates/{id}", updateRequest, coordinates.getId())
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.id").isEqualTo(coordinates.getId())
+                .jsonPath("$.x").isEqualTo(50)
+                .jsonPath("$.y").isEqualTo(55.5);
 
-        webTestClient.put().uri("/coordinates/{id}", saved.getId()).contentType(MediaType.APPLICATION_JSON).bodyValue(updateRequest).exchange().expectStatus().isOk().expectBody().jsonPath("$.id").isEqualTo(saved.getId()).jsonPath("$.x").isEqualTo(99).jsonPath("$.y").isEqualTo(99.9);
-
-        Coordinates updated = coordinatesRepository.findById(saved.getId()).orElseThrow();
-        assertThat(updated.getX()).isEqualTo(99);
-        assertThat(updated.getY()).isEqualTo(99.9f);
+        // Verify in DB
+        Coordinates updated = coordinatesRepository.findById(coordinates.getId()).orElseThrow();
+        assertThat(updated.getX()).isEqualTo(50);
+        assertThat(updated.getY()).isEqualTo(55.5f);
     }
 
     @Test
-    void shouldReturnNotFoundWhenUpdatingNonExistentCoordinates() {
-        CoordinatesRequest updateRequest = CoordinatesRequest.builder().x(10).y(10f).build();
+    void shouldUpdateCoordinatesWithNullY() {
+        // Given
+        Coordinates coordinates = coordinatesRepository.save(createCoordinates(10, 15.5f));
+        CoordinatesRequest updateRequest = createCoordinatesRequest(50, null);
 
-        webTestClient.put().uri("/coordinates/{id}", 999L).contentType(MediaType.APPLICATION_JSON).bodyValue(updateRequest).exchange().expectStatus().isNotFound().expectBody().jsonPath("$.status").isEqualTo(404).jsonPath("$.message").isEqualTo("Ошибка выполнения операции").jsonPath("$.details[0].field").isEqualTo("service").jsonPath("$.details[0].errorType").isEqualTo("SERVICE_ERROR");
-    }
+        // When & Then
+        performPutWithBody(webTestClient, "/coordinates/{id}", updateRequest, coordinates.getId())
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.id").isEqualTo(coordinates.getId())
+                .jsonPath("$.x").isEqualTo(50)
+                .jsonPath("$.y").isEmpty();
 
-    @Test
-    void shouldReturnBadRequestWhenUpdatingWithInvalidData() {
-        Coordinates c = Coordinates.builder().x(1).y(1.1f).build();
-        Coordinates saved = coordinatesRepository.save(c);
-
-        CoordinatesRequest invalidUpdate = CoordinatesRequest.builder().x(null).y(-200f).build();
-
-        webTestClient.put().uri("/coordinates/{id}", saved.getId()).contentType(MediaType.APPLICATION_JSON).bodyValue(invalidUpdate).exchange().expectStatus().isBadRequest().expectBody().jsonPath("$.status").isEqualTo(400).jsonPath("$.message").isEqualTo("Ошибка валидации данных").jsonPath("$.details.length()").isEqualTo(1);
+        // Verify in DB
+        Coordinates updated = coordinatesRepository.findById(coordinates.getId()).orElseThrow();
+        assertThat(updated.getX()).isEqualTo(50);
+        assertThat(updated.getY()).isNull();
     }
 
     @Test
     void shouldDeleteCoordinatesSuccessfully() {
-        Coordinates c = Coordinates.builder().x(1).y(1.1f).build();
-        Coordinates saved = coordinatesRepository.save(c);
+        // Given
+        Coordinates coordinates = coordinatesRepository.save(createCoordinates(10, 15.5f));
 
-        webTestClient.delete().uri("/coordinates/{id}", saved.getId()).exchange().expectStatus().isOk().expectBody().jsonPath("$.id").isEqualTo(saved.getId()).jsonPath("$.x").isEqualTo(1).jsonPath("$.y").isEqualTo(1.1);
+        // When & Then
+        performDelete(webTestClient, "/coordinates/{id}", coordinates.getId())
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.id").isEqualTo(coordinates.getId())
+                .jsonPath("$.x").isEqualTo(10)
+                .jsonPath("$.y").isEqualTo(15.5);
 
-        assertThat(coordinatesRepository.existsById(saved.getId())).isFalse();
+        // Verify DB deletion
+        assertThat(coordinatesRepository.existsById(coordinates.getId())).isFalse();
+    }
+
+    @Test
+    void shouldReturnNotFoundWhenGettingNonExistentCoordinates() {
+        performGet(webTestClient, "/coordinates/{id}", 999L)
+                .expectStatus().isNotFound()
+                .expectBody()
+                .jsonPath("$.status").isEqualTo(404)
+                .jsonPath("$.message").isEqualTo("Ошибка выполнения операции")
+                .jsonPath("$.details[0].errorType").isEqualTo("SERVICE_ERROR");
+    }
+
+    @Test
+    void shouldReturnNotFoundWhenUpdatingNonExistentCoordinates() {
+        CoordinatesRequest updateRequest = createValidCoordinatesRequest();
+
+        performPutWithBody(webTestClient, "/coordinates/{id}", updateRequest, 999L)
+                .expectStatus().isNotFound()
+                .expectBody()
+                .jsonPath("$.status").isEqualTo(404);
     }
 
     @Test
     void shouldReturnNotFoundWhenDeletingNonExistentCoordinates() {
-        webTestClient.delete().uri("/coordinates/{id}", 999L).exchange().expectStatus().isNotFound().expectBody().jsonPath("$.status").isEqualTo(404).jsonPath("$.message").isEqualTo("Ошибка выполнения операции").jsonPath("$.details[0].field").isEqualTo("service").jsonPath("$.details[0].errorType").isEqualTo("SERVICE_ERROR");
+        performDelete(webTestClient, "/coordinates/{id}", 999L)
+                .expectStatus().isNotFound()
+                .expectBody()
+                .jsonPath("$.status").isEqualTo(404);
     }
+
+    @ParameterizedTest
+    @MethodSource("provideInvalidCoordinatesRequests")
+    void shouldReturnBadRequestWhenCreatingCoordinatesWithInvalidData(
+            String ignored, CoordinatesRequest invalidRequest, String expectedErrorField) {
+
+        performPost(webTestClient, "/coordinates", invalidRequest)
+                .expectStatus().isBadRequest()
+                .expectBody()
+                .jsonPath("$.status").isEqualTo(400)
+                .jsonPath("$.message").isEqualTo("Ошибка валидации данных")
+                .jsonPath("$.details[0].field").isEqualTo(expectedErrorField);
+    }
+
+    @ParameterizedTest
+    @MethodSource("provideInvalidCoordinatesRequests")
+    void shouldReturnBadRequestWhenUpdatingCoordinatesWithInvalidData(
+            String ignored, CoordinatesRequest invalidRequest, String expectedErrorField) {
+
+        Coordinates coordinates = coordinatesRepository.save(createCoordinates(10, 15.5f));
+
+        performPutWithBody(webTestClient, "/coordinates/{id}", invalidRequest, coordinates.getId())
+                .expectStatus().isBadRequest()
+                .expectBody()
+                .jsonPath("$.status").isEqualTo(400)
+                .jsonPath("$.details[0].field").isEqualTo(expectedErrorField);
+    }
+
+    @Test
+    void shouldReturnEmptyListWhenNoCoordinates() {
+        performGet(webTestClient, "/coordinates")
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.length()").isEqualTo(0);
+    }
+
+    @Test
+    void shouldCreateCoordinatesWithMinimumValidX() {
+        CoordinatesRequest request = createCoordinatesRequest(-146, 15.5f);
+
+        performPost(webTestClient, "/coordinates", request)
+                .expectStatus().isCreated()
+                .expectBody()
+                .jsonPath("$.x").isEqualTo(-146);
+    }
+
+    private CoordinatesRequest createValidCoordinatesRequest() {
+        return createCoordinatesRequest(10, 15.5f);
+    }
+
+    private Coordinates createCoordinates(Integer x, Float y) {
+        return Coordinates.builder()
+                .x(x)
+                .y(y)
+                .build();
+    }
+
 }

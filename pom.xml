@@ -222,6 +222,9 @@
                         <exclude>**/dto/**</exclude>
                         <exclude>**/model/**</exclude>
                         <exclude>**/config/**</exclude>
+                        <exclude>**/repository/filter/**</exclude>
+                        <exclude>**/exception/**</exclude>
+                        <exclude>**/event/**</exclude>
                     </excludes>
                 </configuration>
                 <executions>

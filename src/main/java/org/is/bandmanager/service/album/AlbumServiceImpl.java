@@ -21,6 +21,7 @@ import static org.is.bandmanager.event.EventType.CREATED;
 import static org.is.bandmanager.event.EventType.DELETED;
 import static org.is.bandmanager.event.EventType.UPDATED;
 import static org.is.bandmanager.exception.message.ServiceErrorMessage.ENTITY_IN_USE;
+import static org.is.bandmanager.exception.message.ServiceErrorMessage.ID_MUST_BE_POSITIVE;
 import static org.is.bandmanager.exception.message.ServiceErrorMessage.MUST_BE_NOT_NULL;
 import static org.is.bandmanager.exception.message.ServiceErrorMessage.SOURCE_NOT_FOUND;
 
@@ -41,6 +42,9 @@ public class AlbumServiceImpl implements AlbumService, CleanupStrategy<Album, Al
     private Album findById(Long id) {
         if (id == null) {
             throw new ServiceException(MUST_BE_NOT_NULL, "Album.id");
+        }
+        if (id <= 0) {
+            throw new ServiceException(ID_MUST_BE_POSITIVE, "Album.id");
         }
         return albumRepository.findById(id).orElseThrow(() -> new ServiceException(SOURCE_NOT_FOUND, "Album", id));
     }
