@@ -31,6 +31,7 @@ import static org.is.bandmanager.event.EventType.CREATED;
 import static org.is.bandmanager.event.EventType.DELETED;
 import static org.is.bandmanager.event.EventType.UPDATED;
 import static org.is.bandmanager.exception.message.ServiceErrorMessage.CANNOT_REMOVE_LAST_PARTICIPANT;
+import static org.is.bandmanager.exception.message.ServiceErrorMessage.ID_MUST_BE_POSITIVE;
 import static org.is.bandmanager.exception.message.ServiceErrorMessage.MUST_BE_NOT_NULL;
 import static org.is.bandmanager.exception.message.ServiceErrorMessage.SOURCE_NOT_FOUND;
 
@@ -55,8 +56,11 @@ public class MusicBandServiceImpl implements MusicBandService {
     private final MusicBandMapper mapper;
 
     private MusicBand findById(Integer id) {
-        if (id == null || id <= 0) {
+        if (id == null) {
             throw new ServiceException(MUST_BE_NOT_NULL, "MusicBand.id");
+        }
+        if (id <= 0) {
+            throw new ServiceException(ID_MUST_BE_POSITIVE, "MusicBand.id");
         }
         return musicBandRepository.findById(id).orElseThrow(() -> new ServiceException(SOURCE_NOT_FOUND, "MusicBand", id));
     }

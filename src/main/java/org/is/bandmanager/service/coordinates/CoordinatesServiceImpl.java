@@ -21,6 +21,7 @@ import static org.is.bandmanager.event.EventType.CREATED;
 import static org.is.bandmanager.event.EventType.DELETED;
 import static org.is.bandmanager.event.EventType.UPDATED;
 import static org.is.bandmanager.exception.message.ServiceErrorMessage.ENTITY_IN_USE;
+import static org.is.bandmanager.exception.message.ServiceErrorMessage.ID_MUST_BE_POSITIVE;
 import static org.is.bandmanager.exception.message.ServiceErrorMessage.MUST_BE_NOT_NULL;
 import static org.is.bandmanager.exception.message.ServiceErrorMessage.SOURCE_NOT_FOUND;
 
@@ -39,8 +40,11 @@ public class CoordinatesServiceImpl implements CoordinatesService, CleanupStrate
     private final CoordinatesMapper mapper;
 
     private Coordinates findById(Long id) {
-        if (id == null || id <= 0) {
+        if (id == null) {
             throw new ServiceException(MUST_BE_NOT_NULL, "Coordinates.id");
+        }
+        if (id <= 0) {
+            throw new ServiceException(ID_MUST_BE_POSITIVE, "Coordinates.id");
         }
         return coordinatesRepository.findById(id).orElseThrow(() -> new ServiceException(SOURCE_NOT_FOUND, "Coordinates", id));
     }
