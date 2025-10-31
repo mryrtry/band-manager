@@ -43,7 +43,7 @@ public class BestBandAwardServiceImpl implements BestBandAwardService {
     private final BestBandAwardMapper mapper;
 
     private BestBandAward findById(Long id) {
-        if (id == null) {
+        if (id == null || id <= 0) {
             throw new ServiceException(MUST_BE_NOT_NULL, "BestBandAward.id");
         }
         return bestBandAwardRepository.findById(id).orElseThrow(() -> new ServiceException(SOURCE_NOT_FOUND, "BestBandAward", id));

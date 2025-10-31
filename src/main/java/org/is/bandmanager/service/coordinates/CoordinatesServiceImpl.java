@@ -39,7 +39,7 @@ public class CoordinatesServiceImpl implements CoordinatesService, CleanupStrate
     private final CoordinatesMapper mapper;
 
     private Coordinates findById(Long id) {
-        if (id == null) {
+        if (id == null || id <= 0) {
             throw new ServiceException(MUST_BE_NOT_NULL, "Coordinates.id");
         }
         return coordinatesRepository.findById(id).orElseThrow(() -> new ServiceException(SOURCE_NOT_FOUND, "Coordinates", id));

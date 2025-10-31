@@ -39,7 +39,7 @@ public class LocationServiceImpl implements LocationService, CleanupStrategy<Loc
     private final LocationMapper mapper;
 
     private Location findById(Long id) {
-        if (id == null) {
+        if (id == null || id <= 0) {
             throw new ServiceException(MUST_BE_NOT_NULL, "Location.id");
         }
         return locationRepository.findById(id).orElseThrow(() -> new ServiceException(SOURCE_NOT_FOUND, "Location", id));

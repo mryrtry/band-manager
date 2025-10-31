@@ -55,7 +55,7 @@ public class MusicBandServiceImpl implements MusicBandService {
     private final MusicBandMapper mapper;
 
     private MusicBand findById(Integer id) {
-        if (id == null) {
+        if (id == null || id <= 0) {
             throw new ServiceException(MUST_BE_NOT_NULL, "MusicBand.id");
         }
         return musicBandRepository.findById(id).orElseThrow(() -> new ServiceException(SOURCE_NOT_FOUND, "MusicBand", id));
