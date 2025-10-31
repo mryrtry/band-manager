@@ -1,3 +1,23 @@
+-- Таблица users
+CREATE TABLE users
+(
+    id         BIGSERIAL PRIMARY KEY,
+    username   VARCHAR(50) UNIQUE NOT NULL CHECK (username <> ''),
+    password   VARCHAR(100)       NOT NULL CHECK (password <> ''),
+    is_active  BOOLEAN            NOT NULL DEFAULT TRUE,
+    created_at TIMESTAMP WITH TIME ZONE    DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE    DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Таблица user_roles
+CREATE TABLE user_roles
+(
+    user_id    BIGINT      NOT NULL REFERENCES users (id) ON DELETE CASCADE,
+    role       VARCHAR(20) NOT NULL CHECK (role IN ('ROLE_USER', 'ROLE_ADMIN')),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (user_id, role)
+);
+
 -- Таблица location
 CREATE TABLE location
 (
@@ -87,6 +107,9 @@ CREATE TABLE best_band_award
 );
 
 -- Индексы для улучшения производительности
+CREATE INDEX idx_users_username ON users (username);
+CREATE INDEX idx_users_active ON users (is_active);
+CREATE INDEX idx_user_roles_user ON user_roles (user_id);
 CREATE INDEX idx_best_band_award_genre ON best_band_award (genre);
 CREATE INDEX idx_best_band_award_band_id ON best_band_award (band_id);
 CREATE INDEX idx_best_band_award_created_at ON best_band_award (created_at DESC);
