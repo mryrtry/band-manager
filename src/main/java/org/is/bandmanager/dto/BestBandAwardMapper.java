@@ -2,12 +2,10 @@ package org.is.bandmanager.dto;
 
 import org.is.bandmanager.dto.request.BestBandAwardRequest;
 import org.is.bandmanager.model.BestBandAward;
-import org.mapstruct.BeanMapping;
 import org.mapstruct.InjectionStrategy;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
-import org.mapstruct.NullValuePropertyMappingStrategy;
 
 
 @Mapper(componentModel = "spring", injectionStrategy = InjectionStrategy.CONSTRUCTOR)
@@ -25,7 +23,6 @@ public interface BestBandAwardMapper {
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "band", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
-    @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     void updateEntityFromRequest(BestBandAwardRequest request, @MappingTarget BestBandAward entity);
 
 }
