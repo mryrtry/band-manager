@@ -1,4 +1,4 @@
-package org.is.bandmanager.exception.message;
+package org.is.exception.message;
 
 import org.springframework.http.HttpStatus;
 

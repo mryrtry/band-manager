@@ -1,4 +1,4 @@
-package org.is.bandmanager.exception;
+package org.is.exception;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

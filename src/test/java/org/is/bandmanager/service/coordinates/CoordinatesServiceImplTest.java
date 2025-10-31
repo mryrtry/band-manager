@@ -4,8 +4,8 @@ import org.is.bandmanager.dto.CoordinatesDto;
 import org.is.bandmanager.dto.CoordinatesMapper;
 import org.is.bandmanager.dto.request.CoordinatesRequest;
 import org.is.bandmanager.event.EntityEvent;
-import org.is.bandmanager.exception.ServiceException;
-import org.is.bandmanager.exception.message.ServiceErrorMessage;
+import org.is.exception.ServiceException;
+import org.is.exception.message.BandManagerErrorMessage;
 import org.is.bandmanager.model.Coordinates;
 import org.is.bandmanager.repository.CoordinatesRepository;
 import org.is.bandmanager.repository.MusicBandRepository;
@@ -25,10 +25,10 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.is.bandmanager.exception.message.ServiceErrorMessage.ENTITY_IN_USE;
-import static org.is.bandmanager.exception.message.ServiceErrorMessage.ID_MUST_BE_POSITIVE;
-import static org.is.bandmanager.exception.message.ServiceErrorMessage.MUST_BE_NOT_NULL;
-import static org.is.bandmanager.exception.message.ServiceErrorMessage.SOURCE_NOT_FOUND;
+import static org.is.exception.message.BandManagerErrorMessage.ENTITY_IN_USE;
+import static org.is.exception.message.BandManagerErrorMessage.ID_MUST_BE_POSITIVE;
+import static org.is.exception.message.BandManagerErrorMessage.MUST_BE_NOT_NULL;
+import static org.is.exception.message.BandManagerErrorMessage.SOURCE_NOT_FOUND;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -150,7 +150,7 @@ class CoordinatesServiceImplTest {
     @ValueSource(longs = {0L, -1L})
     void shouldThrowExceptionWhenIdIsInvalid(Long id) {
         // When & Then
-        ServiceErrorMessage expectedError = id == null ? MUST_BE_NOT_NULL : ID_MUST_BE_POSITIVE;
+        BandManagerErrorMessage expectedError = id == null ? MUST_BE_NOT_NULL : ID_MUST_BE_POSITIVE;
         String expectedField = "Coordinates.id";
 
         assertThatThrownBy(() -> coordinatesService.get(id))

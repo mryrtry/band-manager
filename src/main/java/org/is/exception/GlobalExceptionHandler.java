@@ -1,10 +1,8 @@
-package org.is.bandmanager.controller;
+package org.is.exception;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
-import org.is.bandmanager.exception.ErrorResponse;
-import org.is.bandmanager.exception.ServiceException;
 import org.springframework.core.MethodParameter;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

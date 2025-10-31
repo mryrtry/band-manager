@@ -4,8 +4,8 @@ import org.is.bandmanager.dto.BestBandAwardDto;
 import org.is.bandmanager.dto.BestBandAwardMapper;
 import org.is.bandmanager.dto.request.BestBandAwardRequest;
 import org.is.bandmanager.event.EntityEvent;
-import org.is.bandmanager.exception.ServiceException;
-import org.is.bandmanager.exception.message.ServiceErrorMessage;
+import org.is.exception.ServiceException;
+import org.is.exception.message.BandManagerErrorMessage;
 import org.is.bandmanager.model.BestBandAward;
 import org.is.bandmanager.model.MusicBand;
 import org.is.bandmanager.model.MusicGenre;
@@ -33,9 +33,9 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.is.bandmanager.exception.message.ServiceErrorMessage.ID_MUST_BE_POSITIVE;
-import static org.is.bandmanager.exception.message.ServiceErrorMessage.MUST_BE_NOT_NULL;
-import static org.is.bandmanager.exception.message.ServiceErrorMessage.SOURCE_NOT_FOUND;
+import static org.is.exception.message.BandManagerErrorMessage.ID_MUST_BE_POSITIVE;
+import static org.is.exception.message.BandManagerErrorMessage.MUST_BE_NOT_NULL;
+import static org.is.exception.message.BandManagerErrorMessage.SOURCE_NOT_FOUND;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.verify;
@@ -213,7 +213,7 @@ class BestBandAwardServiceImplTest {
     @ValueSource(longs = {0L, -1L})
     void shouldThrowExceptionWhenIdIsInvalid(Long id) {
         // When & Then
-        ServiceErrorMessage expectedError = id == null ? MUST_BE_NOT_NULL : ID_MUST_BE_POSITIVE;
+        BandManagerErrorMessage expectedError = id == null ? MUST_BE_NOT_NULL : ID_MUST_BE_POSITIVE;
         String expectedField = "BestBandAward.id";
 
         assertThatThrownBy(() -> bestBandAwardService.get(id))

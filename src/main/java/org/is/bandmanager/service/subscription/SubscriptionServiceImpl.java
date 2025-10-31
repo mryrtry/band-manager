@@ -3,7 +3,7 @@ package org.is.bandmanager.service.subscription;
 import lombok.RequiredArgsConstructor;
 import org.is.bandmanager.repository.filter.BestBandAwardFilter;
 import org.is.bandmanager.event.EntityEvent;
-import org.is.bandmanager.exception.ServiceException;
+import org.is.exception.ServiceException;
 import org.is.bandmanager.repository.filter.EntityFilter;
 import org.is.bandmanager.repository.filter.MusicBandFilter;
 import org.is.bandmanager.service.bestBandAward.BestBandAwardService;
@@ -20,8 +20,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
-import static org.is.bandmanager.exception.message.ServiceErrorMessage.CANNOT_ACCESS_SOURCE;
-import static org.is.bandmanager.exception.message.ServiceErrorMessage.SOURCE_NOT_FOUND;
+import static org.is.exception.message.BandManagerErrorMessage.CANNOT_ACCESS_SOURCE;
+import static org.is.exception.message.BandManagerErrorMessage.SOURCE_NOT_FOUND;
 
 @Service
 @RequiredArgsConstructor

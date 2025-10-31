@@ -1,11 +1,11 @@
-package org.is.bandmanager.exception.message;
+package org.is.exception.message;
 
 import lombok.Getter;
 import org.springframework.http.HttpStatus;
 
 
 @Getter
-public enum ServiceErrorMessage implements ErrorMessage {
+public enum BandManagerErrorMessage implements ErrorMessage {
 
     MUST_BE_NOT_NULL(HttpStatus.BAD_REQUEST, "Ресурс '%s' не может быть пустым"),
     ID_MUST_BE_POSITIVE(HttpStatus.BAD_REQUEST, "Идентификатор ресурса '%s' должен быть положительным"),
@@ -19,7 +19,7 @@ public enum ServiceErrorMessage implements ErrorMessage {
 
     private final String messageTemplate;
 
-    ServiceErrorMessage(HttpStatus httpStatus, String messageTemplate) {
+    BandManagerErrorMessage(HttpStatus httpStatus, String messageTemplate) {
         this.httpStatus = httpStatus;
         this.messageTemplate = messageTemplate;
     }

@@ -6,7 +6,7 @@ import org.is.bandmanager.dto.AlbumDto;
 import org.is.bandmanager.dto.AlbumMapper;
 import org.is.bandmanager.dto.request.AlbumRequest;
 import org.is.bandmanager.event.EntityEvent;
-import org.is.bandmanager.exception.ServiceException;
+import org.is.exception.ServiceException;
 import org.is.bandmanager.model.Album;
 import org.is.bandmanager.repository.AlbumRepository;
 import org.is.bandmanager.repository.MusicBandRepository;
@@ -20,10 +20,10 @@ import java.util.List;
 import static org.is.bandmanager.event.EventType.CREATED;
 import static org.is.bandmanager.event.EventType.DELETED;
 import static org.is.bandmanager.event.EventType.UPDATED;
-import static org.is.bandmanager.exception.message.ServiceErrorMessage.ENTITY_IN_USE;
-import static org.is.bandmanager.exception.message.ServiceErrorMessage.ID_MUST_BE_POSITIVE;
-import static org.is.bandmanager.exception.message.ServiceErrorMessage.MUST_BE_NOT_NULL;
-import static org.is.bandmanager.exception.message.ServiceErrorMessage.SOURCE_NOT_FOUND;
+import static org.is.exception.message.BandManagerErrorMessage.ENTITY_IN_USE;
+import static org.is.exception.message.BandManagerErrorMessage.ID_MUST_BE_POSITIVE;
+import static org.is.exception.message.BandManagerErrorMessage.MUST_BE_NOT_NULL;
+import static org.is.exception.message.BandManagerErrorMessage.SOURCE_NOT_FOUND;
 
 
 @Service

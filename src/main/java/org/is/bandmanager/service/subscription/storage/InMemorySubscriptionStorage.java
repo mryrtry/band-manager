@@ -2,7 +2,7 @@ package org.is.bandmanager.service.subscription.storage;
 
 import lombok.RequiredArgsConstructor;
 import org.is.bandmanager.constants.SubscriptionsConstants;
-import org.is.bandmanager.exception.ServiceException;
+import org.is.exception.ServiceException;
 import org.is.bandmanager.repository.filter.EntityFilter;
 import org.is.bandmanager.service.subscription.model.Subscription;
 import org.is.bandmanager.service.subscription.model.request.SubscriptionRequest;
@@ -22,8 +22,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Collectors;
 
-import static org.is.bandmanager.exception.message.ServiceErrorMessage.MUST_BE_NOT_NULL;
-import static org.is.bandmanager.exception.message.ServiceErrorMessage.SOURCE_NOT_FOUND;
+import static org.is.exception.message.BandManagerErrorMessage.MUST_BE_NOT_NULL;
+import static org.is.exception.message.BandManagerErrorMessage.SOURCE_NOT_FOUND;
 
 @Service
 @RequiredArgsConstructor

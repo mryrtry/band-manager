@@ -4,8 +4,8 @@ import org.is.bandmanager.dto.AlbumDto;
 import org.is.bandmanager.dto.AlbumMapper;
 import org.is.bandmanager.dto.request.AlbumRequest;
 import org.is.bandmanager.event.EntityEvent;
-import org.is.bandmanager.exception.ServiceException;
-import org.is.bandmanager.exception.message.ServiceErrorMessage;
+import org.is.exception.ServiceException;
+import org.is.exception.message.BandManagerErrorMessage;
 import org.is.bandmanager.model.Album;
 import org.is.bandmanager.repository.AlbumRepository;
 import org.is.bandmanager.repository.MusicBandRepository;
@@ -25,7 +25,10 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.is.bandmanager.exception.message.ServiceErrorMessage.*;
+import static org.is.exception.message.BandManagerErrorMessage.ENTITY_IN_USE;
+import static org.is.exception.message.BandManagerErrorMessage.ID_MUST_BE_POSITIVE;
+import static org.is.exception.message.BandManagerErrorMessage.MUST_BE_NOT_NULL;
+import static org.is.exception.message.BandManagerErrorMessage.SOURCE_NOT_FOUND;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -127,7 +130,7 @@ class AlbumServiceImplTest {
     @ValueSource(longs = {0L, -1L})
     void shouldThrowExceptionWhenIdIsInvalid(Long id) {
         // When & Then
-        ServiceErrorMessage expectedError = id == null ? MUST_BE_NOT_NULL : ID_MUST_BE_POSITIVE;
+        BandManagerErrorMessage expectedError = id == null ? MUST_BE_NOT_NULL : ID_MUST_BE_POSITIVE;
         String expectedField = "Album.id";
 
         assertThatThrownBy(() -> albumService.get(id))

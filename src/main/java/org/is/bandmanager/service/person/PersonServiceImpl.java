@@ -6,7 +6,7 @@ import org.is.bandmanager.dto.PersonDto;
 import org.is.bandmanager.dto.PersonMapper;
 import org.is.bandmanager.dto.request.PersonRequest;
 import org.is.bandmanager.event.EntityEvent;
-import org.is.bandmanager.exception.ServiceException;
+import org.is.exception.ServiceException;
 import org.is.bandmanager.model.Person;
 import org.is.bandmanager.repository.PersonRepository;
 import org.is.bandmanager.service.cleanup.CleanupStrategy;
@@ -20,9 +20,9 @@ import java.util.List;
 import static org.is.bandmanager.event.EventType.CREATED;
 import static org.is.bandmanager.event.EventType.DELETED;
 import static org.is.bandmanager.event.EventType.UPDATED;
-import static org.is.bandmanager.exception.message.ServiceErrorMessage.ID_MUST_BE_POSITIVE;
-import static org.is.bandmanager.exception.message.ServiceErrorMessage.MUST_BE_NOT_NULL;
-import static org.is.bandmanager.exception.message.ServiceErrorMessage.SOURCE_NOT_FOUND;
+import static org.is.exception.message.BandManagerErrorMessage.ID_MUST_BE_POSITIVE;
+import static org.is.exception.message.BandManagerErrorMessage.MUST_BE_NOT_NULL;
+import static org.is.exception.message.BandManagerErrorMessage.SOURCE_NOT_FOUND;
 
 
 @Service
