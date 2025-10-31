@@ -84,7 +84,7 @@ public class PersonServiceImpl implements PersonService, CleanupStrategy<Person,
         Person updatingPerson = findById(id);
         mapper.updateEntityFromRequest(request, updatingPerson);
         handleDependencies(request, updatingPerson);
-        PersonDto updatedPerson = mapper.toDto(updatingPerson);
+        PersonDto updatedPerson = mapper.toDto(personRepository.save(updatingPerson));
         eventPublisher.publishEvent(new EntityEvent<>(UPDATED, updatedPerson));
         return updatedPerson;
     }

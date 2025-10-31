@@ -3,185 +3,285 @@ package org.is.bandmanager.controller;
 import org.is.bandmanager.config.IntegrationTest;
 import org.is.bandmanager.dto.request.LocationRequest;
 import org.is.bandmanager.model.Location;
+import org.is.bandmanager.model.Person;
 import org.is.bandmanager.repository.LocationRepository;
-import org.junit.jupiter.api.AfterAll;
+import org.is.bandmanager.repository.PersonRepository;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
 
 import java.util.List;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.is.bandmanager.util.IntegrationTestUtil.performDelete;
+import static org.is.bandmanager.util.IntegrationTestUtil.performGet;
+import static org.is.bandmanager.util.IntegrationTestUtil.performPost;
+import static org.is.bandmanager.util.IntegrationTestUtil.performPutWithBody;
 
 @IntegrationTest
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class LocationControllerTest extends AbstractIntegrationTest {
 
     @Autowired
     private LocationRepository locationRepository;
 
-    @BeforeEach
-    void setUp() {
-        locationRepository.deleteAll();
+    @Autowired
+    private PersonRepository personRepository;
+
+    private static Stream<Arguments> provideInvalidLocationRequests() {
+        return Stream.of(
+                Arguments.of("Null Y coordinate",
+                        createLocationRequest(10, null, 20L), "y"),
+                Arguments.of("Null Z coordinate",
+                        createLocationRequest(10, 15L, null), "z")
+        );
     }
 
-    @AfterAll
-    void tearDown() {
+    private static LocationRequest createLocationRequest(Integer x, Long y, Long z) {
+        return LocationRequest.builder()
+                .x(x)
+                .y(y)
+                .z(z)
+                .build();
+    }
+
+    @BeforeEach
+    @AfterEach
+    void cleanDatabase() {
+        personRepository.deleteAll();
         locationRepository.deleteAll();
     }
 
     @Test
     void shouldCreateLocationSuccessfully() {
         // Given
-        LocationRequest request = LocationRequest.builder().x(10).y(20L).z(30L).build();
+        LocationRequest request = createValidLocationRequest();
 
         // When & Then
-        webTestClient.post().uri("/locations").contentType(MediaType.APPLICATION_JSON).bodyValue(request).exchange().expectStatus().isCreated().expectBody().jsonPath("$.id").exists().jsonPath("$.x").isEqualTo(10).jsonPath("$.y").isEqualTo(20).jsonPath("$.z").isEqualTo(30);
+        performPost(webTestClient, "/locations", request)
+                .expectStatus().isCreated()
+                .expectBody()
+                .jsonPath("$.id").exists()
+                .jsonPath("$.x").isEqualTo(10)
+                .jsonPath("$.y").isEqualTo(15)
+                .jsonPath("$.z").isEqualTo(20);
 
         // Verify database
-        List<Location> locations = locationRepository.findAll();
-        assertThat(locations).hasSize(1);
-        assertThat(locations.get(0).getX()).isEqualTo(10);
-        assertThat(locations.get(0).getY()).isEqualTo(20L);
-        assertThat(locations.get(0).getZ()).isEqualTo(30L);
+        assertThat(locationRepository.findAll()).hasSize(1);
     }
 
     @Test
-    void shouldReturnBadRequestWhenCreatingLocationWithNullY() {
+    void shouldCreateLocationWithNullX() {
         // Given
-        LocationRequest request = LocationRequest.builder().x(10).y(null) // Invalid - null
-                .z(30L).build();
+        LocationRequest request = createLocationRequest(null, 15L, 20L);
 
         // When & Then
-        webTestClient.post().uri("/locations").contentType(MediaType.APPLICATION_JSON).bodyValue(request).exchange().expectStatus().isBadRequest().expectBody().jsonPath("$.status").isEqualTo(400).jsonPath("$.message").isEqualTo("Ошибка валидации данных").jsonPath("$.details[0].field").isEqualTo("y").jsonPath("$.details[0].message").isEqualTo("Location.Y не может быть пустым").jsonPath("$.details[0].errorType").isEqualTo("VALIDATION_ERROR");
-    }
-
-    @Test
-    void shouldReturnBadRequestWhenCreatingLocationWithNullZ() {
-        // Given
-        LocationRequest request = LocationRequest.builder().x(10).y(20L).z(null) // Invalid - null
-                .build();
-
-        // When & Then
-        webTestClient.post().uri("/locations").contentType(MediaType.APPLICATION_JSON).bodyValue(request).exchange().expectStatus().isBadRequest().expectBody().jsonPath("$.status").isEqualTo(400).jsonPath("$.message").isEqualTo("Ошибка валидации данных").jsonPath("$.details[0].field").isEqualTo("z").jsonPath("$.details[0].message").isEqualTo("Location.Z не может быть пустым").jsonPath("$.details[0].errorType").isEqualTo("VALIDATION_ERROR");
-    }
-
-    @Test
-    void shouldReturnBadRequestWhenCreatingLocationWithMultipleErrors() {
-        // Given
-        LocationRequest request = LocationRequest.builder().x(10).y(null) // Invalid
-                .z(null) // Invalid
-                .build();
-
-        // When & Then
-        webTestClient.post().uri("/locations").contentType(MediaType.APPLICATION_JSON).bodyValue(request).exchange().expectStatus().isBadRequest().expectBody().jsonPath("$.status").isEqualTo(400).jsonPath("$.message").isEqualTo("Ошибка валидации данных").jsonPath("$.details.length()").isEqualTo(2);
+        performPost(webTestClient, "/locations", request)
+                .expectStatus().isCreated()
+                .expectBody()
+                .jsonPath("$.id").exists()
+                .jsonPath("$.x").isEmpty()
+                .jsonPath("$.y").isEqualTo(15)
+                .jsonPath("$.z").isEqualTo(20);
     }
 
     @Test
     void shouldGetAllLocations() {
         // Given
-        Location location1 = Location.builder().x(1).y(10L).z(100L).build();
-
-        Location location2 = Location.builder().x(2).y(20L).z(200L).build();
-
+        Location location1 = createLocation(10, 15L, 20L);
+        Location location2 = createLocation(20, 25L, 30L);
         locationRepository.saveAll(List.of(location1, location2));
 
         // When & Then
-        webTestClient.get().uri("/locations").exchange().expectStatus().isOk().expectBody().jsonPath("$.length()").isEqualTo(2).jsonPath("$[0].x").isEqualTo(1).jsonPath("$[0].y").isEqualTo(10).jsonPath("$[0].z").isEqualTo(100).jsonPath("$[1].x").isEqualTo(2).jsonPath("$[1].y").isEqualTo(20).jsonPath("$[1].z").isEqualTo(200);
+        performGet(webTestClient, "/locations")
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.length()").isEqualTo(2)
+                .jsonPath("$[0].x").isEqualTo(10)
+                .jsonPath("$[1].x").isEqualTo(20);
     }
 
     @Test
     void shouldGetLocationById() {
         // Given
-        Location location = Location.builder().x(5).y(50L).z(500L).build();
-        Location savedLocation = locationRepository.save(location);
+        Location location = locationRepository.save(createLocation(10, 15L, 20L));
 
         // When & Then
-        webTestClient.get().uri("/locations/{id}", savedLocation.getId()).exchange().expectStatus().isOk().expectBody().jsonPath("$.id").isEqualTo(savedLocation.getId()).jsonPath("$.x").isEqualTo(5).jsonPath("$.y").isEqualTo(50).jsonPath("$.z").isEqualTo(500);
-    }
-
-    @Test
-    void shouldReturnNotFoundWhenGettingNonExistentLocation() {
-        // When & Then
-        webTestClient.get().uri("/locations/{id}", 999L).exchange().expectStatus().isNotFound().expectBody().jsonPath("$.status").isEqualTo(404).jsonPath("$.message").isEqualTo("Ошибка выполнения операции").jsonPath("$.details[0].field").isEqualTo("service").jsonPath("$.details[0].errorType").isEqualTo("SERVICE_ERROR");
+        performGet(webTestClient, "/locations/{id}", location.getId())
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.id").isEqualTo(location.getId())
+                .jsonPath("$.x").isEqualTo(10)
+                .jsonPath("$.y").isEqualTo(15)
+                .jsonPath("$.z").isEqualTo(20);
     }
 
     @Test
     void shouldUpdateLocationSuccessfully() {
         // Given
-        Location location = Location.builder().x(1).y(10L).z(100L).build();
-        Location savedLocation = locationRepository.save(location);
-
-        LocationRequest updateRequest = LocationRequest.builder().x(99).y(999L).z(9999L).build();
+        Location location = locationRepository.save(createLocation(10, 15L, 20L));
+        LocationRequest updateRequest = createLocationRequest(50, 55L, 60L);
 
         // When & Then
-        webTestClient.put().uri("/locations/{id}", savedLocation.getId()).contentType(MediaType.APPLICATION_JSON).bodyValue(updateRequest).exchange().expectStatus().isOk().expectBody().jsonPath("$.id").isEqualTo(savedLocation.getId()).jsonPath("$.x").isEqualTo(99).jsonPath("$.y").isEqualTo(999).jsonPath("$.z").isEqualTo(9999);
+        performPutWithBody(webTestClient, "/locations/{id}", updateRequest, location.getId())
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.id").isEqualTo(location.getId())
+                .jsonPath("$.x").isEqualTo(50)
+                .jsonPath("$.y").isEqualTo(55)
+                .jsonPath("$.z").isEqualTo(60);
 
-        // Verify database update
-        Location updatedLocation = locationRepository.findById(savedLocation.getId()).orElseThrow();
-        assertThat(updatedLocation.getX()).isEqualTo(99);
-        assertThat(updatedLocation.getY()).isEqualTo(999L);
-        assertThat(updatedLocation.getZ()).isEqualTo(9999L);
+        // Verify in DB
+        Location updated = locationRepository.findById(location.getId()).orElseThrow();
+        assertThat(updated.getX()).isEqualTo(50);
+        assertThat(updated.getY()).isEqualTo(55L);
+        assertThat(updated.getZ()).isEqualTo(60L);
     }
 
     @Test
-    void shouldReturnNotFoundWhenUpdatingNonExistentLocation() {
+    void shouldUpdateLocationWithNullX() {
         // Given
-        LocationRequest updateRequest = LocationRequest.builder().x(99).y(999L).z(9999L).build();
+        Location location = locationRepository.save(createLocation(10, 15L, 20L));
+        LocationRequest updateRequest = createLocationRequest(null, 55L, 60L);
 
         // When & Then
-        webTestClient.put().uri("/locations/{id}", 999L).contentType(MediaType.APPLICATION_JSON).bodyValue(updateRequest).exchange().expectStatus().isNotFound().expectBody().jsonPath("$.status").isEqualTo(404).jsonPath("$.message").isEqualTo("Ошибка выполнения операции").jsonPath("$.details[0].field").isEqualTo("service").jsonPath("$.details[0].errorType").isEqualTo("SERVICE_ERROR");
-    }
+        performPutWithBody(webTestClient, "/locations/{id}", updateRequest, location.getId())
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.id").isEqualTo(location.getId())
+                .jsonPath("$.x").isEmpty()
+                .jsonPath("$.y").isEqualTo(55)
+                .jsonPath("$.z").isEqualTo(60);
 
-    @Test
-    void shouldReturnBadRequestWhenUpdatingWithInvalidData() {
-        // Given
-        Location location = Location.builder().x(1).y(10L).z(100L).build();
-        Location savedLocation = locationRepository.save(location);
-
-        LocationRequest invalidUpdate = LocationRequest.builder().x(10).y(null) // Invalid
-                .z(null) // Invalid
-                .build();
-
-        // When & Then
-        webTestClient.put().uri("/locations/{id}", savedLocation.getId()).contentType(MediaType.APPLICATION_JSON).bodyValue(invalidUpdate).exchange().expectStatus().isBadRequest().expectBody().jsonPath("$.status").isEqualTo(400).jsonPath("$.message").isEqualTo("Ошибка валидации данных").jsonPath("$.details.length()").isEqualTo(2);
+        // Verify in DB
+        Location updated = locationRepository.findById(location.getId()).orElseThrow();
+        assertThat(updated.getX()).isNull();
+        assertThat(updated.getY()).isEqualTo(55L);
+        assertThat(updated.getZ()).isEqualTo(60L);
     }
 
     @Test
     void shouldDeleteLocationSuccessfully() {
         // Given
-        Location location = Location.builder().x(1).y(10L).z(100L).build();
-        Location savedLocation = locationRepository.save(location);
+        Location location = locationRepository.save(createLocation(10, 15L, 20L));
 
         // When & Then
-        webTestClient.delete().uri("/locations/{id}", savedLocation.getId()).exchange().expectStatus().isOk().expectBody().jsonPath("$.id").isEqualTo(savedLocation.getId()).jsonPath("$.x").isEqualTo(1).jsonPath("$.y").isEqualTo(10).jsonPath("$.z").isEqualTo(100);
+        performDelete(webTestClient, "/locations/{id}", location.getId())
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.id").isEqualTo(location.getId())
+                .jsonPath("$.x").isEqualTo(10)
+                .jsonPath("$.y").isEqualTo(15)
+                .jsonPath("$.z").isEqualTo(20);
 
-        // Verify database deletion
-        assertThat(locationRepository.existsById(savedLocation.getId())).isFalse();
+        // Verify DB deletion
+        assertThat(locationRepository.existsById(location.getId())).isFalse();
+    }
+
+    @Test
+    void shouldReturnNotFoundWhenGettingNonExistentLocation() {
+        performGet(webTestClient, "/locations/{id}", 999L)
+                .expectStatus().isNotFound()
+                .expectBody()
+                .jsonPath("$.status").isEqualTo(404)
+                .jsonPath("$.message").isEqualTo("Ошибка выполнения операции")
+                .jsonPath("$.details[0].errorType").isEqualTo("SERVICE_ERROR");
+    }
+
+    @Test
+    void shouldReturnNotFoundWhenUpdatingNonExistentLocation() {
+        LocationRequest updateRequest = createValidLocationRequest();
+
+        performPutWithBody(webTestClient, "/locations/{id}", updateRequest, 999L)
+                .expectStatus().isNotFound()
+                .expectBody()
+                .jsonPath("$.status").isEqualTo(404);
     }
 
     @Test
     void shouldReturnNotFoundWhenDeletingNonExistentLocation() {
-        // When & Then
-        webTestClient.delete().uri("/locations/{id}", 999L).exchange().expectStatus().isNotFound().expectBody().jsonPath("$.status").isEqualTo(404).jsonPath("$.message").isEqualTo("Ошибка выполнения операции").jsonPath("$.details[0].field").isEqualTo("service").jsonPath("$.details[0].errorType").isEqualTo("SERVICE_ERROR");
+        performDelete(webTestClient, "/locations/{id}", 999L)
+                .expectStatus().isNotFound()
+                .expectBody()
+                .jsonPath("$.status").isEqualTo(404);
     }
 
     @Test
-    void shouldCreateLocationWithNullX() {
-        // Given - X can be null according to your model
-        LocationRequest request = LocationRequest.builder().x(null) // This is allowed
-                .y(20L).z(30L).build();
+    void shouldReturnBadRequestWhenDeletingLocationInUse() {
+        // Given
+        Location location = locationRepository.save(createLocation(10, 15L, 20L));
+        Person person = createPersonWithLocation(location);
+        personRepository.save(person);
 
         // When & Then
-        webTestClient.post().uri("/locations").contentType(MediaType.APPLICATION_JSON).bodyValue(request).exchange().expectStatus().isCreated().expectBody().jsonPath("$.id").exists().jsonPath("$.x").isEmpty().jsonPath("$.y").isEqualTo(20).jsonPath("$.z").isEqualTo(30);
+        performDelete(webTestClient, "/locations/{id}", location.getId())
+                .expectStatus().isBadRequest()
+                .expectBody()
+                .jsonPath("$.status").isEqualTo(400)
+                .jsonPath("$.message").isEqualTo("Ошибка выполнения операции")
+                .jsonPath("$.details[0].errorType").isEqualTo("SERVICE_ERROR");
+    }
+
+    @ParameterizedTest
+    @MethodSource("provideInvalidLocationRequests")
+    void shouldReturnBadRequestWhenCreatingLocationWithInvalidData(
+            String ignored, LocationRequest invalidRequest, String expectedErrorField) {
+
+        performPost(webTestClient, "/locations", invalidRequest)
+                .expectStatus().isBadRequest()
+                .expectBody()
+                .jsonPath("$.status").isEqualTo(400)
+                .jsonPath("$.message").isEqualTo("Ошибка валидации данных")
+                .jsonPath("$.details[0].field").isEqualTo(expectedErrorField);
+    }
+
+    @ParameterizedTest
+    @MethodSource("provideInvalidLocationRequests")
+    void shouldReturnBadRequestWhenUpdatingLocationWithInvalidData(
+            String ignored, LocationRequest invalidRequest, String expectedErrorField) {
+
+        Location location = locationRepository.save(createLocation(10, 15L, 20L));
+
+        performPutWithBody(webTestClient, "/locations/{id}", invalidRequest, location.getId())
+                .expectStatus().isBadRequest()
+                .expectBody()
+                .jsonPath("$.status").isEqualTo(400)
+                .jsonPath("$.details[0].field").isEqualTo(expectedErrorField);
     }
 
     @Test
-    void shouldReturnBadRequestWhenCreatingWithMissingRequestBody() {
-        webTestClient.post().uri("/locations").contentType(MediaType.APPLICATION_JSON).exchange() // Нет bodyValue()
-                .expectStatus().isBadRequest().expectBody().jsonPath("$.status").isEqualTo(400).jsonPath("$.message").isEqualTo("Отсутствует тело запроса").jsonPath("$.details[0].field").isEqualTo("requestBody").jsonPath("$.details[0].errorType").isEqualTo("INVALID_JSON");
+    void shouldReturnEmptyListWhenNoLocations() {
+        performGet(webTestClient, "/locations")
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.length()").isEqualTo(0);
+    }
+
+    private LocationRequest createValidLocationRequest() {
+        return createLocationRequest(10, 15L, 20L);
+    }
+
+    private Location createLocation(Integer x, Long y, Long z) {
+        return Location.builder()
+                .x(x)
+                .y(y)
+                .z(z)
+                .build();
+    }
+
+    private Person createPersonWithLocation(Location location) {
+        return Person.builder()
+                .name("Test Person")
+                .eyeColor(org.is.bandmanager.model.Color.BLUE)
+                .hairColor(org.is.bandmanager.model.Color.BROWN)
+                .location(location)
+                .weight(75.5f)
+                .nationality(org.is.bandmanager.model.Country.USA)
+                .build();
     }
 
 }

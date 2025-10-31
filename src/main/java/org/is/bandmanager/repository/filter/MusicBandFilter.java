@@ -1,14 +1,18 @@
 package org.is.bandmanager.repository.filter;
 
 import jakarta.validation.constraints.DecimalMin;
-import lombok.Data;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.Setter;
 import org.is.bandmanager.model.MusicGenre;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.util.Date;
 
 
-@Data
+@Getter
+@Setter
+@Builder
 public class MusicBandFilter implements EntityFilter {
 
     private String name;

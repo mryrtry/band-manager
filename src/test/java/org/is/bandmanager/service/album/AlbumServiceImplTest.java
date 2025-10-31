@@ -5,6 +5,7 @@ import org.is.bandmanager.dto.AlbumMapper;
 import org.is.bandmanager.dto.request.AlbumRequest;
 import org.is.bandmanager.event.EntityEvent;
 import org.is.bandmanager.exception.ServiceException;
+import org.is.bandmanager.exception.message.ServiceErrorMessage;
 import org.is.bandmanager.model.Album;
 import org.is.bandmanager.repository.AlbumRepository;
 import org.is.bandmanager.repository.MusicBandRepository;
@@ -24,6 +25,7 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.is.bandmanager.exception.message.ServiceErrorMessage.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -115,9 +117,9 @@ class AlbumServiceImplTest {
         // When & Then
         assertThatThrownBy(() -> albumService.get(albumId))
                 .isInstanceOf(ServiceException.class)
-                .hasMessageContaining("не был найден")
-                .extracting(ex -> ((ServiceException) ex).getHttpStatus().value())
-                .isEqualTo(404);
+                .hasMessage(SOURCE_NOT_FOUND.getFormattedMessage("Album", albumId))
+                .extracting(ex -> ((ServiceException) ex).getHttpStatus())
+                .isEqualTo(SOURCE_NOT_FOUND.getHttpStatus());
     }
 
     @ParameterizedTest
@@ -125,11 +127,14 @@ class AlbumServiceImplTest {
     @ValueSource(longs = {0L, -1L})
     void shouldThrowExceptionWhenIdIsInvalid(Long id) {
         // When & Then
+        ServiceErrorMessage expectedError = id == null ? MUST_BE_NOT_NULL : ID_MUST_BE_POSITIVE;
+        String expectedField = "Album.id";
+
         assertThatThrownBy(() -> albumService.get(id))
                 .isInstanceOf(ServiceException.class)
-                .hasMessageContaining("не может быть пустым")
-                .extracting(ex -> ((ServiceException) ex).getHttpStatus().value())
-                .isEqualTo(400);
+                .hasMessage(expectedError.getFormattedMessage(expectedField))
+                .extracting(ex -> ((ServiceException) ex).getHttpStatus())
+                .isEqualTo(expectedError.getHttpStatus());
     }
 
     @Test
@@ -233,9 +238,9 @@ class AlbumServiceImplTest {
         // When & Then
         assertThatThrownBy(() -> albumService.delete(albumId))
                 .isInstanceOf(ServiceException.class)
-                .hasMessageContaining("связан с другим ресурсом")
-                .extracting(ex -> ((ServiceException) ex).getHttpStatus().value())
-                .isEqualTo(400);
+                .hasMessage(ENTITY_IN_USE.getFormattedMessage("Album", albumId, "MusicBand"))
+                .extracting(ex -> ((ServiceException) ex).getHttpStatus())
+                .isEqualTo(ENTITY_IN_USE.getHttpStatus());
 
         verify(albumRepository, never()).delete(any());
         verify(eventPublisher, never()).publishEvent(any());
