@@ -5,7 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.is.bandmanager.dto.LocationDto;
 import org.is.bandmanager.dto.LocationMapper;
 import org.is.bandmanager.dto.request.LocationRequest;
-import org.is.bandmanager.event.EntityEvent;
+import org.is.event.EntityEvent;
 import org.is.exception.ServiceException;
 import org.is.bandmanager.model.Location;
 import org.is.bandmanager.repository.LocationRepository;
@@ -17,13 +17,13 @@ import org.springframework.validation.annotation.Validated;
 
 import java.util.List;
 
-import static org.is.bandmanager.event.EventType.CREATED;
-import static org.is.bandmanager.event.EventType.DELETED;
-import static org.is.bandmanager.event.EventType.UPDATED;
+import static org.is.event.EventType.CREATED;
+import static org.is.event.EventType.DELETED;
+import static org.is.event.EventType.UPDATED;
 import static org.is.exception.message.BandManagerErrorMessage.ENTITY_IN_USE;
 import static org.is.exception.message.BandManagerErrorMessage.ID_MUST_BE_POSITIVE;
 import static org.is.exception.message.BandManagerErrorMessage.MUST_BE_NOT_NULL;
-import static org.is.exception.message.BandManagerErrorMessage.SOURCE_NOT_FOUND;
+import static org.is.exception.message.BandManagerErrorMessage.SOURCE_WITH_ID_NOT_FOUND;
 
 
 @Service
@@ -46,7 +46,7 @@ public class LocationServiceImpl implements LocationService, CleanupStrategy<Loc
         if (id <= 0) {
             throw new ServiceException(ID_MUST_BE_POSITIVE, "Location.id");
         }
-        return locationRepository.findById(id).orElseThrow(() -> new ServiceException(SOURCE_NOT_FOUND, "Location", id));
+        return locationRepository.findById(id).orElseThrow(() -> new ServiceException(SOURCE_WITH_ID_NOT_FOUND, "Location", id));
     }
 
     @Transactional

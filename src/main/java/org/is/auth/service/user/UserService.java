@@ -16,26 +16,14 @@ public interface UserService extends UserDetailsService {
 
     UserDto get(Long id);
 
+    UserDto get(String username);
+
+    UserDto getAuthenticatedUser();
+
     User getEntity(Long id);
 
     UserDto update(Long id, @Valid UserRequest request);
 
     UserDto delete(Long id);
-
-    UserDto getByUsername(String username);
-
-    User getEntityByUsername(String username);
-
-    UserDto activate(Long id);
-
-    UserDto deactivate(Long id);
-
-    UserDto updateRoles(Long id, List<String> roles);
-
-    boolean existsByUsername(String username);
-
-    UserDto changePassword(Long id, String newPassword);
-
-    boolean isUsernameAvailable(String username);
 
 }

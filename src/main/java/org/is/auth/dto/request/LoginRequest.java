@@ -7,7 +7,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.is.auth.annotation.Username;
+import org.is.auth.annotation.Login;
 import org.is.auth.constants.UserConstants;
 
 @Getter
@@ -15,9 +15,9 @@ import org.is.auth.constants.UserConstants;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class UserRequest {
+public class LoginRequest {
 
-    @Username
+    @Login
     private String username;
 
     @NotBlank

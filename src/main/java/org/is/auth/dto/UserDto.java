@@ -22,8 +22,6 @@ public class UserDto {
 
     private String username;
 
-    private Boolean isActive = true;
-
     private Set<Role> roles = new HashSet<>();
 
     private LocalDateTime createdAt;

@@ -2,7 +2,7 @@ package org.is.bandmanager.service.subscription;
 
 import lombok.RequiredArgsConstructor;
 import org.is.bandmanager.repository.filter.BestBandAwardFilter;
-import org.is.bandmanager.event.EntityEvent;
+import org.is.event.EntityEvent;
 import org.is.exception.ServiceException;
 import org.is.bandmanager.repository.filter.EntityFilter;
 import org.is.bandmanager.repository.filter.MusicBandFilter;
@@ -21,7 +21,7 @@ import java.util.Objects;
 import java.util.UUID;
 
 import static org.is.exception.message.BandManagerErrorMessage.CANNOT_ACCESS_SOURCE;
-import static org.is.exception.message.BandManagerErrorMessage.SOURCE_NOT_FOUND;
+import static org.is.exception.message.BandManagerErrorMessage.SOURCE_WITH_ID_NOT_FOUND;
 
 @Service
 @RequiredArgsConstructor
@@ -85,7 +85,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
 
     private Subscription<?> getSubscription(UUID id) {
         return storage.getSubscription(id)
-                .orElseThrow(() -> new ServiceException(SOURCE_NOT_FOUND, "Subscription", id));
+                .orElseThrow(() -> new ServiceException(SOURCE_WITH_ID_NOT_FOUND, "Subscription", id));
     }
 
     private void assertSessionEquals(String principalId, Subscription<?> subscription) {

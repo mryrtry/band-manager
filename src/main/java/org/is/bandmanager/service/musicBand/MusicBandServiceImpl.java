@@ -6,7 +6,7 @@ import org.is.bandmanager.dto.MusicBandDto;
 import org.is.bandmanager.dto.MusicBandMapper;
 import org.is.bandmanager.repository.filter.MusicBandFilter;
 import org.is.bandmanager.dto.request.MusicBandRequest;
-import org.is.bandmanager.event.EntityEvent;
+import org.is.event.EntityEvent;
 import org.is.exception.ServiceException;
 import org.is.bandmanager.model.MusicBand;
 import org.is.bandmanager.repository.BestBandAwardRepository;
@@ -26,14 +26,15 @@ import org.is.bandmanager.util.pageable.PageableType;
 import java.util.Date;
 import java.util.List;
 
-import static org.is.bandmanager.event.EventType.BULK_DELETED;
-import static org.is.bandmanager.event.EventType.CREATED;
-import static org.is.bandmanager.event.EventType.DELETED;
-import static org.is.bandmanager.event.EventType.UPDATED;
+import static org.is.event.EventType.BULK_DELETED;
+import static org.is.event.EventType.CREATED;
+import static org.is.event.EventType.DELETED;
+import static org.is.event.EventType.UPDATED;
 import static org.is.exception.message.BandManagerErrorMessage.CANNOT_REMOVE_LAST_PARTICIPANT;
 import static org.is.exception.message.BandManagerErrorMessage.ID_MUST_BE_POSITIVE;
 import static org.is.exception.message.BandManagerErrorMessage.MUST_BE_NOT_NULL;
 import static org.is.exception.message.BandManagerErrorMessage.SOURCE_NOT_FOUND;
+import static org.is.exception.message.BandManagerErrorMessage.SOURCE_WITH_ID_NOT_FOUND;
 
 
 @Service
@@ -62,7 +63,7 @@ public class MusicBandServiceImpl implements MusicBandService {
         if (id <= 0) {
             throw new ServiceException(ID_MUST_BE_POSITIVE, "MusicBand.id");
         }
-        return musicBandRepository.findById(id).orElseThrow(() -> new ServiceException(SOURCE_NOT_FOUND, "MusicBand", id));
+        return musicBandRepository.findById(id).orElseThrow(() -> new ServiceException(SOURCE_WITH_ID_NOT_FOUND, "MusicBand", id));
     }
 
     @Transactional

@@ -23,7 +23,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Collectors;
 
 import static org.is.exception.message.BandManagerErrorMessage.MUST_BE_NOT_NULL;
-import static org.is.exception.message.BandManagerErrorMessage.SOURCE_NOT_FOUND;
+import static org.is.exception.message.BandManagerErrorMessage.SOURCE_WITH_ID_NOT_FOUND;
 
 @Service
 @RequiredArgsConstructor
@@ -62,7 +62,7 @@ public class InMemorySubscriptionStorage implements SubscriptionStorage {
         @SuppressWarnings("unchecked")
         Subscription<T> existing = (Subscription<T>) subscriptions.get(request.getSubscriptionId());
         if (existing == null) {
-            throw new ServiceException(SOURCE_NOT_FOUND, "Subscription", request.getSubscriptionId());
+            throw new ServiceException(SOURCE_WITH_ID_NOT_FOUND, "Subscription", request.getSubscriptionId());
         }
 
         if (!existing.getFilter().getClass().equals(request.getFilter().getClass())) {

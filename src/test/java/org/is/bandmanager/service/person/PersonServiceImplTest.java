@@ -3,7 +3,8 @@ package org.is.bandmanager.service.person;
 import org.is.bandmanager.dto.PersonDto;
 import org.is.bandmanager.dto.PersonMapper;
 import org.is.bandmanager.dto.request.PersonRequest;
-import org.is.bandmanager.event.EntityEvent;
+import org.is.event.EntityEvent;
+import org.is.event.EventType;
 import org.is.exception.ServiceException;
 import org.is.exception.message.BandManagerErrorMessage;
 import org.is.bandmanager.model.Color;
@@ -30,7 +31,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.is.exception.message.BandManagerErrorMessage.ID_MUST_BE_POSITIVE;
 import static org.is.exception.message.BandManagerErrorMessage.MUST_BE_NOT_NULL;
-import static org.is.exception.message.BandManagerErrorMessage.SOURCE_NOT_FOUND;
+import static org.is.exception.message.BandManagerErrorMessage.SOURCE_WITH_ID_NOT_FOUND;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -79,7 +80,7 @@ class PersonServiceImplTest {
         verify(eventPublisher).publishEvent(eventCaptor.capture());
 
         EntityEvent<PersonDto> capturedEvent = eventCaptor.getValue();
-        assertThat(capturedEvent.getEventType()).isEqualTo(org.is.bandmanager.event.EventType.CREATED);
+        assertThat(capturedEvent.getEventType()).isEqualTo(EventType.CREATED);
         assertThat(capturedEvent.getEntities()).containsExactly(personDto);
     }
 
@@ -125,9 +126,9 @@ class PersonServiceImplTest {
         // When & Then
         assertThatThrownBy(() -> personService.get(personId))
                 .isInstanceOf(ServiceException.class)
-                .hasMessage(SOURCE_NOT_FOUND.getFormattedMessage("Person", personId))
+                .hasMessage(SOURCE_WITH_ID_NOT_FOUND.getFormattedMessage("Person", personId))
                 .extracting(ex -> ((ServiceException) ex).getHttpStatus())
-                .isEqualTo(SOURCE_NOT_FOUND.getHttpStatus());
+                .isEqualTo(SOURCE_WITH_ID_NOT_FOUND.getHttpStatus());
     }
 
     @ParameterizedTest
@@ -209,7 +210,7 @@ class PersonServiceImplTest {
         verify(eventPublisher).publishEvent(eventCaptor.capture());
 
         EntityEvent<PersonDto> capturedEvent = eventCaptor.getValue();
-        assertThat(capturedEvent.getEventType()).isEqualTo(org.is.bandmanager.event.EventType.UPDATED);
+        assertThat(capturedEvent.getEventType()).isEqualTo(EventType.UPDATED);
         assertThat(capturedEvent.getEntities()).containsExactly(updatedDto);
     }
 
@@ -235,7 +236,7 @@ class PersonServiceImplTest {
         verify(eventPublisher).publishEvent(eventCaptor.capture());
 
         EntityEvent<PersonDto> capturedEvent = eventCaptor.getValue();
-        assertThat(capturedEvent.getEventType()).isEqualTo(org.is.bandmanager.event.EventType.DELETED);
+        assertThat(capturedEvent.getEventType()).isEqualTo(EventType.DELETED);
         assertThat(capturedEvent.getEntities()).containsExactly(deletedDto);
     }
 

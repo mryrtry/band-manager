@@ -6,7 +6,8 @@ import org.springframework.http.HttpStatus;
 @Getter
 public enum AuthErrorMessages implements ErrorMessage {
 
-    INVALID_CREDENTIALS(HttpStatus.UNAUTHORIZED, "Некорректный токен типа '%s', проверьте токен");
+    INVALID_CREDENTIALS(HttpStatus.UNAUTHORIZED, "Некорректный токен типа '%s', проверьте токен"),
+    USER_NOT_AUTHENTICATED(HttpStatus.UNAUTHORIZED, "Пользователь не авторизован");
 
 
     private final HttpStatus httpStatus;

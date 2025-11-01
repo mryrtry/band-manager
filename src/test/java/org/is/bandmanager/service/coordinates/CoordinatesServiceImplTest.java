@@ -3,7 +3,8 @@ package org.is.bandmanager.service.coordinates;
 import org.is.bandmanager.dto.CoordinatesDto;
 import org.is.bandmanager.dto.CoordinatesMapper;
 import org.is.bandmanager.dto.request.CoordinatesRequest;
-import org.is.bandmanager.event.EntityEvent;
+import org.is.event.EntityEvent;
+import org.is.event.EventType;
 import org.is.exception.ServiceException;
 import org.is.exception.message.BandManagerErrorMessage;
 import org.is.bandmanager.model.Coordinates;
@@ -28,7 +29,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.is.exception.message.BandManagerErrorMessage.ENTITY_IN_USE;
 import static org.is.exception.message.BandManagerErrorMessage.ID_MUST_BE_POSITIVE;
 import static org.is.exception.message.BandManagerErrorMessage.MUST_BE_NOT_NULL;
-import static org.is.exception.message.BandManagerErrorMessage.SOURCE_NOT_FOUND;
+import static org.is.exception.message.BandManagerErrorMessage.SOURCE_WITH_ID_NOT_FOUND;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -74,7 +75,7 @@ class CoordinatesServiceImplTest {
         verify(eventPublisher).publishEvent(eventCaptor.capture());
 
         EntityEvent<CoordinatesDto> capturedEvent = eventCaptor.getValue();
-        assertThat(capturedEvent.getEventType()).isEqualTo(org.is.bandmanager.event.EventType.CREATED);
+        assertThat(capturedEvent.getEventType()).isEqualTo(EventType.CREATED);
         assertThat(capturedEvent.getEntities()).containsExactly(coordinatesDto);
     }
 
@@ -140,9 +141,9 @@ class CoordinatesServiceImplTest {
         // When & Then
         assertThatThrownBy(() -> coordinatesService.get(coordinatesId))
                 .isInstanceOf(ServiceException.class)
-                .hasMessage(SOURCE_NOT_FOUND.getFormattedMessage("Coordinates", coordinatesId))
+                .hasMessage(SOURCE_WITH_ID_NOT_FOUND.getFormattedMessage("Coordinates", coordinatesId))
                 .extracting(ex -> ((ServiceException) ex).getHttpStatus())
-                .isEqualTo(SOURCE_NOT_FOUND.getHttpStatus());
+                .isEqualTo(SOURCE_WITH_ID_NOT_FOUND.getHttpStatus());
     }
 
     @ParameterizedTest
@@ -220,7 +221,7 @@ class CoordinatesServiceImplTest {
         verify(eventPublisher).publishEvent(eventCaptor.capture());
 
         EntityEvent<CoordinatesDto> capturedEvent = eventCaptor.getValue();
-        assertThat(capturedEvent.getEventType()).isEqualTo(org.is.bandmanager.event.EventType.UPDATED);
+        assertThat(capturedEvent.getEventType()).isEqualTo(EventType.UPDATED);
         assertThat(capturedEvent.getEntities()).containsExactly(updatedDto);
     }
 
@@ -249,7 +250,7 @@ class CoordinatesServiceImplTest {
         verify(eventPublisher).publishEvent(eventCaptor.capture());
 
         EntityEvent<CoordinatesDto> capturedEvent = eventCaptor.getValue();
-        assertThat(capturedEvent.getEventType()).isEqualTo(org.is.bandmanager.event.EventType.DELETED);
+        assertThat(capturedEvent.getEventType()).isEqualTo(EventType.DELETED);
         assertThat(capturedEvent.getEntities()).containsExactly(deletedDto);
     }
 

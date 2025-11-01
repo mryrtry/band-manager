@@ -29,6 +29,9 @@ import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
 
+import static org.is.auth.constants.UserConstants.USERNAME_MAX_LENGTH;
+import static org.is.auth.constants.UserConstants.USERNAME_MIN_LENGTH;
+
 @Entity
 @Table(name = "users")
 @Data
@@ -42,19 +45,15 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotBlank
-    @Size(min = UserConstants.USERNAME_MIN_LENGTH, max = UserConstants.USERNAME_MAX_LENGTH)
+    @NotBlank(message = "User.username не может быть пустым")
+    @Size(min = USERNAME_MIN_LENGTH, max = USERNAME_MAX_LENGTH, message = "User.username должен быть от {min} до {max} символов")
     @Column(unique = true, nullable = false)
     private String username;
 
-    @NotBlank
-    @Size(min = UserConstants.PASSWORD_MIN_LENGTH)
+    @NotBlank(message = "User.password не может быть пустым")
+    @Size(min = UserConstants.PASSWORD_MIN_LENGTH, message = "User.password должен быть не менее {min} символов")
     @Column(nullable = false)
     private String password;
-
-    @Builder.Default
-    @Column(name = "is_active", nullable = false)
-    private Boolean isActive = true;
 
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)

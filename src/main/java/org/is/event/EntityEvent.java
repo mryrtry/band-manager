@@ -1,4 +1,4 @@
-package org.is.bandmanager.event;
+package org.is.event;
 
 import lombok.Getter;
 

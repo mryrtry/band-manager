@@ -12,7 +12,8 @@ public record UserDetailsImpl(User user) implements UserDetails {
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return user.getRoles().stream()
-                .map(role -> new SimpleGrantedAuthority(role.name()))
+                .flatMap(role -> role.getPermissions().stream())
+                .map(permission -> new SimpleGrantedAuthority(permission.name()))
                 .collect(Collectors.toSet());
     }
 
@@ -43,7 +44,7 @@ public record UserDetailsImpl(User user) implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return user.getIsActive();
+        return true;
     }
 
 }
