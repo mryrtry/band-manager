@@ -3,6 +3,7 @@ package org.is.auth.service.user;
 import lombok.RequiredArgsConstructor;
 import org.is.auth.dto.UserDto;
 import org.is.auth.dto.UserMapper;
+import org.is.auth.dto.request.LoginRequest;
 import org.is.auth.dto.request.RoleRequest;
 import org.is.auth.dto.request.UserRequest;
 import org.is.auth.model.Role;
@@ -10,11 +11,11 @@ import org.is.auth.model.User;
 import org.is.auth.model.UserDetailsImpl;
 import org.is.auth.repository.UserRepository;
 import org.is.auth.repository.filter.UserFilter;
+import org.is.event.EntityEvent;
+import org.is.exception.ServiceException;
 import org.is.util.pageable.PageableConfig;
 import org.is.util.pageable.PageableCreator;
 import org.is.util.pageable.PageableType;
-import org.is.event.EntityEvent;
-import org.is.exception.ServiceException;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -29,6 +30,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Set;
 
+import static org.is.auth.exception.message.AuthErrorMessages.INCORRECT_PASSWORD;
 import static org.is.auth.exception.message.AuthErrorMessages.USER_NOT_AUTHENTICATED;
 import static org.is.bandmanager.exception.message.BandManagerErrorMessage.ID_MUST_BE_POSITIVE;
 import static org.is.bandmanager.exception.message.BandManagerErrorMessage.MUST_BE_NOT_NULL;
@@ -150,6 +152,13 @@ public class UserServiceImpl implements UserService {
         UserDto deletedUser = mapper.toDto(deletingUser);
         eventPublisher.publishEvent(new EntityEvent<>(DELETED, deletingUser));
         return deletedUser;
+    }
+
+    @Override
+    public boolean validateLogin(LoginRequest loginRequest) {
+        User user = findUser(loginRequest.getUsername());
+        if (passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) return true;
+        throw new ServiceException(INCORRECT_PASSWORD);
     }
 
 }

@@ -2,6 +2,7 @@ package org.is.auth.service.user;
 
 import jakarta.validation.Valid;
 import org.is.auth.dto.UserDto;
+import org.is.auth.dto.request.LoginRequest;
 import org.is.auth.dto.request.RoleRequest;
 import org.is.auth.dto.request.UserRequest;
 import org.is.auth.model.User;
@@ -29,5 +30,7 @@ public interface UserService extends UserDetailsService {
     UserDto updateRoles(Long id, @Valid RoleRequest request);
 
     UserDto delete(Long id);
+
+    boolean validateLogin(@Valid LoginRequest loginRequest);
 
 }

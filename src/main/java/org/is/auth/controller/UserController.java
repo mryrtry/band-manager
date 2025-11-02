@@ -38,6 +38,13 @@ public class UserController {
         return ResponseEntity.ok(users);
     }
 
+    @GetMapping("/me")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<UserDto> getCurrentUser() {
+        UserDto user = userService.getAuthenticatedUser();
+        return ResponseEntity.ok(user);
+    }
+
     @GetMapping("/{id}")
     @PreAuthorize("hasAuthority('ALL_USER_READ')")
     public ResponseEntity<UserDto> getUser(@PathVariable Long id) {

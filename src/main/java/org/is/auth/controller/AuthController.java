@@ -14,7 +14,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -48,16 +47,19 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<Map<String, Object>> login(@Valid @RequestBody LoginRequest request) {
-        UserDto user = userService.get(request.getUsername());
-        Map<String, String> tokens = jwtService.generateTokenPair(request.getUsername());
+        if (userService.validateLogin(request)) {
+            UserDto user = userService.get(request.getUsername());
+            Map<String, String> tokens = jwtService.generateTokenPair(request.getUsername());
 
-        log.info("User {} successfully authenticated", request.getUsername());
-        request.clearPassword();
+            log.info("User {} successfully authenticated", request.getUsername());
+            request.clearPassword();
 
-        return ResponseEntity.ok(Map.of(
-                "user", user,
-                "tokens", tokens
-        ));
+            return ResponseEntity.ok(Map.of(
+                    "user", user,
+                    "tokens", tokens
+            ));
+        }
+        return null;
     }
 
     @PostMapping("/refresh")
@@ -65,13 +67,6 @@ public class AuthController {
         log.info("Refreshing token");
         Map<String, String> tokens = jwtService.refreshAccessToken(refreshToken);
         return ResponseEntity.ok(tokens);
-    }
-
-    @GetMapping("/me")
-    @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<UserDto> getCurrentUser() {
-        UserDto user = userService.getAuthenticatedUser();
-        return ResponseEntity.ok(user);
     }
 
     @PostMapping("/logout")
