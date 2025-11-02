@@ -1,4 +1,4 @@
-package org.is.auth;
+package org.is.auth.config;
 
 import lombok.RequiredArgsConstructor;
 import org.is.auth.model.Role;
