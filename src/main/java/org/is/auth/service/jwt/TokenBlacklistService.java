@@ -15,16 +15,6 @@ public class TokenBlacklistService {
 
     private long lastCleanup = System.currentTimeMillis();
 
-    private static class TokenInfo {
-        String username;
-        long expiresAt;
-
-        TokenInfo(String username, long expiresAt) {
-            this.username = username;
-            this.expiresAt = expiresAt;
-        }
-    }
-
     public void blacklistToken(String token, String username, Instant expiresAt) {
         blacklistedTokens.put(token, new TokenInfo(username, expiresAt.toEpochMilli()));
         log.debug("Token for user {} blacklisted, expires at: {}", username, expiresAt);
@@ -45,14 +35,6 @@ public class TokenBlacklistService {
         return true;
     }
 
-    public void invalidateToken(String token, String username) {
-        TokenInfo tokenInfo = blacklistedTokens.get(token);
-        if (tokenInfo != null && username.equals(tokenInfo.username)) {
-            blacklistedTokens.remove(token);
-            log.debug("Token invalidated for user: {}", username);
-        }
-    }
-
     private void cleanupExpiredTokens() {
         long currentTime = System.currentTimeMillis();
         if (currentTime - lastCleanup < JwtConstants.BLACKLIST_CLEANUP_INTERVAL) {
@@ -70,8 +52,14 @@ public class TokenBlacklistService {
         log.debug("Blacklist cleanup: {} -> {} tokens", initialSize, blacklistedTokens.size());
     }
 
-    public int getBlacklistSize() {
-        return blacklistedTokens.size();
+    private static class TokenInfo {
+        String username;
+        long expiresAt;
+
+        TokenInfo(String username, long expiresAt) {
+            this.username = username;
+            this.expiresAt = expiresAt;
+        }
     }
 
 }
