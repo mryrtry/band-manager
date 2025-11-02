@@ -4,6 +4,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 import org.is.bandmanager.model.MusicGenre;
+import org.is.util.pageable.EntityFilter;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDate;

@@ -3,8 +3,8 @@ package org.is.bandmanager.service.subscription.model;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.ToString;
-import org.is.bandmanager.repository.filter.EntityFilter;
-import org.is.bandmanager.util.pageable.PageableConfig;
+import org.is.util.pageable.EntityFilter;
+import org.is.util.pageable.PageableConfig;
 
 import java.time.Instant;
 import java.util.UUID;

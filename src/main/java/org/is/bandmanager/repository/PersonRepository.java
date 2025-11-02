@@ -8,7 +8,7 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 
-@Repository
+@Repository("PersonRepository")
 public interface PersonRepository extends JpaRepository<Person, Long> {
 
     @Query("SELECT p FROM Person p WHERE NOT EXISTS (SELECT 1 FROM MusicBand m WHERE m.frontMan.id = p.id)")

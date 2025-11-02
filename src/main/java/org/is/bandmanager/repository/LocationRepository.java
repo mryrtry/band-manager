@@ -8,7 +8,7 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 
-@Repository
+@Repository("LocationRepository")
 public interface LocationRepository extends JpaRepository<Location, Long> {
 
     @Query("SELECT p FROM Location p WHERE NOT EXISTS (SELECT 1 FROM Person m WHERE m.location.id = p.id)")

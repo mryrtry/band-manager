@@ -16,10 +16,6 @@ import java.util.List;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.is.bandmanager.util.IntegrationTestUtil.performDelete;
-import static org.is.bandmanager.util.IntegrationTestUtil.performGet;
-import static org.is.bandmanager.util.IntegrationTestUtil.performPost;
-import static org.is.bandmanager.util.IntegrationTestUtil.performPutWithBody;
 
 @IntegrationTest
 class AlbumControllerTest extends AbstractIntegrationTest {
@@ -64,7 +60,7 @@ class AlbumControllerTest extends AbstractIntegrationTest {
         AlbumRequest request = createValidAlbumRequest();
 
         // When & Then
-        performPost(webTestClient, "/albums", request)
+        getClient().post("/albums", request)
                 .expectStatus().isCreated()
                 .expectBody()
                 .jsonPath("$.id").exists()
@@ -84,7 +80,7 @@ class AlbumControllerTest extends AbstractIntegrationTest {
         albumRepository.saveAll(List.of(album1, album2));
 
         // When & Then
-        performGet(webTestClient, "/albums")
+        getClient().get("/albums")
                 .expectStatus().isOk()
                 .expectBody()
                 .jsonPath("$.length()").isEqualTo(2)
@@ -98,7 +94,7 @@ class AlbumControllerTest extends AbstractIntegrationTest {
         Album album = albumRepository.save(createAlbum("Greatest Hits", 15L, 500));
 
         // When & Then
-        performGet(webTestClient, "/albums/{id}", album.getId())
+        getClient().get("/albums/{id}", album.getId())
                 .expectStatus().isOk()
                 .expectBody()
                 .jsonPath("$.id").isEqualTo(album.getId())
@@ -114,7 +110,7 @@ class AlbumControllerTest extends AbstractIntegrationTest {
         AlbumRequest updateRequest = createAlbumRequest("Updated Name", 9L, 99);
 
         // When & Then
-        performPutWithBody(webTestClient, "/albums/{id}", updateRequest, album.getId())
+        getClient().putWithBody("/albums/{id}", updateRequest, album.getId())
                 .expectStatus().isOk()
                 .expectBody()
                 .jsonPath("$.id").isEqualTo(album.getId())
@@ -135,7 +131,7 @@ class AlbumControllerTest extends AbstractIntegrationTest {
         Album album = albumRepository.save(createAlbum("To Delete", 5L, 50));
 
         // When & Then
-        performDelete(webTestClient, "/albums/{id}", album.getId())
+        getClient().delete("/albums/{id}", album.getId())
                 .expectStatus().isOk()
                 .expectBody()
                 .jsonPath("$.id").isEqualTo(album.getId())
@@ -147,7 +143,7 @@ class AlbumControllerTest extends AbstractIntegrationTest {
 
     @Test
     void shouldReturnNotFoundWhenGettingNonExistentAlbum() {
-        performGet(webTestClient, "/albums/{id}", 999L)
+        getClient().get("/albums/{id}", 999L)
                 .expectStatus().isNotFound()
                 .expectBody()
                 .jsonPath("$.status").isEqualTo(404)
@@ -159,7 +155,7 @@ class AlbumControllerTest extends AbstractIntegrationTest {
     void shouldReturnNotFoundWhenUpdatingNonExistentAlbum() {
         AlbumRequest updateRequest = createValidAlbumRequest();
 
-        performPutWithBody(webTestClient, "/albums/{id}", updateRequest, 999L)
+        getClient().putWithBody("/albums/{id}", updateRequest, 999L)
                 .expectStatus().isNotFound()
                 .expectBody()
                 .jsonPath("$.status").isEqualTo(404);
@@ -167,7 +163,7 @@ class AlbumControllerTest extends AbstractIntegrationTest {
 
     @Test
     void shouldReturnNotFoundWhenDeletingNonExistentAlbum() {
-        performDelete(webTestClient, "/albums/{id}", 999L)
+        getClient().delete("/albums/{id}", 999L)
                 .expectStatus().isNotFound()
                 .expectBody()
                 .jsonPath("$.status").isEqualTo(404);
@@ -178,7 +174,7 @@ class AlbumControllerTest extends AbstractIntegrationTest {
     void shouldReturnBadRequestWhenCreatingAlbumWithInvalidData(
             String ignored, AlbumRequest invalidRequest, String expectedErrorField) {
 
-        performPost(webTestClient, "/albums", invalidRequest)
+        getClient().post("/albums", invalidRequest)
                 .expectStatus().isBadRequest()
                 .expectBody()
                 .jsonPath("$.status").isEqualTo(400)
@@ -193,7 +189,7 @@ class AlbumControllerTest extends AbstractIntegrationTest {
 
         Album album = albumRepository.save(createAlbum("Valid Album", 5L, 50));
 
-        performPutWithBody(webTestClient, "/albums/{id}", invalidRequest, album.getId())
+        getClient().putWithBody("/albums/{id}", invalidRequest, album.getId())
                 .expectStatus().isBadRequest()
                 .expectBody()
                 .jsonPath("$.status").isEqualTo(400)
@@ -204,7 +200,7 @@ class AlbumControllerTest extends AbstractIntegrationTest {
     void shouldReturnBadRequestWhenCreatingAlbumWithMultipleErrors() {
         AlbumRequest request = createAlbumRequest("", null, -5);
 
-        performPost(webTestClient, "/albums", request)
+        getClient().post("/albums", request)
                 .expectStatus().isBadRequest()
                 .expectBody()
                 .jsonPath("$.status").isEqualTo(400)

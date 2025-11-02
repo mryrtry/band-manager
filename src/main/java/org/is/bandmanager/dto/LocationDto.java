@@ -5,7 +5,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-
 @Data
 @Builder
 @NoArgsConstructor
@@ -13,11 +12,8 @@ import lombok.NoArgsConstructor;
 public class LocationDto {
 
     private Long id;
-
     private Integer x;
-
     private Long y;
-
     private Long z;
 
 }

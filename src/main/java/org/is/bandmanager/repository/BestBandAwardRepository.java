@@ -13,7 +13,7 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 
-@Repository
+@Repository("BestBandAwardRepository")
 public interface BestBandAwardRepository extends JpaRepository<BestBandAward, Long>, JpaSpecificationExecutor<BestBandAward> {
 
     default Page<BestBandAward> findWithFilter(BestBandAwardFilter filter, Pageable pageable) {
@@ -21,7 +21,7 @@ public interface BestBandAwardRepository extends JpaRepository<BestBandAward, Lo
         return findAll(specification, pageable);
     }
 
-    List<BestBandAward> deleteAllByBandIdIn(List<Integer> bandIds);
+    List<BestBandAward> deleteAllByBandIdIn(List<Long> bandIds);
 
 }
 

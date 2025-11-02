@@ -13,12 +13,10 @@ import org.is.bandmanager.repository.CoordinatesRepository;
 import org.is.bandmanager.repository.LocationRepository;
 import org.is.bandmanager.repository.MusicBandRepository;
 import org.is.bandmanager.repository.PersonRepository;
-import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -36,7 +34,6 @@ import static org.is.bandmanager.model.MusicGenre.POST_ROCK;
 import static org.is.bandmanager.model.MusicGenre.ROCK;
 
 @IntegrationTest
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class MusicBandControllerTest extends AbstractIntegrationTest {
 
     @Autowired
@@ -60,6 +57,8 @@ class MusicBandControllerTest extends AbstractIntegrationTest {
 
     @BeforeEach
     void setUp() {
+        getClient();
+
         musicBandRepository.deleteAll();
         coordinatesRepository.deleteAll();
         albumRepository.deleteAll();
@@ -75,7 +74,7 @@ class MusicBandControllerTest extends AbstractIntegrationTest {
         savedPerson = personRepository.save(Person.builder().name("John Doe").eyeColor(BLUE).hairColor(BLACK).location(location).weight(70f).nationality(USA).build());
     }
 
-    @AfterAll
+    @AfterEach
     void cleanUp() {
         musicBandRepository.deleteAll();
         coordinatesRepository.deleteAll();
@@ -92,7 +91,16 @@ class MusicBandControllerTest extends AbstractIntegrationTest {
     void shouldCreateMusicBandSuccessfully() {
         MusicBandRequest request = createMusicBandRequest();
 
-        webTestClient.post().uri("/music-bands").contentType(MediaType.APPLICATION_JSON).bodyValue(request).exchange().expectStatus().isCreated().expectBody().jsonPath("$.id").exists().jsonPath("$.name").isEqualTo("Radiohead").jsonPath("$.genre").isEqualTo("ROCK").jsonPath("$.numberOfParticipants").isEqualTo(5).jsonPath("$.coordinates.id").isEqualTo(savedCoordinates.getId()).jsonPath("$.bestAlbum.id").isEqualTo(savedAlbum.getId()).jsonPath("$.frontMan.id").isEqualTo(savedPerson.getId());
+        getClient().post("/music-bands", request)
+                .expectStatus().isCreated()
+                .expectBody()
+                .jsonPath("$.id").exists()
+                .jsonPath("$.name").isEqualTo("Radiohead")
+                .jsonPath("$.genre").isEqualTo("ROCK")
+                .jsonPath("$.numberOfParticipants").isEqualTo(5)
+                .jsonPath("$.coordinates.id").isEqualTo(savedCoordinates.getId())
+                .jsonPath("$.bestAlbum.id").isEqualTo(savedAlbum.getId())
+                .jsonPath("$.frontMan.id").isEqualTo(savedPerson.getId());
 
         List<MusicBand> bands = musicBandRepository.findAll();
         assertThat(bands).hasSize(1);
@@ -108,7 +116,14 @@ class MusicBandControllerTest extends AbstractIntegrationTest {
         MusicBandRequest request = createMusicBandRequest();
         request.setName("");
 
-        webTestClient.post().uri("/music-bands").contentType(MediaType.APPLICATION_JSON).bodyValue(request).exchange().expectStatus().isBadRequest().expectBody().jsonPath("$.status").isEqualTo(400).jsonPath("$.message").isEqualTo("Ошибка валидации данных").jsonPath("$.details[0].field").isEqualTo("name").jsonPath("$.details[0].message").isEqualTo("MusicBand.Name не может быть пустым").jsonPath("$.details[0].errorType").isEqualTo("VALIDATION_ERROR");
+        getClient().post("/music-bands", request)
+                .expectStatus().isBadRequest()
+                .expectBody()
+                .jsonPath("$.status").isEqualTo(400)
+                .jsonPath("$.message").isEqualTo("Ошибка валидации данных")
+                .jsonPath("$.details[0].field").isEqualTo("name")
+                .jsonPath("$.details[0].message").isEqualTo("MusicBand.Name не может быть пустым")
+                .jsonPath("$.details[0].errorType").isEqualTo("VALIDATION_ERROR");
     }
 
     @Test
@@ -116,22 +131,29 @@ class MusicBandControllerTest extends AbstractIntegrationTest {
         MusicBandRequest request = createMusicBandRequest();
         request.setCoordinatesId(null);
 
-        webTestClient.post().uri("/music-bands").contentType(MediaType.APPLICATION_JSON).bodyValue(request).exchange().expectStatus().isBadRequest().expectBody().jsonPath("$.status").isEqualTo(400).jsonPath("$.message").isEqualTo("Ошибка валидации данных").jsonPath("$.details[0].field").isEqualTo("coordinatesId").jsonPath("$.details[0].message").isEqualTo("MusicBand.CoordinatesId не может быть пустым").jsonPath("$.details[0].errorType").isEqualTo("VALIDATION_ERROR");
+        getClient().post("/music-bands", request)
+                .expectStatus().isBadRequest()
+                .expectBody()
+                .jsonPath("$.status").isEqualTo(400)
+                .jsonPath("$.message").isEqualTo("Ошибка валидации данных")
+                .jsonPath("$.details[0].field").isEqualTo("coordinatesId")
+                .jsonPath("$.details[0].message").isEqualTo("MusicBand.CoordinatesId не может быть пустым")
+                .jsonPath("$.details[0].errorType").isEqualTo("VALIDATION_ERROR");
     }
 
     @Test
     void shouldReturnNotFoundWhenCoordinatesIdDoesNotExist() {
-
         MusicBandRequest request = createMusicBandRequest();
-
         request.setCoordinatesId(999L);
 
-        webTestClient.post().uri("/music-bands").contentType(MediaType.APPLICATION_JSON).bodyValue(request).exchange().expectStatus().isNotFound().expectBody().jsonPath("$.status").isEqualTo(404);
+        getClient().post("/music-bands", request)
+                .expectStatus().isNotFound()
+                .expectBody()
+                .jsonPath("$.status").isEqualTo(404);
     }
 
     @Test
     void shouldGetAllMusicBands() {
-
         Coordinates c2 = coordinatesRepository.save(Coordinates.builder().x(3254).y(1.3f).build());
 
         Album a2 = albumRepository.save(Album.builder().name("Really Best Album").tracks(124L).sales(300).build());
@@ -140,28 +162,46 @@ class MusicBandControllerTest extends AbstractIntegrationTest {
 
         Person p2 = personRepository.save(Person.builder().name("Man Yesterday").eyeColor(BLACK).hairColor(BLUE).location(location2).weight(213f).nationality(FRANCE).build());
 
-        MusicBand b1 = musicBandRepository.save(MusicBand.builder().name("Radiohead").coordinates(savedCoordinates).genre(ROCK).numberOfParticipants(5L).singlesCount(10L).description("Legendary rock band").bestAlbum(savedAlbum).albumsCount(9L).establishmentDate(new Date()).frontMan(savedPerson).creationDate(new Date()).build());
+        MusicBand b1 = musicBandRepository.save(MusicBand.builder().name("Radiohead").coordinates(savedCoordinates).genre(ROCK).numberOfParticipants(5L).singlesCount(10L).description("Legendary rock band").bestAlbum(savedAlbum).albumsCount(9L).establishmentDate(new Date()).frontMan(savedPerson).build());
 
-        MusicBand b2 = musicBandRepository.save(MusicBand.builder().name("Muse").coordinates(c2).genre(POST_ROCK).numberOfParticipants(3L).singlesCount(7L).description("British alt-rock band").bestAlbum(a2).albumsCount(5L).establishmentDate(new Date()).frontMan(p2).creationDate(new Date()).build());
+        MusicBand b2 = musicBandRepository.save(MusicBand.builder().name("Muse").coordinates(c2).genre(POST_ROCK).numberOfParticipants(3L).singlesCount(7L).description("British alt-rock band").bestAlbum(a2).albumsCount(5L).establishmentDate(new Date()).frontMan(p2).build());
 
-        webTestClient.get().uri("/music-bands").exchange().expectStatus().isOk().expectBody().jsonPath("$.content.length()").isEqualTo(2).jsonPath("$.content[0].id").isEqualTo(b1.getId()).jsonPath("$.content[1].id").isEqualTo(b2.getId());
+        getClient().get("/music-bands")
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.content.length()").isEqualTo(2)
+                .jsonPath("$.content[0].id").isEqualTo(b1.getId())
+                .jsonPath("$.content[1].id").isEqualTo(b2.getId());
     }
 
     @Test
     void shouldGetMusicBandById() {
-        MusicBand saved = musicBandRepository.save(MusicBand.builder().name("Test Band").coordinates(savedCoordinates).genre(ROCK).numberOfParticipants(5L).singlesCount(10L).description("Some description").bestAlbum(savedAlbum).albumsCount(3L).establishmentDate(new Date()).frontMan(savedPerson).creationDate(new Date()).build());
+        MusicBand saved = musicBandRepository.save(MusicBand.builder().name("Test Band").coordinates(savedCoordinates).genre(ROCK).numberOfParticipants(5L).singlesCount(10L).description("Some description").bestAlbum(savedAlbum).albumsCount(3L).establishmentDate(new Date()).frontMan(savedPerson).build());
 
-        webTestClient.get().uri("/music-bands/{id}", saved.getId()).exchange().expectStatus().isOk().expectBody().jsonPath("$.id").isEqualTo(saved.getId()).jsonPath("$.name").isEqualTo("Test Band").jsonPath("$.coordinates.id").isEqualTo(savedCoordinates.getId()).jsonPath("$.bestAlbum.id").isEqualTo(savedAlbum.getId()).jsonPath("$.frontMan.id").isEqualTo(savedPerson.getId());
+        getClient().get("/music-bands/{id}", saved.getId())
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.id").isEqualTo(saved.getId())
+                .jsonPath("$.name").isEqualTo("Test Band")
+                .jsonPath("$.coordinates.id").isEqualTo(savedCoordinates.getId())
+                .jsonPath("$.bestAlbum.id").isEqualTo(savedAlbum.getId())
+                .jsonPath("$.frontMan.id").isEqualTo(savedPerson.getId());
     }
 
     @Test
     void shouldReturnNotFoundWhenGettingNonExistentBand() {
-        webTestClient.get().uri("/music-bands/{id}", 9999).exchange().expectStatus().isNotFound().expectBody().jsonPath("$.status").isEqualTo(404).jsonPath("$.message").isEqualTo("Ошибка выполнения операции").jsonPath("$.details[0].field").isEqualTo("service").jsonPath("$.details[0].errorType").isEqualTo("SERVICE_ERROR");
+        getClient().get("/music-bands/{id}", 9999)
+                .expectStatus().isNotFound()
+                .expectBody()
+                .jsonPath("$.status").isEqualTo(404)
+                .jsonPath("$.message").isEqualTo("Ошибка выполнения операции")
+                .jsonPath("$.details[0].field").isEqualTo("service")
+                .jsonPath("$.details[0].errorType").isEqualTo("SERVICE_ERROR");
     }
 
     @Test
     void shouldUpdateMusicBandSuccessfully() {
-        MusicBand saved = musicBandRepository.save(MusicBand.builder().name("Old Band").coordinates(savedCoordinates).genre(ROCK).numberOfParticipants(5L).singlesCount(10L).description("Old description").bestAlbum(savedAlbum).albumsCount(9L).establishmentDate(new Date()).frontMan(savedPerson).creationDate(new Date()).build());
+        MusicBand saved = musicBandRepository.save(MusicBand.builder().name("Old Band").coordinates(savedCoordinates).genre(ROCK).numberOfParticipants(5L).singlesCount(10L).description("Old description").bestAlbum(savedAlbum).albumsCount(9L).establishmentDate(new Date()).frontMan(savedPerson).build());
 
         Coordinates newCoordinates = coordinatesRepository.save(Coordinates.builder().x(100).y(50.5f).build());
 
@@ -173,7 +213,13 @@ class MusicBandControllerTest extends AbstractIntegrationTest {
 
         MusicBandRequest updateRequest = MusicBandRequest.builder().name("Updated Band").coordinatesId(newCoordinates.getId()).genre(POST_ROCK).numberOfParticipants(8L).singlesCount(15L).description("Updated description").bestAlbumId(newAlbum.getId()).albumsCount(12L).establishmentDate(new Date()).frontManId(newPerson.getId()).build();
 
-        webTestClient.put().uri("/music-bands/{id}", saved.getId()).contentType(MediaType.APPLICATION_JSON).bodyValue(updateRequest).exchange().expectStatus().isOk().expectBody().jsonPath("$.name").isEqualTo("Updated Band").jsonPath("$.coordinates.id").isEqualTo(newCoordinates.getId()).jsonPath("$.bestAlbum.id").isEqualTo(newAlbum.getId()).jsonPath("$.frontMan.id").isEqualTo(newPerson.getId());
+        getClient().putWithBody("/music-bands/{id}", updateRequest, saved.getId())
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.name").isEqualTo("Updated Band")
+                .jsonPath("$.coordinates.id").isEqualTo(newCoordinates.getId())
+                .jsonPath("$.bestAlbum.id").isEqualTo(newAlbum.getId())
+                .jsonPath("$.frontMan.id").isEqualTo(newPerson.getId());
 
         MusicBand updated = musicBandRepository.findById(saved.getId()).orElseThrow();
         assertThat(updated.getName()).isEqualTo("Updated Band");
@@ -186,21 +232,36 @@ class MusicBandControllerTest extends AbstractIntegrationTest {
     void shouldReturnNotFoundWhenUpdatingNonExistentBand() {
         MusicBandRequest updateRequest = createMusicBandRequest();
 
-        webTestClient.put().uri("/music-bands/{id}", 9999).contentType(MediaType.APPLICATION_JSON).bodyValue(updateRequest).exchange().expectStatus().isNotFound().expectBody().jsonPath("$.status").isEqualTo(404).jsonPath("$.message").isEqualTo("Ошибка выполнения операции").jsonPath("$.details[0].field").isEqualTo("service").jsonPath("$.details[0].errorType").isEqualTo("SERVICE_ERROR");
+        getClient().putWithBody("/music-bands/{id}", updateRequest, 9999)
+                .expectStatus().isNotFound()
+                .expectBody()
+                .jsonPath("$.status").isEqualTo(404)
+                .jsonPath("$.message").isEqualTo("Ошибка выполнения операции")
+                .jsonPath("$.details[0].field").isEqualTo("service")
+                .jsonPath("$.details[0].errorType").isEqualTo("SERVICE_ERROR");
     }
 
     @Test
     void shouldDeleteMusicBandSuccessfully() {
-        MusicBand saved = musicBandRepository.save(MusicBand.builder().name("ToDelete").coordinates(savedCoordinates).genre(ROCK).numberOfParticipants(4L).singlesCount(7L).description("temp").bestAlbum(savedAlbum).albumsCount(3L).establishmentDate(new Date()).frontMan(savedPerson).creationDate(new Date()).build());
+        MusicBand saved = musicBandRepository.save(MusicBand.builder().name("ToDelete").coordinates(savedCoordinates).genre(ROCK).numberOfParticipants(4L).singlesCount(7L).description("temp").bestAlbum(savedAlbum).albumsCount(3L).establishmentDate(new Date()).frontMan(savedPerson).build());
 
-        webTestClient.delete().uri("/music-bands/{id}", saved.getId()).exchange().expectStatus().isOk().expectBody().jsonPath("$.id").isEqualTo(saved.getId());
+        getClient().delete("/music-bands/{id}", saved.getId())
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.id").isEqualTo(saved.getId());
 
         assertThat(musicBandRepository.existsById(saved.getId())).isFalse();
     }
 
     @Test
     void shouldReturnNotFoundWhenDeletingNonExistentBand() {
-        webTestClient.delete().uri("/music-bands/{id}", 9999).exchange().expectStatus().isNotFound().expectBody().jsonPath("$.status").isEqualTo(404).jsonPath("$.message").isEqualTo("Ошибка выполнения операции").jsonPath("$.details[0].field").isEqualTo("service").jsonPath("$.details[0].errorType").isEqualTo("SERVICE_ERROR");
+        getClient().delete("/music-bands/{id}", 9999)
+                .expectStatus().isNotFound()
+                .expectBody()
+                .jsonPath("$.status").isEqualTo(404)
+                .jsonPath("$.message").isEqualTo("Ошибка выполнения операции")
+                .jsonPath("$.details[0].field").isEqualTo("service")
+                .jsonPath("$.details[0].errorType").isEqualTo("SERVICE_ERROR");
     }
 
     @Test
@@ -213,7 +274,12 @@ class MusicBandControllerTest extends AbstractIntegrationTest {
         createAndSaveBand("Band 2", c2);
         createAndSaveBand("Band 3", c3);
 
-        webTestClient.get().uri("/music-bands/max-coordinates").exchange().expectStatus().isOk().expectBody().jsonPath("$.id").isEqualTo(b1.getId()).jsonPath("$.name").isEqualTo("Band 1").jsonPath("$.coordinates.id").isEqualTo(c1.getId());
+        getClient().get("/music-bands/max-coordinates")
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.id").isEqualTo(b1.getId())
+                .jsonPath("$.name").isEqualTo("Band 1")
+                .jsonPath("$.coordinates.id").isEqualTo(c1.getId());
     }
 
     @Test
@@ -225,27 +291,42 @@ class MusicBandControllerTest extends AbstractIntegrationTest {
         MusicBand oldBand = createAndSaveBandWithDate("Old Band", oldDate);
         createAndSaveBandWithDate("New Band", newDate);
 
-        webTestClient.get().uri(uriBuilder -> uriBuilder.path("/music-bands/established-before").queryParam("date", "2015-01-01").build()).exchange().expectStatus().isOk().expectBody().jsonPath("$.length()").isEqualTo(1).jsonPath("$[0].id").isEqualTo(oldBand.getId()).jsonPath("$[0].name").isEqualTo("Old Band");
+        getClient().get("/music-bands/established-before?date=2015-01-01")
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.length()").isEqualTo(1)
+                .jsonPath("$[0].id").isEqualTo(oldBand.getId())
+                .jsonPath("$[0].name").isEqualTo("Old Band");
     }
 
     @Test
     void shouldReturnBadRequestWhenDateParameterMissing() {
-        webTestClient.get().uri("/music-bands/established-before").exchange().expectStatus().isBadRequest().expectBody().jsonPath("$.status").isEqualTo(400).jsonPath("$.message").isEqualTo("Отсутствуют обязательные параметры").jsonPath("$.details[0].field").isEqualTo("date").jsonPath("$.details[0].errorType").isEqualTo("MISSING_PARAMETER");
+        getClient().get("/music-bands/established-before")
+                .expectStatus().isBadRequest()
+                .expectBody()
+                .jsonPath("$.status").isEqualTo(400)
+                .jsonPath("$.message").isEqualTo("Отсутствуют обязательные параметры")
+                .jsonPath("$.details[0].field").isEqualTo("date")
+                .jsonPath("$.details[0].errorType").isEqualTo("MISSING_PARAMETER");
     }
 
     @Test
     void shouldReturnBadRequestWhenDateInvalidFormat() {
-        webTestClient.get().uri(uriBuilder -> uriBuilder.path("/music-bands/established-before").queryParam("date", "invalid-date").build()).exchange().expectStatus().isBadRequest().expectBody().jsonPath("$.status").isEqualTo(400).jsonPath("$.message").isEqualTo("Ошибка в параметрах запроса").jsonPath("$.details[0].field").isEqualTo("date").jsonPath("$.details[0].errorType").isEqualTo("TYPE_MISMATCH");
+        getClient().get("/music-bands/established-before?date=invalid-date")
+                .expectStatus().isBadRequest()
+                .expectBody()
+                .jsonPath("$.status").isEqualTo(400)
+                .jsonPath("$.message").isEqualTo("Ошибка в параметрах запроса")
+                .jsonPath("$.details[0].field").isEqualTo("date")
+                .jsonPath("$.details[0].errorType").isEqualTo("TYPE_MISMATCH");
     }
 
     @Test
     void shouldReturnEmptyArrayWhenNoBandsFound() {
-        webTestClient.get().uri(uriBuilder -> uriBuilder.path("/music-bands/established-before").queryParam("date", "1900-01-01").build()).exchange().expectStatus().isOk().expectBody().jsonPath("$.length()").isEqualTo(0);
-    }
-
-    @Test
-    void shouldReturnBadRequestWhenCreatingWithMissingRequestBody() {
-        webTestClient.post().uri("/music-bands").contentType(MediaType.APPLICATION_JSON).exchange().expectStatus().isBadRequest().expectBody().jsonPath("$.status").isEqualTo(400).jsonPath("$.message").isEqualTo("Отсутствует тело запроса").jsonPath("$.details[0].field").isEqualTo("requestBody").jsonPath("$.details[0].errorType").isEqualTo("INVALID_JSON");
+        getClient().get("/music-bands/established-before?date=1900-01-01")
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.length()").isEqualTo(0);
     }
 
     @Test
@@ -255,14 +336,22 @@ class MusicBandControllerTest extends AbstractIntegrationTest {
         createAndSaveBand("Band 3", 5L);
         createAndSaveBand("Band 4", 7L);
 
-        webTestClient.get().uri("/music-bands/unique-albums-count").exchange().expectStatus().isOk().expectBody().jsonPath("$.length()").isEqualTo(3);
+        getClient().get("/music-bands/unique-albums-count")
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.length()").isEqualTo(3);
     }
 
     @Test
     void shouldRemoveParticipantFromBand() {
         MusicBand band = createAndSaveBandWithParticipants("Test Band", 5L);
 
-        webTestClient.put().uri("/music-bands/{id}/remove-participant", band.getId()).exchange().expectStatus().isOk().expectBody().jsonPath("$.id").isEqualTo(band.getId()).jsonPath("$.name").isEqualTo("Test Band").jsonPath("$.numberOfParticipants").isEqualTo(4);
+        getClient().put("/music-bands/{id}/remove-participant", band.getId())
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.id").isEqualTo(band.getId())
+                .jsonPath("$.name").isEqualTo("Test Band")
+                .jsonPath("$.numberOfParticipants").isEqualTo(4);
 
         MusicBand updated = musicBandRepository.findById(band.getId()).orElseThrow();
         assertThat(updated.getNumberOfParticipants()).isEqualTo(4L);
@@ -272,7 +361,14 @@ class MusicBandControllerTest extends AbstractIntegrationTest {
     void shouldReturnBadRequestWhenRemovingLastParticipant() {
         MusicBand band = createAndSaveBandWithParticipants("Solo Band", 1L);
 
-        webTestClient.put().uri("/music-bands/{id}/remove-participant", band.getId()).exchange().expectStatus().isBadRequest().expectBody().jsonPath("$.status").isEqualTo(400).jsonPath("$.message").isEqualTo("Ошибка выполнения операции").jsonPath("$.details[0].field").isEqualTo("service").jsonPath("$.details[0].message").isEqualTo("Невозможно удалить участника - в группе должен остаться хотя бы 1 участник").jsonPath("$.details[0].errorType").isEqualTo("SERVICE_ERROR");
+        getClient().put("/music-bands/{id}/remove-participant", band.getId())
+                .expectStatus().isBadRequest()
+                .expectBody()
+                .jsonPath("$.status").isEqualTo(400)
+                .jsonPath("$.message").isEqualTo("Ошибка выполнения операции")
+                .jsonPath("$.details[0].field").isEqualTo("service")
+                .jsonPath("$.details[0].message").isEqualTo("Невозможно удалить участника - в группе должен остаться хотя бы 1 участник")
+                .jsonPath("$.details[0].errorType").isEqualTo("SERVICE_ERROR");
 
         MusicBand unchanged = musicBandRepository.findById(band.getId()).orElseThrow();
         assertThat(unchanged.getNumberOfParticipants()).isEqualTo(1L);
@@ -280,24 +376,30 @@ class MusicBandControllerTest extends AbstractIntegrationTest {
 
     @Test
     void shouldReturnNotFoundWhenRemovingFromNonExistentBand() {
-        webTestClient.put().uri("/music-bands/{id}/remove-participant", 9999).exchange().expectStatus().isNotFound().expectBody().jsonPath("$.status").isEqualTo(404).jsonPath("$.message").isEqualTo("Ошибка выполнения операции").jsonPath("$.details[0].field").isEqualTo("service").jsonPath("$.details[0].errorType").isEqualTo("SERVICE_ERROR");
+        getClient().put("/music-bands/{id}/remove-participant", 9999)
+                .expectStatus().isNotFound()
+                .expectBody()
+                .jsonPath("$.status").isEqualTo(404)
+                .jsonPath("$.message").isEqualTo("Ошибка выполнения операции")
+                .jsonPath("$.details[0].field").isEqualTo("service")
+                .jsonPath("$.details[0].errorType").isEqualTo("SERVICE_ERROR");
     }
 
     // Вспомогательные методы
     private MusicBand createAndSaveBand(String name, Coordinates coordinates) {
-        return musicBandRepository.save(MusicBand.builder().name(name).coordinates(coordinates).genre(ROCK).numberOfParticipants(5L).singlesCount(10L).description("Description for " + name).bestAlbum(savedAlbum).albumsCount(5L).establishmentDate(new Date()).frontMan(savedPerson).creationDate(new Date()).build());
+        return musicBandRepository.save(MusicBand.builder().name(name).coordinates(coordinates).genre(ROCK).numberOfParticipants(5L).singlesCount(10L).description("Description for " + name).bestAlbum(savedAlbum).albumsCount(5L).establishmentDate(new Date()).frontMan(savedPerson).build());
     }
 
     private MusicBand createAndSaveBandWithParticipants(String name, Long numberOfParticipants) {
-        return musicBandRepository.save(MusicBand.builder().name(name).coordinates(savedCoordinates).genre(ROCK).numberOfParticipants(numberOfParticipants).singlesCount(10L).description("Description for " + name).bestAlbum(savedAlbum).albumsCount(5L).establishmentDate(new Date()).frontMan(savedPerson).creationDate(new Date()).build());
+        return musicBandRepository.save(MusicBand.builder().name(name).coordinates(savedCoordinates).genre(ROCK).numberOfParticipants(numberOfParticipants).singlesCount(10L).description("Description for " + name).bestAlbum(savedAlbum).albumsCount(5L).establishmentDate(new Date()).frontMan(savedPerson).build());
     }
 
     private MusicBand createAndSaveBandWithDate(String name, Date establishmentDate) {
-        return musicBandRepository.save(MusicBand.builder().name(name).coordinates(savedCoordinates).genre(ROCK).numberOfParticipants(5L).singlesCount(10L).description("Description for " + name).bestAlbum(savedAlbum).albumsCount(5L).establishmentDate(establishmentDate).frontMan(savedPerson).creationDate(new Date()).build());
+        return musicBandRepository.save(MusicBand.builder().name(name).coordinates(savedCoordinates).genre(ROCK).numberOfParticipants(5L).singlesCount(10L).description("Description for " + name).bestAlbum(savedAlbum).albumsCount(5L).establishmentDate(establishmentDate).frontMan(savedPerson).build());
     }
 
     private void createAndSaveBand(String name, Long albumsCount) {
-        musicBandRepository.save(MusicBand.builder().name(name).coordinates(savedCoordinates).genre(ROCK).numberOfParticipants(5L).singlesCount(10L).description("Description for " + name).bestAlbum(savedAlbum).albumsCount(albumsCount).establishmentDate(new Date()).frontMan(savedPerson).creationDate(new Date()).build());
+        musicBandRepository.save(MusicBand.builder().name(name).coordinates(savedCoordinates).genre(ROCK).numberOfParticipants(5L).singlesCount(10L).description("Description for " + name).bestAlbum(savedAlbum).albumsCount(albumsCount).establishmentDate(new Date()).frontMan(savedPerson).build());
     }
 
     @Test
@@ -308,7 +410,16 @@ class MusicBandControllerTest extends AbstractIntegrationTest {
         createAndSaveBand("Band B", 7L, 5L, 2L);
 
         // Тест пагинации с сортировкой по имени (asc)
-        webTestClient.get().uri(uriBuilder -> uriBuilder.path("/music-bands").queryParam("page", "0").queryParam("size", "2").queryParam("sort", "name").queryParam("direction", "asc").build()).exchange().expectStatus().isOk().expectBody().jsonPath("$.content.length()").isEqualTo(2).jsonPath("$.content[0].name").isEqualTo("Band A").jsonPath("$.content[1].name").isEqualTo("Band B").jsonPath("$.page.totalPages").isEqualTo(2).jsonPath("$.page.totalElements").isEqualTo(3).jsonPath("$.page.size").isEqualTo(2).jsonPath("$.page.number").isEqualTo(0);
+        getClient().get("/music-bands?page=0&size=2&sort=name&direction=asc")
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.content.length()").isEqualTo(2)
+                .jsonPath("$.content[0].name").isEqualTo("Band A")
+                .jsonPath("$.content[1].name").isEqualTo("Band B")
+                .jsonPath("$.page.totalPages").isEqualTo(2)
+                .jsonPath("$.page.totalElements").isEqualTo(3)
+                .jsonPath("$.page.size").isEqualTo(2)
+                .jsonPath("$.page.number").isEqualTo(0);
     }
 
     @Test
@@ -319,7 +430,13 @@ class MusicBandControllerTest extends AbstractIntegrationTest {
         createAndSaveBand("Gamma Band", 7L, 5L, 2L);
 
         // Тест сортировки по имени (desc)
-        webTestClient.get().uri(uriBuilder -> uriBuilder.path("/music-bands").queryParam("sort", "name").queryParam("direction", "desc").build()).exchange().expectStatus().isOk().expectBody().jsonPath("$.content.length()").isEqualTo(3).jsonPath("$.content[0].name").isEqualTo("Gamma Band").jsonPath("$.content[1].name").isEqualTo("Beta Band").jsonPath("$.content[2].name").isEqualTo("Alpha Band");
+        getClient().get("/music-bands?sort=name&direction=desc")
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.content.length()").isEqualTo(3)
+                .jsonPath("$.content[0].name").isEqualTo("Gamma Band")
+                .jsonPath("$.content[1].name").isEqualTo("Beta Band")
+                .jsonPath("$.content[2].name").isEqualTo("Alpha Band");
     }
 
     @Test
@@ -330,7 +447,13 @@ class MusicBandControllerTest extends AbstractIntegrationTest {
         createAndSaveBand("Large Band", 8L, 5L, 2L);
 
         // Тест сортировки по количеству участников (desc)
-        webTestClient.get().uri(uriBuilder -> uriBuilder.path("/music-bands").queryParam("sort", "numberOfParticipants").queryParam("direction", "desc").build()).exchange().expectStatus().isOk().expectBody().jsonPath("$.content.length()").isEqualTo(3).jsonPath("$.content[0].numberOfParticipants").isEqualTo(8).jsonPath("$.content[1].numberOfParticipants").isEqualTo(5).jsonPath("$.content[2].numberOfParticipants").isEqualTo(2);
+        getClient().get("/music-bands?sort=numberOfParticipants&direction=desc")
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.content.length()").isEqualTo(3)
+                .jsonPath("$.content[0].numberOfParticipants").isEqualTo(8)
+                .jsonPath("$.content[1].numberOfParticipants").isEqualTo(5)
+                .jsonPath("$.content[2].numberOfParticipants").isEqualTo(2);
     }
 
     @Test
@@ -341,7 +464,13 @@ class MusicBandControllerTest extends AbstractIntegrationTest {
         createAndSaveBand("Band Three", 5L, 10L, 2L);
 
         // Тест сортировки по количеству синглов (asc)
-        webTestClient.get().uri(uriBuilder -> uriBuilder.path("/music-bands").queryParam("sort", "singlesCount").queryParam("direction", "asc").build()).exchange().expectStatus().isOk().expectBody().jsonPath("$.content.length()").isEqualTo(3).jsonPath("$.content[0].singlesCount").isEqualTo(5).jsonPath("$.content[1].singlesCount").isEqualTo(10).jsonPath("$.content[2].singlesCount").isEqualTo(15);
+        getClient().get("/music-bands?sort=singlesCount&direction=asc")
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.content.length()").isEqualTo(3)
+                .jsonPath("$.content[0].singlesCount").isEqualTo(5)
+                .jsonPath("$.content[1].singlesCount").isEqualTo(10)
+                .jsonPath("$.content[2].singlesCount").isEqualTo(15);
     }
 
     @Test
@@ -352,7 +481,12 @@ class MusicBandControllerTest extends AbstractIntegrationTest {
         createAndSaveBand("Rock Group", 7L, 5L, 2L);
 
         // Тест фильтрации по точному имени
-        webTestClient.get().uri(uriBuilder -> uriBuilder.path("/music-bands").queryParam("name", "Rock Band").build()).exchange().expectStatus().isOk().expectBody().jsonPath("$.content.length()").isEqualTo(1).jsonPath("$.content[0].name").isEqualTo("Rock Band").jsonPath("$.content[0].numberOfParticipants").isEqualTo(5);
+        getClient().get("/music-bands?name=Rock Band")
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.content.length()").isEqualTo(1)
+                .jsonPath("$.content[0].name").isEqualTo("Rock Band")
+                .jsonPath("$.content[0].numberOfParticipants").isEqualTo(5);
     }
 
     @Test
@@ -363,7 +497,12 @@ class MusicBandControllerTest extends AbstractIntegrationTest {
         createAndSaveBandWithGenre("Punk Band", MusicGenre.PUNK_ROCK);
 
         // Тест фильтрации по жанру
-        webTestClient.get().uri(uriBuilder -> uriBuilder.path("/music-bands").queryParam("genre", "ROCK").build()).exchange().expectStatus().isOk().expectBody().jsonPath("$.content.length()").isEqualTo(1).jsonPath("$.content[0].name").isEqualTo("Rockers").jsonPath("$.content[0].genre").isEqualTo("ROCK");
+        getClient().get("/music-bands?genre=ROCK")
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.content.length()").isEqualTo(1)
+                .jsonPath("$.content[0].name").isEqualTo("Rockers")
+                .jsonPath("$.content[0].genre").isEqualTo("ROCK");
     }
 
     @Test
@@ -374,7 +513,12 @@ class MusicBandControllerTest extends AbstractIntegrationTest {
         createAndSaveBand("Large", 8L, 5L, 2L);
 
         // Тест фильтрации по диапазону участников
-        webTestClient.get().uri(uriBuilder -> uriBuilder.path("/music-bands").queryParam("minParticipants", "3").queryParam("maxParticipants", "6").build()).exchange().expectStatus().isOk().expectBody().jsonPath("$.content.length()").isEqualTo(1).jsonPath("$.content[0].name").isEqualTo("Medium").jsonPath("$.content[0].numberOfParticipants").isEqualTo(5);
+        getClient().get("/music-bands?minParticipants=3&maxParticipants=6")
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.content.length()").isEqualTo(1)
+                .jsonPath("$.content[0].name").isEqualTo("Medium")
+                .jsonPath("$.content[0].numberOfParticipants").isEqualTo(5);
     }
 
     @Test
@@ -385,7 +529,12 @@ class MusicBandControllerTest extends AbstractIntegrationTest {
         createAndSaveBand("Many Singles", 5L, 12L, 2L);
 
         // Тест фильтрации по диапазону синглов
-        webTestClient.get().uri(uriBuilder -> uriBuilder.path("/music-bands").queryParam("minSingles", "5").queryParam("maxSingles", "10").build()).exchange().expectStatus().isOk().expectBody().jsonPath("$.content.length()").isEqualTo(1).jsonPath("$.content[0].name").isEqualTo("Some Singles").jsonPath("$.content[0].singlesCount").isEqualTo(8);
+        getClient().get("/music-bands?minSingles=5&maxSingles=10")
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.content.length()").isEqualTo(1)
+                .jsonPath("$.content[0].name").isEqualTo("Some Singles")
+                .jsonPath("$.content[0].singlesCount").isEqualTo(8);
     }
 
     @Test
@@ -396,7 +545,12 @@ class MusicBandControllerTest extends AbstractIntegrationTest {
         createAndSaveBand("Veteran", 5L, 5L, 10L);
 
         // Тест фильтрации по диапазону альбомов
-        webTestClient.get().uri(uriBuilder -> uriBuilder.path("/music-bands").queryParam("minAlbumsCount", "3").queryParam("maxAlbumsCount", "7").build()).exchange().expectStatus().isOk().expectBody().jsonPath("$.content.length()").isEqualTo(1).jsonPath("$.content[0].name").isEqualTo("Established").jsonPath("$.content[0].albumsCount").isEqualTo(5);
+        getClient().get("/music-bands?minAlbumsCount=3&maxAlbumsCount=7")
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.content.length()").isEqualTo(1)
+                .jsonPath("$.content[0].name").isEqualTo("Established")
+                .jsonPath("$.content[0].albumsCount").isEqualTo(5);
     }
 
     @Test
@@ -411,7 +565,12 @@ class MusicBandControllerTest extends AbstractIntegrationTest {
         createAndSaveBandWithFrontMan("Band Three", anna);
 
         // Тест фильтрации по имени фронтмена
-        webTestClient.get().uri(uriBuilder -> uriBuilder.path("/music-bands").queryParam("frontManName", "John Doe").build()).exchange().expectStatus().isOk().expectBody().jsonPath("$.content.length()").isEqualTo(1).jsonPath("$.content[0].name").isEqualTo("Band One").jsonPath("$.content[0].frontMan.id").isEqualTo(john.getId());
+        getClient().get("/music-bands?frontManName=John Doe")
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.content.length()").isEqualTo(1)
+                .jsonPath("$.content[0].name").isEqualTo("Band One")
+                .jsonPath("$.content[0].frontMan.id").isEqualTo(john.getId());
     }
 
     @Test
@@ -426,7 +585,12 @@ class MusicBandControllerTest extends AbstractIntegrationTest {
         createAndSaveBandWithAlbum("AC/DC", album3);
 
         // Тест фильтрации по названию альбома
-        webTestClient.get().uri(uriBuilder -> uriBuilder.path("/music-bands").queryParam("bestAlbumName", "Thriller").build()).exchange().expectStatus().isOk().expectBody().jsonPath("$.content.length()").isEqualTo(1).jsonPath("$.content[0].name").isEqualTo("Michael Jackson").jsonPath("$.content[0].bestAlbum.id").isEqualTo(album2.getId());
+        getClient().get("/music-bands?bestAlbumName=Thriller")
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.content.length()").isEqualTo(1)
+                .jsonPath("$.content[0].name").isEqualTo("Michael Jackson")
+                .jsonPath("$.content[0].bestAlbum.id").isEqualTo(album2.getId());
     }
 
     @Test
@@ -437,7 +601,13 @@ class MusicBandControllerTest extends AbstractIntegrationTest {
         createAndSaveBand("Other Band 2", 7L, 5L, 7L);
 
         // Комплексный фильтр
-        webTestClient.get().uri(uriBuilder -> uriBuilder.path("/music-bands").queryParam("name", "Target Band").queryParam("minParticipants", "4").queryParam("maxParticipants", "6").queryParam("minAlbumsCount", "4").queryParam("maxAlbumsCount", "6").queryParam("sort", "singlesCount").queryParam("direction", "desc").build()).exchange().expectStatus().isOk().expectBody().jsonPath("$.content.length()").isEqualTo(1).jsonPath("$.content[0].name").isEqualTo("Target Band").jsonPath("$.content[0].numberOfParticipants").isEqualTo(5).jsonPath("$.content[0].albumsCount").isEqualTo(5);
+        getClient().get("/music-bands?name=Target Band&minParticipants=4&maxParticipants=6&minAlbumsCount=4&maxAlbumsCount=6&sort=singlesCount&direction=desc")
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.content.length()").isEqualTo(1)
+                .jsonPath("$.content[0].name").isEqualTo("Target Band")
+                .jsonPath("$.content[0].numberOfParticipants").isEqualTo(5)
+                .jsonPath("$.content[0].albumsCount").isEqualTo(5);
     }
 
     @Test
@@ -447,7 +617,11 @@ class MusicBandControllerTest extends AbstractIntegrationTest {
         createAndSaveBand("Jazz Band", 3L, 15L, 5L);
 
         // Фильтр, который не соответствует ни одной группе
-        webTestClient.get().uri(uriBuilder -> uriBuilder.path("/music-bands").queryParam("name", "Non Existent Band").build()).exchange().expectStatus().isOk().expectBody().jsonPath("$.content.length()").isEqualTo(0).jsonPath("$.page.totalElements").isEqualTo(0);
+        getClient().get("/music-bands?name=Non Existent Band")
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.content.length()").isEqualTo(0)
+                .jsonPath("$.page.totalElements").isEqualTo(0);
     }
 
     @Test
@@ -457,26 +631,32 @@ class MusicBandControllerTest extends AbstractIntegrationTest {
             createAndSaveBand("Band " + i, 5L, 10L, 3L);
         }
 
-        webTestClient.get().uri("/music-bands").exchange().expectStatus().isOk().expectBody().jsonPath("$.content.length()").isEqualTo(10) // дефолтный size
-                .jsonPath("$.page.totalPages").isEqualTo(3).jsonPath("$.page.totalElements").isEqualTo(25).jsonPath("$.page.size").isEqualTo(10).jsonPath("$.page.number").isEqualTo(0);
+        getClient().get("/music-bands")
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.content.length()").isEqualTo(10) // дефолтный size
+                .jsonPath("$.page.totalPages").isEqualTo(3)
+                .jsonPath("$.page.totalElements").isEqualTo(25)
+                .jsonPath("$.page.size").isEqualTo(10)
+                .jsonPath("$.page.number").isEqualTo(0);
     }
 
     // Вспомогательные методы для тестов
 
     private void createAndSaveBand(String name, Long numberOfParticipants, Long singlesCount, Long albumsCount) {
-        musicBandRepository.save(MusicBand.builder().name(name).coordinates(savedCoordinates).genre(ROCK).numberOfParticipants(numberOfParticipants).singlesCount(singlesCount).description("Description for " + name).bestAlbum(savedAlbum).albumsCount(albumsCount).establishmentDate(new Date()).frontMan(savedPerson).creationDate(new Date()).build());
+        musicBandRepository.save(MusicBand.builder().name(name).coordinates(savedCoordinates).genre(ROCK).numberOfParticipants(numberOfParticipants).singlesCount(singlesCount).description("Description for " + name).bestAlbum(savedAlbum).albumsCount(albumsCount).establishmentDate(new Date()).frontMan(savedPerson).build());
     }
 
     private void createAndSaveBandWithGenre(String name, MusicGenre genre) {
-        musicBandRepository.save(MusicBand.builder().name(name).coordinates(savedCoordinates).genre(genre).numberOfParticipants(5L).singlesCount(10L).description("Description for " + name).bestAlbum(savedAlbum).albumsCount(5L).establishmentDate(new Date()).frontMan(savedPerson).creationDate(new Date()).build());
+        musicBandRepository.save(MusicBand.builder().name(name).coordinates(savedCoordinates).genre(genre).numberOfParticipants(5L).singlesCount(10L).description("Description for " + name).bestAlbum(savedAlbum).albumsCount(5L).establishmentDate(new Date()).frontMan(savedPerson).build());
     }
 
     private void createAndSaveBandWithFrontMan(String name, Person frontMan) {
-        musicBandRepository.save(MusicBand.builder().name(name).coordinates(savedCoordinates).genre(ROCK).numberOfParticipants(5L).singlesCount(10L).description("Description for " + name).bestAlbum(savedAlbum).albumsCount(5L).establishmentDate(new Date()).frontMan(frontMan).creationDate(new Date()).build());
+        musicBandRepository.save(MusicBand.builder().name(name).coordinates(savedCoordinates).genre(ROCK).numberOfParticipants(5L).singlesCount(10L).description("Description for " + name).bestAlbum(savedAlbum).albumsCount(5L).establishmentDate(new Date()).frontMan(frontMan).build());
     }
 
     private void createAndSaveBandWithAlbum(String name, Album album) {
-        musicBandRepository.save(MusicBand.builder().name(name).coordinates(savedCoordinates).genre(ROCK).numberOfParticipants(5L).singlesCount(10L).description("Description for " + name).bestAlbum(album).albumsCount(5L).establishmentDate(new Date()).frontMan(savedPerson).creationDate(new Date()).build());
+        musicBandRepository.save(MusicBand.builder().name(name).coordinates(savedCoordinates).genre(ROCK).numberOfParticipants(5L).singlesCount(10L).description("Description for " + name).bestAlbum(album).albumsCount(5L).establishmentDate(new Date()).frontMan(savedPerson).build());
     }
 
     private Person createPerson(String name) {

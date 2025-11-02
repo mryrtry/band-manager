@@ -5,7 +5,7 @@ import org.is.bandmanager.dto.MusicBandDto;
 import org.is.bandmanager.dto.request.MusicBandRequest;
 import org.is.bandmanager.model.MusicBand;
 import org.is.bandmanager.repository.filter.MusicBandFilter;
-import org.is.bandmanager.util.pageable.PageableConfig;
+import org.is.util.pageable.PageableConfig;
 import org.springframework.data.domain.Page;
 
 import java.util.Date;
@@ -18,9 +18,9 @@ public interface MusicBandService {
 
     Page<MusicBandDto> getAll(@Valid MusicBandFilter filter, PageableConfig config);
 
-    MusicBandDto get(Integer id);
+    MusicBandDto get(Long id);
 
-    MusicBand getEntity(Integer id);
+    MusicBand getEntity(Long id);
 
     MusicBandDto getWithMaxCoordinates();
 
@@ -28,12 +28,12 @@ public interface MusicBandService {
 
     List<Long> getDistinctAlbumsCount();
 
-    MusicBandDto update(Integer id, @Valid MusicBandRequest request);
+    MusicBandDto update(Long id, @Valid MusicBandRequest request);
 
-    MusicBandDto delete(Integer id);
+    MusicBandDto delete(Long id);
 
-    List<MusicBandDto> delete(List<Integer> ids);
+    List<MusicBandDto> delete(List<Long> ids);
 
-    MusicBandDto removeParticipant(Integer id);
+    MusicBandDto removeParticipant(Long id);
 
 }

@@ -1,0 +1,19 @@
+{
+  "properties": [
+    {
+      "name": "band-manager.jwt.secret",
+      "type": "java.lang.String",
+      "description": "Jwt secret key."
+    },
+    {
+      "name": "band-manager.jwt.access-token.expiration",
+      "type": "java.lang.String",
+      "description": "Jwt access token expiration duration."
+    },
+    {
+      "name": "band-manager.jwt.refresh-token.expiration",
+      "type": "java.lang.String",
+      "description": "Jwt refresh token expiration duration."
+    }
+  ]
+}
