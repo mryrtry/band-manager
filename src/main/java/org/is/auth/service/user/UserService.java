@@ -34,6 +34,8 @@ public interface UserService extends UserDetailsService {
 
     boolean validateLogin(@Valid LoginRequest loginRequest);
 
-    boolean authenticatedUserPermission(Permission permission);
+    boolean authenticatedUserHasPermission(Permission permission);
+
+    boolean authenticatedUserHasPermission(Permission... permissions);
 
 }

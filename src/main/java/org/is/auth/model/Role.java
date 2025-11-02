@@ -8,16 +8,14 @@ import java.util.Set;
 public enum Role {
     ROLE_USER(Set.of(
             Permission.ENTITY_CREATE,
-            Permission.OWN_ENTITY_READ,
-            Permission.ALL_ENTITY_READ,
+            Permission.ENTITY_READ,
             Permission.OWN_ENTITY_UPDATE,
             Permission.OWN_ENTITY_DELETE,
             Permission.OWN_ENTITY_BULK_DELETE
     )),
     ROLE_ADMIN(Set.of(
             Permission.ENTITY_CREATE,
-            Permission.OWN_ENTITY_READ,
-            Permission.ALL_ENTITY_READ,
+            Permission.ENTITY_READ,
             Permission.OWN_ENTITY_UPDATE,
             Permission.ALL_ENTITY_UPDATE,
             Permission.OWN_ENTITY_DELETE,
