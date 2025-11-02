@@ -31,10 +31,6 @@ import java.util.List;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.is.bandmanager.util.IntegrationTestUtil.performDelete;
-import static org.is.bandmanager.util.IntegrationTestUtil.performGet;
-import static org.is.bandmanager.util.IntegrationTestUtil.performPost;
-import static org.is.bandmanager.util.IntegrationTestUtil.performPutWithBody;
 
 @IntegrationTest
 class BestBandAwardControllerTest extends AbstractIntegrationTest {
@@ -77,6 +73,7 @@ class BestBandAwardControllerTest extends AbstractIntegrationTest {
 
     @BeforeEach
     void setUp() {
+        getClient();
         // Сначала сохраняем все зависимости
         Album savedAlbum = albumRepository.save(
                 Album.builder()
@@ -145,7 +142,7 @@ class BestBandAwardControllerTest extends AbstractIntegrationTest {
         BestBandAwardRequest request = createValidBestBandAwardRequest();
 
         // When & Then
-        performPost(webTestClient, "/best-band-awards", request)
+        getClient().post("/best-band-awards", request)
                 .expectStatus().isCreated()
                 .expectBody()
                 .jsonPath("$.id").exists()
@@ -166,7 +163,7 @@ class BestBandAwardControllerTest extends AbstractIntegrationTest {
         bestBandAwardRepository.saveAll(List.of(award1, award2));
 
         // When & Then - без фильтра, с пагинацией
-        performGet(webTestClient, "/best-band-awards?page=0&size=1&sort=createdAt,DESC")
+        getClient().get("/best-band-awards?page=0&size=1&sort=createdAt,DESC")
                 .expectStatus().isOk()
                 .expectBody()
                 .jsonPath("$.content.length()").isEqualTo(1)
@@ -182,7 +179,7 @@ class BestBandAwardControllerTest extends AbstractIntegrationTest {
         bestBandAwardRepository.saveAll(List.of(award1, award2));
 
         // When & Then - фильтр по жанру
-        performGet(webTestClient, "/best-band-awards?genre=ROCK")
+        getClient().get("/best-band-awards?genre=ROCK")
                 .expectStatus().isOk()
                 .expectBody()
                 .jsonPath("$.content.length()").isEqualTo(1)
@@ -196,7 +193,7 @@ class BestBandAwardControllerTest extends AbstractIntegrationTest {
         bestBandAwardRepository.save(award);
 
         // When & Then - фильтр по имени группы
-        performGet(webTestClient, "/best-band-awards?bandName=Test Band")
+        getClient().get("/best-band-awards?bandName=Test Band")
                 .expectStatus().isOk()
                 .expectBody()
                 .jsonPath("$.content.length()").isEqualTo(1)
@@ -209,7 +206,7 @@ class BestBandAwardControllerTest extends AbstractIntegrationTest {
         BestBandAward award = bestBandAwardRepository.save(createBestBandAward(testBand, MusicGenre.ROCK, LocalDateTime.now()));
 
         // When & Then
-        performGet(webTestClient, "/best-band-awards/{id}", award.getId())
+        getClient().get("/best-band-awards/{id}", award.getId())
                 .expectStatus().isOk()
                 .expectBody()
                 .jsonPath("$.id").isEqualTo(award.getId())
@@ -226,7 +223,7 @@ class BestBandAwardControllerTest extends AbstractIntegrationTest {
         BestBandAwardRequest updateRequest = createBestBandAwardRequest(testBand.getId(), MusicGenre.POST_ROCK);
 
         // When & Then
-        performPutWithBody(webTestClient, "/best-band-awards/{id}", updateRequest, award.getId())
+        getClient().putWithBody("/best-band-awards/{id}", updateRequest, award.getId())
                 .expectStatus().isOk()
                 .expectBody()
                 .jsonPath("$.id").isEqualTo(award.getId())
@@ -243,7 +240,7 @@ class BestBandAwardControllerTest extends AbstractIntegrationTest {
         BestBandAward award = bestBandAwardRepository.save(createBestBandAward(testBand, MusicGenre.ROCK, LocalDateTime.now()));
 
         // When & Then
-        performDelete(webTestClient, "/best-band-awards/{id}", award.getId())
+        getClient().delete("/best-band-awards/{id}", award.getId())
                 .expectStatus().isOk()
                 .expectBody()
                 .jsonPath("$.id").isEqualTo(award.getId())
@@ -255,7 +252,7 @@ class BestBandAwardControllerTest extends AbstractIntegrationTest {
 
     @Test
     void shouldReturnNotFoundWhenGettingNonExistentBestBandAward() {
-        performGet(webTestClient, "/best-band-awards/{id}", 999L)
+        getClient().get("/best-band-awards/{id}", 999L)
                 .expectStatus().isNotFound()
                 .expectBody()
                 .jsonPath("$.status").isEqualTo(404)
@@ -267,7 +264,7 @@ class BestBandAwardControllerTest extends AbstractIntegrationTest {
     void shouldReturnNotFoundWhenUpdatingNonExistentBestBandAward() {
         BestBandAwardRequest updateRequest = createValidBestBandAwardRequest();
 
-        performPutWithBody(webTestClient, "/best-band-awards/{id}", updateRequest, 999L)
+        getClient().putWithBody("/best-band-awards/{id}", updateRequest, 999L)
                 .expectStatus().isNotFound()
                 .expectBody()
                 .jsonPath("$.status").isEqualTo(404);
@@ -275,7 +272,7 @@ class BestBandAwardControllerTest extends AbstractIntegrationTest {
 
     @Test
     void shouldReturnNotFoundWhenDeletingNonExistentBestBandAward() {
-        performDelete(webTestClient, "/best-band-awards/{id}", 999L)
+        getClient().delete("/best-band-awards/{id}", 999L)
                 .expectStatus().isNotFound()
                 .expectBody()
                 .jsonPath("$.status").isEqualTo(404);
@@ -285,7 +282,7 @@ class BestBandAwardControllerTest extends AbstractIntegrationTest {
     void shouldReturnBadRequestWhenMusicBandNotFound() {
         BestBandAwardRequest request = createBestBandAwardRequest(999, MusicGenre.ROCK);
 
-        performPost(webTestClient, "/best-band-awards", request)
+        getClient().post("/best-band-awards", request)
                 .expectStatus().isNotFound()
                 .expectBody()
                 .jsonPath("$.status").isEqualTo(404);
@@ -296,7 +293,7 @@ class BestBandAwardControllerTest extends AbstractIntegrationTest {
     void shouldReturnBadRequestWhenCreatingBestBandAwardWithInvalidData(
             String ignored, BestBandAwardRequest invalidRequest, String expectedErrorField) {
 
-        performPost(webTestClient, "/best-band-awards", invalidRequest)
+        getClient().post("/best-band-awards", invalidRequest)
                 .expectStatus().isBadRequest()
                 .expectBody()
                 .jsonPath("$.status").isEqualTo(400)
@@ -311,7 +308,7 @@ class BestBandAwardControllerTest extends AbstractIntegrationTest {
 
         BestBandAward award = bestBandAwardRepository.save(createBestBandAward(testBand, MusicGenre.ROCK, LocalDateTime.now()));
 
-        performPutWithBody(webTestClient, "/best-band-awards/{id}", invalidRequest, award.getId())
+        getClient().putWithBody("/best-band-awards/{id}", invalidRequest, award.getId())
                 .expectStatus().isBadRequest()
                 .expectBody()
                 .jsonPath("$.status").isEqualTo(400)
@@ -320,7 +317,7 @@ class BestBandAwardControllerTest extends AbstractIntegrationTest {
 
     @Test
     void shouldReturnEmptyPageWhenNoBestBandAwards() {
-        performGet(webTestClient, "/best-band-awards")
+        getClient().get("/best-band-awards")
                 .expectStatus().isOk()
                 .expectBody()
                 .jsonPath("$.content.length()").isEqualTo(0)

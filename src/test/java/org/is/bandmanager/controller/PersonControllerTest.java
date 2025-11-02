@@ -20,10 +20,6 @@ import java.util.List;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.is.bandmanager.util.IntegrationTestUtil.performDelete;
-import static org.is.bandmanager.util.IntegrationTestUtil.performGet;
-import static org.is.bandmanager.util.IntegrationTestUtil.performPost;
-import static org.is.bandmanager.util.IntegrationTestUtil.performPutWithBody;
 
 @IntegrationTest
 class PersonControllerTest extends AbstractIntegrationTest {
@@ -81,7 +77,7 @@ class PersonControllerTest extends AbstractIntegrationTest {
         PersonRequest request = createValidPersonRequest(location.getId());
 
         // When & Then
-        performPost(webTestClient, "/persons", request)
+        getClient().post("/persons", request)
                 .expectStatus().isCreated()
                 .expectBody()
                 .jsonPath("$.id").exists()
@@ -104,7 +100,7 @@ class PersonControllerTest extends AbstractIntegrationTest {
         personRepository.saveAll(List.of(person1, person2));
 
         // When & Then
-        performGet(webTestClient, "/persons")
+        getClient().get("/persons")
                 .expectStatus().isOk()
                 .expectBody()
                 .jsonPath("$.length()").isEqualTo(2)
@@ -119,7 +115,7 @@ class PersonControllerTest extends AbstractIntegrationTest {
         Person person = personRepository.save(createPerson("John Doe", Color.BLUE, Color.BROWN, 75.5f, Country.USA, location));
 
         // When & Then
-        performGet(webTestClient, "/persons/{id}", person.getId())
+        getClient().get("/persons/{id}", person.getId())
                 .expectStatus().isOk()
                 .expectBody()
                 .jsonPath("$.id").isEqualTo(person.getId())
@@ -138,7 +134,7 @@ class PersonControllerTest extends AbstractIntegrationTest {
         PersonRequest updateRequest = createPersonRequest("Updated Name", Color.GREEN, Color.BLACK, 85.0f, Country.UK, location.getId());
 
         // When & Then
-        performPutWithBody(webTestClient, "/persons/{id}", updateRequest, person.getId())
+        getClient().putWithBody("/persons/{id}", updateRequest, person.getId())
                 .expectStatus().isOk()
                 .expectBody()
                 .jsonPath("$.id").isEqualTo(person.getId())
@@ -164,7 +160,7 @@ class PersonControllerTest extends AbstractIntegrationTest {
         Person person = personRepository.save(createPerson("To Delete", Color.BLUE, Color.BROWN, 70.0f, Country.USA, location));
 
         // When & Then
-        performDelete(webTestClient, "/persons/{id}", person.getId())
+        getClient().delete("/persons/{id}", person.getId())
                 .expectStatus().isOk()
                 .expectBody()
                 .jsonPath("$.id").isEqualTo(person.getId())
@@ -176,7 +172,7 @@ class PersonControllerTest extends AbstractIntegrationTest {
 
     @Test
     void shouldReturnNotFoundWhenGettingNonExistentPerson() {
-        performGet(webTestClient, "/persons/{id}", 999L)
+        getClient().get("/persons/{id}", 999L)
                 .expectStatus().isNotFound()
                 .expectBody()
                 .jsonPath("$.status").isEqualTo(404)
@@ -189,7 +185,7 @@ class PersonControllerTest extends AbstractIntegrationTest {
         Location location = locationRepository.save(createLocation());
         PersonRequest updateRequest = createValidPersonRequest(location.getId());
 
-        performPutWithBody(webTestClient, "/persons/{id}", updateRequest, 999L)
+        getClient().putWithBody("/persons/{id}", updateRequest, 999L)
                 .expectStatus().isNotFound()
                 .expectBody()
                 .jsonPath("$.status").isEqualTo(404);
@@ -197,7 +193,7 @@ class PersonControllerTest extends AbstractIntegrationTest {
 
     @Test
     void shouldReturnNotFoundWhenDeletingNonExistentPerson() {
-        performDelete(webTestClient, "/persons/{id}", 999L)
+        getClient().delete("/persons/{id}", 999L)
                 .expectStatus().isNotFound()
                 .expectBody()
                 .jsonPath("$.status").isEqualTo(404);
@@ -208,7 +204,7 @@ class PersonControllerTest extends AbstractIntegrationTest {
     void shouldReturnBadRequestWhenCreatingPersonWithInvalidData(
             String ignored, PersonRequest invalidRequest, String expectedErrorField) {
 
-        performPost(webTestClient, "/persons", invalidRequest)
+        getClient().post("/persons", invalidRequest)
                 .expectStatus().isBadRequest()
                 .expectBody()
                 .jsonPath("$.status").isEqualTo(400)
@@ -224,7 +220,7 @@ class PersonControllerTest extends AbstractIntegrationTest {
         Location location = locationRepository.save(createLocation());
         Person person = personRepository.save(createPerson("Valid Person", Color.BLUE, Color.BROWN, 70.0f, Country.USA, location));
 
-        performPutWithBody(webTestClient, "/persons/{id}", invalidRequest, person.getId())
+        getClient().putWithBody("/persons/{id}", invalidRequest, person.getId())
                 .expectStatus().isBadRequest()
                 .expectBody()
                 .jsonPath("$.status").isEqualTo(400)
@@ -235,7 +231,7 @@ class PersonControllerTest extends AbstractIntegrationTest {
     void shouldReturnBadRequestWhenCreatingPersonWithMultipleErrors() {
         PersonRequest request = createPersonRequest("", null, null, -5f, null, null);
 
-        performPost(webTestClient, "/persons", request)
+        getClient().post("/persons", request)
                 .expectStatus().isBadRequest()
                 .expectBody()
                 .jsonPath("$.status").isEqualTo(400)

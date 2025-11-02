@@ -17,10 +17,6 @@ import java.util.List;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.is.bandmanager.util.IntegrationTestUtil.performDelete;
-import static org.is.bandmanager.util.IntegrationTestUtil.performGet;
-import static org.is.bandmanager.util.IntegrationTestUtil.performPost;
-import static org.is.bandmanager.util.IntegrationTestUtil.performPutWithBody;
 
 @IntegrationTest
 class CoordinatesControllerTest extends AbstractIntegrationTest {
@@ -62,7 +58,7 @@ class CoordinatesControllerTest extends AbstractIntegrationTest {
         CoordinatesRequest request = createValidCoordinatesRequest();
 
         // When & Then
-        performPost(webTestClient, "/coordinates", request)
+        getClient().post("/coordinates", request)
                 .expectStatus().isCreated()
                 .expectBody()
                 .jsonPath("$.id").exists()
@@ -79,7 +75,7 @@ class CoordinatesControllerTest extends AbstractIntegrationTest {
         CoordinatesRequest request = createCoordinatesRequest(10, null);
 
         // When & Then
-        performPost(webTestClient, "/coordinates", request)
+        getClient().post("/coordinates", request)
                 .expectStatus().isCreated()
                 .expectBody()
                 .jsonPath("$.id").exists()
@@ -95,7 +91,7 @@ class CoordinatesControllerTest extends AbstractIntegrationTest {
         coordinatesRepository.saveAll(List.of(coordinates1, coordinates2));
 
         // When & Then
-        performGet(webTestClient, "/coordinates")
+        getClient().get("/coordinates")
                 .expectStatus().isOk()
                 .expectBody()
                 .jsonPath("$.length()").isEqualTo(2)
@@ -109,7 +105,7 @@ class CoordinatesControllerTest extends AbstractIntegrationTest {
         Coordinates coordinates = coordinatesRepository.save(createCoordinates(10, 15.5f));
 
         // When & Then
-        performGet(webTestClient, "/coordinates/{id}", coordinates.getId())
+        getClient().get("/coordinates/{id}", coordinates.getId())
                 .expectStatus().isOk()
                 .expectBody()
                 .jsonPath("$.id").isEqualTo(coordinates.getId())
@@ -124,7 +120,7 @@ class CoordinatesControllerTest extends AbstractIntegrationTest {
         CoordinatesRequest updateRequest = createCoordinatesRequest(50, 55.5f);
 
         // When & Then
-        performPutWithBody(webTestClient, "/coordinates/{id}", updateRequest, coordinates.getId())
+        getClient().putWithBody("/coordinates/{id}", updateRequest, coordinates.getId())
                 .expectStatus().isOk()
                 .expectBody()
                 .jsonPath("$.id").isEqualTo(coordinates.getId())
@@ -144,7 +140,7 @@ class CoordinatesControllerTest extends AbstractIntegrationTest {
         CoordinatesRequest updateRequest = createCoordinatesRequest(50, null);
 
         // When & Then
-        performPutWithBody(webTestClient, "/coordinates/{id}", updateRequest, coordinates.getId())
+        getClient().putWithBody("/coordinates/{id}", updateRequest, coordinates.getId())
                 .expectStatus().isOk()
                 .expectBody()
                 .jsonPath("$.id").isEqualTo(coordinates.getId())
@@ -163,7 +159,7 @@ class CoordinatesControllerTest extends AbstractIntegrationTest {
         Coordinates coordinates = coordinatesRepository.save(createCoordinates(10, 15.5f));
 
         // When & Then
-        performDelete(webTestClient, "/coordinates/{id}", coordinates.getId())
+        getClient().delete("/coordinates/{id}", coordinates.getId())
                 .expectStatus().isOk()
                 .expectBody()
                 .jsonPath("$.id").isEqualTo(coordinates.getId())
@@ -176,7 +172,7 @@ class CoordinatesControllerTest extends AbstractIntegrationTest {
 
     @Test
     void shouldReturnNotFoundWhenGettingNonExistentCoordinates() {
-        performGet(webTestClient, "/coordinates/{id}", 999L)
+        getClient().get("/coordinates/{id}", 999L)
                 .expectStatus().isNotFound()
                 .expectBody()
                 .jsonPath("$.status").isEqualTo(404)
@@ -188,7 +184,7 @@ class CoordinatesControllerTest extends AbstractIntegrationTest {
     void shouldReturnNotFoundWhenUpdatingNonExistentCoordinates() {
         CoordinatesRequest updateRequest = createValidCoordinatesRequest();
 
-        performPutWithBody(webTestClient, "/coordinates/{id}", updateRequest, 999L)
+        getClient().putWithBody("/coordinates/{id}", updateRequest, 999L)
                 .expectStatus().isNotFound()
                 .expectBody()
                 .jsonPath("$.status").isEqualTo(404);
@@ -196,7 +192,7 @@ class CoordinatesControllerTest extends AbstractIntegrationTest {
 
     @Test
     void shouldReturnNotFoundWhenDeletingNonExistentCoordinates() {
-        performDelete(webTestClient, "/coordinates/{id}", 999L)
+        getClient().delete("/coordinates/{id}", 999L)
                 .expectStatus().isNotFound()
                 .expectBody()
                 .jsonPath("$.status").isEqualTo(404);
@@ -207,7 +203,7 @@ class CoordinatesControllerTest extends AbstractIntegrationTest {
     void shouldReturnBadRequestWhenCreatingCoordinatesWithInvalidData(
             String ignored, CoordinatesRequest invalidRequest, String expectedErrorField) {
 
-        performPost(webTestClient, "/coordinates", invalidRequest)
+        getClient().post("/coordinates", invalidRequest)
                 .expectStatus().isBadRequest()
                 .expectBody()
                 .jsonPath("$.status").isEqualTo(400)
@@ -222,7 +218,7 @@ class CoordinatesControllerTest extends AbstractIntegrationTest {
 
         Coordinates coordinates = coordinatesRepository.save(createCoordinates(10, 15.5f));
 
-        performPutWithBody(webTestClient, "/coordinates/{id}", invalidRequest, coordinates.getId())
+        getClient().putWithBody("/coordinates/{id}", invalidRequest, coordinates.getId())
                 .expectStatus().isBadRequest()
                 .expectBody()
                 .jsonPath("$.status").isEqualTo(400)
@@ -231,7 +227,7 @@ class CoordinatesControllerTest extends AbstractIntegrationTest {
 
     @Test
     void shouldReturnEmptyListWhenNoCoordinates() {
-        performGet(webTestClient, "/coordinates")
+        getClient().get("/coordinates")
                 .expectStatus().isOk()
                 .expectBody()
                 .jsonPath("$.length()").isEqualTo(0);
@@ -241,7 +237,7 @@ class CoordinatesControllerTest extends AbstractIntegrationTest {
     void shouldCreateCoordinatesWithMinimumValidX() {
         CoordinatesRequest request = createCoordinatesRequest(-146, 15.5f);
 
-        performPost(webTestClient, "/coordinates", request)
+        getClient().post("/coordinates", request)
                 .expectStatus().isCreated()
                 .expectBody()
                 .jsonPath("$.x").isEqualTo(-146);

@@ -6,7 +6,7 @@ import org.is.bandmanager.dto.request.PersonRequest;
 import org.is.event.EntityEvent;
 import org.is.event.EventType;
 import org.is.exception.ServiceException;
-import org.is.exception.message.BandManagerErrorMessage;
+import org.is.bandmanager.exception.message.BandManagerErrorMessage;
 import org.is.bandmanager.model.Color;
 import org.is.bandmanager.model.Country;
 import org.is.bandmanager.model.Location;
@@ -29,9 +29,9 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.is.exception.message.BandManagerErrorMessage.ID_MUST_BE_POSITIVE;
-import static org.is.exception.message.BandManagerErrorMessage.MUST_BE_NOT_NULL;
-import static org.is.exception.message.BandManagerErrorMessage.SOURCE_WITH_ID_NOT_FOUND;
+import static org.is.bandmanager.exception.message.BandManagerErrorMessage.ID_MUST_BE_POSITIVE;
+import static org.is.bandmanager.exception.message.BandManagerErrorMessage.MUST_BE_NOT_NULL;
+import static org.is.bandmanager.exception.message.BandManagerErrorMessage.SOURCE_WITH_ID_NOT_FOUND;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 

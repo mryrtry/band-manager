@@ -1,5 +1,6 @@
 package org.is.bandmanager.config;
 
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 
@@ -11,6 +12,6 @@ import java.lang.annotation.Target;
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 @ActiveProfiles("test")
-@Import(TestContainersConfig.class)
+@Import({TestContainersConfig.class})
 public @interface IntegrationTest {
 }
