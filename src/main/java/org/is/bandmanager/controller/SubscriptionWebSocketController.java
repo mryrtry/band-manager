@@ -24,6 +24,8 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class SubscriptionWebSocketController {
 
+    // todo: Защита веб сокета
+
     private final SubscriptionService subscriptionService;
 
     @MessageMapping("/subscriptions/music-band.create")
