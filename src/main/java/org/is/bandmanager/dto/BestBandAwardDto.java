@@ -8,7 +8,6 @@ import org.is.bandmanager.model.MusicGenre;
 
 import java.time.LocalDateTime;
 
-
 @Data
 @Builder
 @NoArgsConstructor
@@ -16,13 +15,12 @@ import java.time.LocalDateTime;
 public class BestBandAwardDto {
 
     private Long id;
-
     private Long bandId;
-
     private String bandName;
-
     private MusicGenre genre;
-
-    private LocalDateTime createdAt;
+    private String createdBy;
+    private LocalDateTime createdDate;
+    private String lastModifiedBy;
+    private LocalDateTime lastModifiedDate;
 
 }
