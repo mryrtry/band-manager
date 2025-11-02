@@ -22,6 +22,7 @@ public class UserDto {
 
     private String username;
 
+    @Builder.Default
     private Set<Role> roles = new HashSet<>();
 
     private LocalDateTime createdAt;

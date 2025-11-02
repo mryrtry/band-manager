@@ -30,11 +30,11 @@ import static org.is.event.EventType.BULK_DELETED;
 import static org.is.event.EventType.CREATED;
 import static org.is.event.EventType.DELETED;
 import static org.is.event.EventType.UPDATED;
-import static org.is.exception.message.BandManagerErrorMessage.CANNOT_REMOVE_LAST_PARTICIPANT;
-import static org.is.exception.message.BandManagerErrorMessage.ID_MUST_BE_POSITIVE;
-import static org.is.exception.message.BandManagerErrorMessage.MUST_BE_NOT_NULL;
-import static org.is.exception.message.BandManagerErrorMessage.SOURCE_NOT_FOUND;
-import static org.is.exception.message.BandManagerErrorMessage.SOURCE_WITH_ID_NOT_FOUND;
+import static org.is.bandmanager.exception.message.BandManagerErrorMessage.CANNOT_REMOVE_LAST_PARTICIPANT;
+import static org.is.bandmanager.exception.message.BandManagerErrorMessage.ID_MUST_BE_POSITIVE;
+import static org.is.bandmanager.exception.message.BandManagerErrorMessage.MUST_BE_NOT_NULL;
+import static org.is.bandmanager.exception.message.BandManagerErrorMessage.SOURCE_NOT_FOUND;
+import static org.is.bandmanager.exception.message.BandManagerErrorMessage.SOURCE_WITH_ID_NOT_FOUND;
 
 
 @Service

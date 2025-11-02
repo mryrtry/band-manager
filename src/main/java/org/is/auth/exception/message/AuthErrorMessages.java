@@ -1,6 +1,7 @@
-package org.is.exception.message;
+package org.is.auth.exception.message;
 
 import lombok.Getter;
+import org.is.exception.ErrorMessage;
 import org.springframework.http.HttpStatus;
 
 @Getter

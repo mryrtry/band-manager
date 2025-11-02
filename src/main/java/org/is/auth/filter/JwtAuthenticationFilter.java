@@ -40,7 +40,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final AntPathMatcher pathMatcher = new AntPathMatcher();
 
     @Override
-    protected void doFilterInternal(
+    public void doFilterInternal(
             @NonNull HttpServletRequest request,
             @NonNull HttpServletResponse response,
             @NonNull FilterChain filterChain

@@ -20,8 +20,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
-import static org.is.exception.message.BandManagerErrorMessage.CANNOT_ACCESS_SOURCE;
-import static org.is.exception.message.BandManagerErrorMessage.SOURCE_WITH_ID_NOT_FOUND;
+import static org.is.bandmanager.exception.message.BandManagerErrorMessage.CANNOT_ACCESS_SOURCE;
+import static org.is.bandmanager.exception.message.BandManagerErrorMessage.SOURCE_WITH_ID_NOT_FOUND;
 
 @Service
 @RequiredArgsConstructor

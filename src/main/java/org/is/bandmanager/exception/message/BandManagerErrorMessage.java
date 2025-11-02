@@ -1,6 +1,7 @@
-package org.is.exception.message;
+package org.is.bandmanager.exception.message;
 
 import lombok.Getter;
+import org.is.exception.ErrorMessage;
 import org.springframework.http.HttpStatus;
 
 
