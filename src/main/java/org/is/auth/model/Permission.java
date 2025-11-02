@@ -2,8 +2,7 @@ package org.is.auth.model;
 
 public enum Permission {
     ENTITY_CREATE,
-    OWN_ENTITY_READ,
-    ALL_ENTITY_READ,
+    ENTITY_READ,
     OWN_ENTITY_UPDATE,
     ALL_ENTITY_UPDATE,
     OWN_ENTITY_DELETE,

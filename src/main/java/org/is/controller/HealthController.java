@@ -1,4 +1,4 @@
-package org.is.bandmanager.controller;
+package org.is.controller;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;

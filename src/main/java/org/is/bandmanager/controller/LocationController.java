@@ -7,6 +7,7 @@ import org.is.bandmanager.dto.request.LocationRequest;
 import org.is.bandmanager.service.location.LocationService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -18,7 +19,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
-
 @RestController
 @RequestMapping("/locations")
 @RequiredArgsConstructor
@@ -27,29 +27,34 @@ public class LocationController {
     private final LocationService locationService;
 
     @GetMapping
+    @PreAuthorize("@securityService.canReadEntity()")
     public ResponseEntity<List<LocationDto>> getAllLocations() {
         return ResponseEntity.ok(locationService.getAll());
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("@securityService.canReadEntity()")
     public ResponseEntity<LocationDto> getLocation(@PathVariable Long id) {
         LocationDto location = locationService.get(id);
         return ResponseEntity.ok(location);
     }
 
     @PostMapping
+    @PreAuthorize("@securityService.canCreate()")
     public ResponseEntity<LocationDto> createLocation(@Valid @RequestBody LocationRequest request) {
         LocationDto createdLocation = locationService.create(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdLocation);
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("@securityService.canUpdateEntity(#id, 'Location')")
     public ResponseEntity<LocationDto> updateLocation(@PathVariable Long id, @Valid @RequestBody LocationRequest request) {
         LocationDto updatedLocation = locationService.update(id, request);
         return ResponseEntity.ok(updatedLocation);
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("@securityService.canDeleteEntity(#id, 'Location')")
     public ResponseEntity<LocationDto> deleteLocation(@PathVariable Long id) {
         LocationDto deletedLocation = locationService.delete(id);
         return ResponseEntity.ok(deletedLocation);

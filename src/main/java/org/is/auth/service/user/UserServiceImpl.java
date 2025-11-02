@@ -29,7 +29,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Arrays;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import static org.is.auth.exception.message.AuthErrorMessages.INCORRECT_PASSWORD;
 import static org.is.auth.exception.message.AuthErrorMessages.USER_NOT_AUTHENTICATED;
@@ -163,11 +165,23 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public boolean authenticatedUserPermission(Permission permission) {
+    public boolean authenticatedUserHasPermission(Permission permission) {
         return getAuthenticatedUser()
                 .getRoles()
                 .stream()
                 .anyMatch(role -> role.getPermissions().contains(permission));
+    }
+
+    @Override
+    public boolean authenticatedUserHasPermission(Permission... permissions) {
+        Set<Permission> userPermissions = getAuthenticatedUser()
+                .getRoles()
+                .stream()
+                .flatMap(role -> role.getPermissions().stream())
+                .collect(Collectors.toSet());
+
+        return Arrays.stream(permissions)
+                .anyMatch(userPermissions::contains);
     }
 
 }

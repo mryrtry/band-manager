@@ -10,6 +10,7 @@ import org.is.util.pageable.PageableConfig;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -28,6 +29,7 @@ public class BestBandAwardController {
     private final BestBandAwardService bestBandAwardService;
 
     @GetMapping()
+    @PreAuthorize("@securityService.canReadEntity()")
     public ResponseEntity<Page<BestBandAwardDto>> getAllBestBandAwardsFiltered(
             @ModelAttribute BestBandAwardFilter filter,
             @ModelAttribute PageableConfig config) {
@@ -36,18 +38,21 @@ public class BestBandAwardController {
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("@securityService.canReadEntity()")
     public ResponseEntity<BestBandAwardDto> getBestBandAward(@PathVariable Long id) {
         BestBandAwardDto bestBandAward = bestBandAwardService.get(id);
         return ResponseEntity.ok(bestBandAward);
     }
 
     @PostMapping
+    @PreAuthorize("@securityService.canCreate()")
     public ResponseEntity<BestBandAwardDto> createBestBandAward(@Valid @RequestBody BestBandAwardRequest request) {
         BestBandAwardDto createdBestBandAward = bestBandAwardService.create(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdBestBandAward);
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("@securityService.canUpdateEntity(#id, 'BestBandAward')")
     public ResponseEntity<BestBandAwardDto> updateBestBandAward(
             @PathVariable Long id,
             @Valid @RequestBody BestBandAwardRequest request) {
@@ -56,6 +61,7 @@ public class BestBandAwardController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("@securityService.canDeleteEntity(#id, 'BestBandAward')")
     public ResponseEntity<BestBandAwardDto> deleteBestBandAward(@PathVariable Long id) {
         BestBandAwardDto deletedBestBandAward = bestBandAwardService.delete(id);
         return ResponseEntity.ok(deletedBestBandAward);

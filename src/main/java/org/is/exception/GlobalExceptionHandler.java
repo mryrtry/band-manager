@@ -72,7 +72,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<ErrorResponse> handleAccessDenied(AccessDeniedException ex) {
-        List<ErrorResponse.ErrorDetail> errorDetails = Collections.singletonList(ErrorResponse.ErrorDetail.builder().field("security").message("Нет необходимых прав на доступ к методы").rejectedValue(null).errorType("ACCESS_DENIED").build());
+        List<ErrorResponse.ErrorDetail> errorDetails = Collections.singletonList(ErrorResponse.ErrorDetail.builder().field("security").message("Нет необходимых прав на доступ к методу").rejectedValue(null).errorType("ACCESS_DENIED").build());
 
         ErrorResponse errorResponse = ErrorResponse.builder().status(HttpStatus.UNAUTHORIZED.value()).message("Доступ запрещён").details(errorDetails).timestamp(LocalDateTime.now()).build();
 

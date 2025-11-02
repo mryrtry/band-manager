@@ -7,6 +7,7 @@ import org.is.bandmanager.dto.request.CoordinatesRequest;
 import org.is.bandmanager.service.coordinates.CoordinatesService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -18,7 +19,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
-
 @RestController
 @RequestMapping("/coordinates")
 @RequiredArgsConstructor
@@ -27,29 +27,34 @@ public class CoordinatesController {
     private final CoordinatesService coordinatesService;
 
     @GetMapping
+    @PreAuthorize("@securityService.canReadEntity()")
     public ResponseEntity<List<CoordinatesDto>> getAllCoordinates() {
         return ResponseEntity.ok(coordinatesService.getAll());
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("@securityService.canReadEntity()")
     public ResponseEntity<CoordinatesDto> getCoordinates(@PathVariable Long id) {
         CoordinatesDto coordinates = coordinatesService.get(id);
         return ResponseEntity.ok(coordinates);
     }
 
     @PostMapping
+    @PreAuthorize("@securityService.canCreate()")
     public ResponseEntity<CoordinatesDto> createCoordinates(@Valid @RequestBody CoordinatesRequest request) {
         CoordinatesDto createdCoordinates = coordinatesService.create(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdCoordinates);
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("@securityService.canUpdateEntity(#id, 'Coordinates')")
     public ResponseEntity<CoordinatesDto> updateCoordinates(@PathVariable Long id, @Valid @RequestBody CoordinatesRequest request) {
         CoordinatesDto updatedCoordinates = coordinatesService.update(id, request);
         return ResponseEntity.ok(updatedCoordinates);
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("@securityService.canDeleteEntity(#id, 'Coordinates')")
     public ResponseEntity<CoordinatesDto> deleteCoordinates(@PathVariable Long id) {
         CoordinatesDto deletedCoordinates = coordinatesService.delete(id);
         return ResponseEntity.ok(deletedCoordinates);
