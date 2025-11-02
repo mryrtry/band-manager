@@ -23,7 +23,11 @@ public enum Role {
             Permission.OWN_ENTITY_DELETE,
             Permission.ALL_ENTITY_DELETE,
             Permission.OWN_ENTITY_BULK_DELETE,
-            Permission.ALL_ENTITY_BULK_DELETE
+            Permission.ALL_ENTITY_BULK_DELETE,
+            Permission.ALL_USER_READ,
+            Permission.ALL_USER_UPDATE,
+            Permission.ALL_USER_DELETE,
+            Permission.ALL_USER_BULK_DELETE
     ));
 
     private final Set<Permission> permissions;

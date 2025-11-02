@@ -19,9 +19,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
-import org.is.bandmanager.util.pageable.PageableConfig;
-import org.is.bandmanager.util.pageable.PageableCreator;
-import org.is.bandmanager.util.pageable.PageableType;
+import org.is.util.pageable.PageableConfig;
+import org.is.util.pageable.PageableCreator;
+import org.is.util.pageable.PageableType;
 
 import java.util.Date;
 import java.util.List;

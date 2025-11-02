@@ -3,11 +3,11 @@ package org.is.bandmanager.service.subscription.storage;
 import lombok.RequiredArgsConstructor;
 import org.is.bandmanager.constants.SubscriptionsConstants;
 import org.is.exception.ServiceException;
-import org.is.bandmanager.repository.filter.EntityFilter;
+import org.is.util.pageable.EntityFilter;
 import org.is.bandmanager.service.subscription.model.Subscription;
 import org.is.bandmanager.service.subscription.model.request.SubscriptionRequest;
 import org.springframework.stereotype.Service;
-import org.is.bandmanager.util.pageable.PageableConfig;
+import org.is.util.pageable.PageableConfig;
 
 import java.time.Instant;
 import java.util.ArrayList;

@@ -1,30 +1,29 @@
-package org.is.bandmanager.repository.filter;
+package org.is.auth.repository.filter;
 
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
-import org.is.bandmanager.model.MusicGenre;
-import org.is.util.pageable.EntityFilter;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDate;
 
-
 @Getter
 @Setter
 @Builder
-public class BestBandAwardFilter implements EntityFilter {
+public class UserFilter {
 
-    private MusicGenre genre;
-
-    private String bandName;
-
-    private Long bandId;
+    private String username;
 
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     private LocalDate createdAtAfter;
 
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     private LocalDate createdAtBefore;
+
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
+    private LocalDate updatedAtAfter;
+
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
+    private LocalDate updatedAtBefore;
 
 }

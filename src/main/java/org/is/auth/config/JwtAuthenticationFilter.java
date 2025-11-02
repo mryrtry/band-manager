@@ -1,4 +1,4 @@
-package org.is.auth.filter;
+package org.is.auth.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.FilterChain;

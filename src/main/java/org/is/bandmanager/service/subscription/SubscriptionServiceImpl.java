@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.is.bandmanager.repository.filter.BestBandAwardFilter;
 import org.is.event.EntityEvent;
 import org.is.exception.ServiceException;
-import org.is.bandmanager.repository.filter.EntityFilter;
+import org.is.util.pageable.EntityFilter;
 import org.is.bandmanager.repository.filter.MusicBandFilter;
 import org.is.bandmanager.service.bestBandAward.BestBandAwardService;
 import org.is.bandmanager.service.musicBand.MusicBandService;

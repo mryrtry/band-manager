@@ -1,4 +1,4 @@
-package org.is.bandmanager.util.pageable;
+package org.is.util.pageable;
 
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;

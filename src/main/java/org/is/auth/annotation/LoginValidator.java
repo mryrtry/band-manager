@@ -1,8 +1,7 @@
-package org.is.auth.validator;
+package org.is.auth.annotation;
 
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
-import org.is.auth.annotation.Login;
 import org.is.auth.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 

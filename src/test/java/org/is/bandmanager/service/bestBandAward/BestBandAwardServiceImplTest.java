@@ -13,7 +13,7 @@ import org.is.bandmanager.model.MusicGenre;
 import org.is.bandmanager.repository.BestBandAwardRepository;
 import org.is.bandmanager.repository.filter.BestBandAwardFilter;
 import org.is.bandmanager.service.musicBand.MusicBandService;
-import org.is.bandmanager.util.pageable.PageableConfig;
+import org.is.util.pageable.PageableConfig;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;

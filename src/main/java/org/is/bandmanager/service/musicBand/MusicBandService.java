@@ -5,7 +5,7 @@ import org.is.bandmanager.dto.MusicBandDto;
 import org.is.bandmanager.dto.request.MusicBandRequest;
 import org.is.bandmanager.model.MusicBand;
 import org.is.bandmanager.repository.filter.MusicBandFilter;
-import org.is.bandmanager.util.pageable.PageableConfig;
+import org.is.util.pageable.PageableConfig;
 import org.springframework.data.domain.Page;
 
 import java.util.Date;

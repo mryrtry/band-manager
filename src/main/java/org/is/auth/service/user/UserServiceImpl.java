@@ -3,14 +3,21 @@ package org.is.auth.service.user;
 import lombok.RequiredArgsConstructor;
 import org.is.auth.dto.UserDto;
 import org.is.auth.dto.UserMapper;
+import org.is.auth.dto.request.RoleRequest;
 import org.is.auth.dto.request.UserRequest;
 import org.is.auth.model.Role;
 import org.is.auth.model.User;
 import org.is.auth.model.UserDetailsImpl;
 import org.is.auth.repository.UserRepository;
+import org.is.auth.repository.filter.UserFilter;
+import org.is.util.pageable.PageableConfig;
+import org.is.util.pageable.PageableCreator;
+import org.is.util.pageable.PageableType;
 import org.is.event.EntityEvent;
 import org.is.exception.ServiceException;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -20,16 +27,15 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
 import java.util.Set;
 
-import static org.is.event.EventType.CREATED;
-import static org.is.event.EventType.DELETED;
-import static org.is.event.EventType.UPDATED;
 import static org.is.auth.exception.message.AuthErrorMessages.USER_NOT_AUTHENTICATED;
 import static org.is.bandmanager.exception.message.BandManagerErrorMessage.ID_MUST_BE_POSITIVE;
 import static org.is.bandmanager.exception.message.BandManagerErrorMessage.MUST_BE_NOT_NULL;
 import static org.is.bandmanager.exception.message.BandManagerErrorMessage.SOURCE_WITH_ID_NOT_FOUND;
+import static org.is.event.EventType.CREATED;
+import static org.is.event.EventType.DELETED;
+import static org.is.event.EventType.UPDATED;
 
 @Service
 @RequiredArgsConstructor
@@ -82,8 +88,10 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public List<UserDto> getAll() {
-        return userRepository.findAll().stream().map(mapper::toDto).toList();
+    public Page<UserDto> getAll(UserFilter filter, PageableConfig config) {
+        Pageable pageable = PageableCreator.create(config, PageableType.USERS);
+        Page<User> users = userRepository.findWithFilter(filter, pageable);
+        return users.map(mapper::toDto);
     }
 
     @Override
@@ -119,6 +127,16 @@ public class UserServiceImpl implements UserService {
         User updatingUser = findUser(id);
         updatingUser.setUsername(request.getUsername());
         updatingUser.setPassword(passwordEncoder.encode(request.getPassword()));
+        UserDto updatedUser = mapper.toDto(userRepository.save(updatingUser));
+        eventPublisher.publishEvent(new EntityEvent<>(UPDATED, updatedUser));
+        return updatedUser;
+    }
+
+    @Override
+    @Transactional
+    public UserDto updateRoles(Long id, RoleRequest request) {
+        User updatingUser = findUser(id);
+        updatingUser.setRoles(request.getRoles());
         UserDto updatedUser = mapper.toDto(userRepository.save(updatingUser));
         eventPublisher.publishEvent(new EntityEvent<>(UPDATED, updatedUser));
         return updatedUser;
