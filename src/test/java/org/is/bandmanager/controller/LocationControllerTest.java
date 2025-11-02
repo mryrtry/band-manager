@@ -18,10 +18,6 @@ import java.util.List;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.is.bandmanager.util.IntegrationTestUtil.performDelete;
-import static org.is.bandmanager.util.IntegrationTestUtil.performGet;
-import static org.is.bandmanager.util.IntegrationTestUtil.performPost;
-import static org.is.bandmanager.util.IntegrationTestUtil.performPutWithBody;
 
 @IntegrationTest
 class LocationControllerTest extends AbstractIntegrationTest {
@@ -62,7 +58,7 @@ class LocationControllerTest extends AbstractIntegrationTest {
         LocationRequest request = createValidLocationRequest();
 
         // When & Then
-        performPost(webTestClient, "/locations", request)
+        getClient().post("/locations", request)
                 .expectStatus().isCreated()
                 .expectBody()
                 .jsonPath("$.id").exists()
@@ -80,7 +76,7 @@ class LocationControllerTest extends AbstractIntegrationTest {
         LocationRequest request = createLocationRequest(null, 15L, 20L);
 
         // When & Then
-        performPost(webTestClient, "/locations", request)
+        getClient().post("/locations", request)
                 .expectStatus().isCreated()
                 .expectBody()
                 .jsonPath("$.id").exists()
@@ -97,7 +93,7 @@ class LocationControllerTest extends AbstractIntegrationTest {
         locationRepository.saveAll(List.of(location1, location2));
 
         // When & Then
-        performGet(webTestClient, "/locations")
+        getClient().get("/locations")
                 .expectStatus().isOk()
                 .expectBody()
                 .jsonPath("$.length()").isEqualTo(2)
@@ -111,7 +107,7 @@ class LocationControllerTest extends AbstractIntegrationTest {
         Location location = locationRepository.save(createLocation(10, 15L, 20L));
 
         // When & Then
-        performGet(webTestClient, "/locations/{id}", location.getId())
+        getClient().get("/locations/{id}", location.getId())
                 .expectStatus().isOk()
                 .expectBody()
                 .jsonPath("$.id").isEqualTo(location.getId())
@@ -127,7 +123,7 @@ class LocationControllerTest extends AbstractIntegrationTest {
         LocationRequest updateRequest = createLocationRequest(50, 55L, 60L);
 
         // When & Then
-        performPutWithBody(webTestClient, "/locations/{id}", updateRequest, location.getId())
+        getClient().putWithBody("/locations/{id}", updateRequest, location.getId())
                 .expectStatus().isOk()
                 .expectBody()
                 .jsonPath("$.id").isEqualTo(location.getId())
@@ -149,7 +145,7 @@ class LocationControllerTest extends AbstractIntegrationTest {
         LocationRequest updateRequest = createLocationRequest(null, 55L, 60L);
 
         // When & Then
-        performPutWithBody(webTestClient, "/locations/{id}", updateRequest, location.getId())
+        getClient().putWithBody("/locations/{id}", updateRequest, location.getId())
                 .expectStatus().isOk()
                 .expectBody()
                 .jsonPath("$.id").isEqualTo(location.getId())
@@ -170,7 +166,7 @@ class LocationControllerTest extends AbstractIntegrationTest {
         Location location = locationRepository.save(createLocation(10, 15L, 20L));
 
         // When & Then
-        performDelete(webTestClient, "/locations/{id}", location.getId())
+        getClient().delete("/locations/{id}", location.getId())
                 .expectStatus().isOk()
                 .expectBody()
                 .jsonPath("$.id").isEqualTo(location.getId())
@@ -184,7 +180,7 @@ class LocationControllerTest extends AbstractIntegrationTest {
 
     @Test
     void shouldReturnNotFoundWhenGettingNonExistentLocation() {
-        performGet(webTestClient, "/locations/{id}", 999L)
+        getClient().get("/locations/{id}", 999L)
                 .expectStatus().isNotFound()
                 .expectBody()
                 .jsonPath("$.status").isEqualTo(404)
@@ -196,7 +192,7 @@ class LocationControllerTest extends AbstractIntegrationTest {
     void shouldReturnNotFoundWhenUpdatingNonExistentLocation() {
         LocationRequest updateRequest = createValidLocationRequest();
 
-        performPutWithBody(webTestClient, "/locations/{id}", updateRequest, 999L)
+        getClient().putWithBody("/locations/{id}", updateRequest, 999L)
                 .expectStatus().isNotFound()
                 .expectBody()
                 .jsonPath("$.status").isEqualTo(404);
@@ -204,7 +200,7 @@ class LocationControllerTest extends AbstractIntegrationTest {
 
     @Test
     void shouldReturnNotFoundWhenDeletingNonExistentLocation() {
-        performDelete(webTestClient, "/locations/{id}", 999L)
+        getClient().delete("/locations/{id}", 999L)
                 .expectStatus().isNotFound()
                 .expectBody()
                 .jsonPath("$.status").isEqualTo(404);
@@ -218,7 +214,7 @@ class LocationControllerTest extends AbstractIntegrationTest {
         personRepository.save(person);
 
         // When & Then
-        performDelete(webTestClient, "/locations/{id}", location.getId())
+        getClient().delete("/locations/{id}", location.getId())
                 .expectStatus().isBadRequest()
                 .expectBody()
                 .jsonPath("$.status").isEqualTo(400)
@@ -231,7 +227,7 @@ class LocationControllerTest extends AbstractIntegrationTest {
     void shouldReturnBadRequestWhenCreatingLocationWithInvalidData(
             String ignored, LocationRequest invalidRequest, String expectedErrorField) {
 
-        performPost(webTestClient, "/locations", invalidRequest)
+        getClient().post("/locations", invalidRequest)
                 .expectStatus().isBadRequest()
                 .expectBody()
                 .jsonPath("$.status").isEqualTo(400)
@@ -246,7 +242,7 @@ class LocationControllerTest extends AbstractIntegrationTest {
 
         Location location = locationRepository.save(createLocation(10, 15L, 20L));
 
-        performPutWithBody(webTestClient, "/locations/{id}", invalidRequest, location.getId())
+        getClient().putWithBody("/locations/{id}", invalidRequest, location.getId())
                 .expectStatus().isBadRequest()
                 .expectBody()
                 .jsonPath("$.status").isEqualTo(400)
@@ -255,7 +251,7 @@ class LocationControllerTest extends AbstractIntegrationTest {
 
     @Test
     void shouldReturnEmptyListWhenNoLocations() {
-        performGet(webTestClient, "/locations")
+        getClient().get("/locations")
                 .expectStatus().isOk()
                 .expectBody()
                 .jsonPath("$.length()").isEqualTo(0);

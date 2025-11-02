@@ -2,6 +2,8 @@
 SET session_replication_role = 'replica';
 
 -- Удаляем таблицы в правильном порядке зависимостей
+DROP TABLE IF EXISTS users CASCADE;
+DROP TABLE IF EXISTS user_roles CASCADE;
 DROP TABLE IF EXISTS best_band_award CASCADE;
 DROP TABLE IF EXISTS music_band CASCADE;
 DROP TABLE IF EXISTS person CASCADE;
@@ -10,6 +12,8 @@ DROP TABLE IF EXISTS coordinates CASCADE;
 DROP TABLE IF EXISTS location CASCADE;
 
 -- Удаляем последовательности
+DROP SEQUENCE IF EXISTS users_id_seq CASCADE;
+DROP SEQUENCE IF EXISTS user_roles_id_seq CASCADE;
 DROP SEQUENCE IF EXISTS best_band_award_id_seq CASCADE;
 DROP SEQUENCE IF EXISTS location_id_seq CASCADE;
 DROP SEQUENCE IF EXISTS coordinates_id_seq CASCADE;

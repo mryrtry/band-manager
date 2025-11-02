@@ -19,10 +19,10 @@ public final class BestBandAwardSpecifications {
                         filter.getBandId() != null ? cb.equal(root.get("band").get("id"), filter.getBandId()) : null)
                 .and((root, query, cb) ->
                         filter.getCreatedAtAfter() != null ?
-                                cb.greaterThanOrEqualTo(root.get("createdAt"), filter.getCreatedAtAfter().atStartOfDay()) : null)
+                                cb.greaterThanOrEqualTo(root.get("created_date"), filter.getCreatedAtAfter().atStartOfDay()) : null)
                 .and((root, query, cb) ->
                         filter.getCreatedAtBefore() != null ?
-                                cb.lessThanOrEqualTo(root.get("createdAt"), filter.getCreatedAtBefore().atTime(LocalTime.MAX)) : null);
+                                cb.lessThanOrEqualTo(root.get("created_date"), filter.getCreatedAtBefore().atTime(LocalTime.MAX)) : null);
     }
 
 }

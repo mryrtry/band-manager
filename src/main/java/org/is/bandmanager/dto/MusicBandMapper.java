@@ -7,8 +7,9 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 
-
-@Mapper(componentModel = "spring", uses = {AlbumMapper.class, PersonMapper.class, CoordinatesMapper.class}, injectionStrategy = InjectionStrategy.CONSTRUCTOR)
+@Mapper(componentModel = "spring",
+        uses = {AlbumMapper.class, PersonMapper.class, CoordinatesMapper.class},
+        injectionStrategy = InjectionStrategy.CONSTRUCTOR)
 public interface MusicBandMapper {
 
     @Mapping(target = "coordinates", source = "coordinates")
@@ -20,14 +21,16 @@ public interface MusicBandMapper {
     @Mapping(target = "coordinates", ignore = true)
     @Mapping(target = "bestAlbum", ignore = true)
     @Mapping(target = "frontMan", ignore = true)
-    @Mapping(target = "creationDate", ignore = true)
     MusicBand toEntity(MusicBandRequest request);
 
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "coordinates", ignore = true)
     @Mapping(target = "bestAlbum", ignore = true)
     @Mapping(target = "frontMan", ignore = true)
-    @Mapping(target = "creationDate", ignore = true)
+    @Mapping(target = "createdBy", ignore = true)
+    @Mapping(target = "createdDate", ignore = true)
+    @Mapping(target = "lastModifiedBy", ignore = true)
+    @Mapping(target = "lastModifiedDate", ignore = true)
     void updateEntityFromRequest(MusicBandRequest request, @MappingTarget MusicBand entity);
 
 }

@@ -3,16 +3,17 @@ package org.is.bandmanager.service.bestBandAward;
 import org.is.bandmanager.dto.BestBandAwardDto;
 import org.is.bandmanager.dto.BestBandAwardMapper;
 import org.is.bandmanager.dto.request.BestBandAwardRequest;
-import org.is.bandmanager.event.EntityEvent;
-import org.is.bandmanager.exception.ServiceException;
-import org.is.bandmanager.exception.message.ServiceErrorMessage;
+import org.is.bandmanager.exception.message.BandManagerErrorMessage;
 import org.is.bandmanager.model.BestBandAward;
 import org.is.bandmanager.model.MusicBand;
 import org.is.bandmanager.model.MusicGenre;
 import org.is.bandmanager.repository.BestBandAwardRepository;
 import org.is.bandmanager.repository.filter.BestBandAwardFilter;
 import org.is.bandmanager.service.musicBand.MusicBandService;
-import org.is.bandmanager.util.pageable.PageableConfig;
+import org.is.event.EntityEvent;
+import org.is.event.EventType;
+import org.is.exception.ServiceException;
+import org.is.util.pageable.PageableConfig;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -33,9 +34,9 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.is.bandmanager.exception.message.ServiceErrorMessage.ID_MUST_BE_POSITIVE;
-import static org.is.bandmanager.exception.message.ServiceErrorMessage.MUST_BE_NOT_NULL;
-import static org.is.bandmanager.exception.message.ServiceErrorMessage.SOURCE_NOT_FOUND;
+import static org.is.bandmanager.exception.message.BandManagerErrorMessage.ID_MUST_BE_POSITIVE;
+import static org.is.bandmanager.exception.message.BandManagerErrorMessage.MUST_BE_NOT_NULL;
+import static org.is.bandmanager.exception.message.BandManagerErrorMessage.SOURCE_WITH_ID_NOT_FOUND;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.verify;
@@ -88,7 +89,7 @@ class BestBandAwardServiceImplTest {
         verify(eventPublisher).publishEvent(eventCaptor.capture());
 
         EntityEvent<BestBandAwardDto> capturedEvent = eventCaptor.getValue();
-        assertThat(capturedEvent.getEventType()).isEqualTo(org.is.bandmanager.event.EventType.CREATED);
+        assertThat(capturedEvent.getEventType()).isEqualTo(EventType.CREATED);
         assertThat(capturedEvent.getEntities()).containsExactly(awardDto);
     }
 
@@ -203,9 +204,9 @@ class BestBandAwardServiceImplTest {
         // When & Then
         assertThatThrownBy(() -> bestBandAwardService.get(awardId))
                 .isInstanceOf(ServiceException.class)
-                .hasMessage(SOURCE_NOT_FOUND.getFormattedMessage("BestBandAward", awardId))
+                .hasMessage(SOURCE_WITH_ID_NOT_FOUND.getFormattedMessage("BestBandAward", awardId))
                 .extracting(ex -> ((ServiceException) ex).getHttpStatus())
-                .isEqualTo(SOURCE_NOT_FOUND.getHttpStatus());
+                .isEqualTo(SOURCE_WITH_ID_NOT_FOUND.getHttpStatus());
     }
 
     @ParameterizedTest
@@ -213,7 +214,7 @@ class BestBandAwardServiceImplTest {
     @ValueSource(longs = {0L, -1L})
     void shouldThrowExceptionWhenIdIsInvalid(Long id) {
         // When & Then
-        ServiceErrorMessage expectedError = id == null ? MUST_BE_NOT_NULL : ID_MUST_BE_POSITIVE;
+        BandManagerErrorMessage expectedError = id == null ? MUST_BE_NOT_NULL : ID_MUST_BE_POSITIVE;
         String expectedField = "BestBandAward.id";
 
         assertThatThrownBy(() -> bestBandAwardService.get(id))
@@ -249,7 +250,7 @@ class BestBandAwardServiceImplTest {
         verify(eventPublisher).publishEvent(eventCaptor.capture());
 
         EntityEvent<BestBandAwardDto> capturedEvent = eventCaptor.getValue();
-        assertThat(capturedEvent.getEventType()).isEqualTo(org.is.bandmanager.event.EventType.UPDATED);
+        assertThat(capturedEvent.getEventType()).isEqualTo(EventType.UPDATED);
         assertThat(capturedEvent.getEntities()).containsExactly(updatedDto);
     }
 
@@ -299,7 +300,7 @@ class BestBandAwardServiceImplTest {
         verify(eventPublisher).publishEvent(eventCaptor.capture());
 
         EntityEvent<BestBandAwardDto> capturedEvent = eventCaptor.getValue();
-        assertThat(capturedEvent.getEventType()).isEqualTo(org.is.bandmanager.event.EventType.BULK_DELETED);
+        assertThat(capturedEvent.getEventType()).isEqualTo(EventType.BULK_DELETED);
         assertThat(capturedEvent.getEntities()).containsExactly(dto1, dto2);
     }
 
@@ -319,22 +320,20 @@ class BestBandAwardServiceImplTest {
                 .build();
     }
 
-    private BestBandAward createBestBandAward(Long id, MusicBand band, MusicGenre genre, LocalDateTime createdAt) {
+    private BestBandAward createBestBandAward(Long id, MusicBand band, MusicGenre genre, LocalDateTime ignored) {
         return BestBandAward.builder()
                 .id(id)
                 .band(band)
                 .genre(genre)
-                .createdAt(createdAt)
                 .build();
     }
 
-    private BestBandAwardDto createBestBandAwardDto(Long id, MusicGenre genre, LocalDateTime createdAt) {
+    private BestBandAwardDto createBestBandAwardDto(Long id, MusicGenre genre, LocalDateTime ignored) {
         return BestBandAwardDto.builder()
                 .id(id)
                 .bandId(1L)
                 .bandName("Test Band")
                 .genre(genre)
-                .createdAt(createdAt)
                 .build();
     }
 

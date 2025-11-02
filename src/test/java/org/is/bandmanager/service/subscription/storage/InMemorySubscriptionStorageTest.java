@@ -5,7 +5,8 @@ import org.is.bandmanager.repository.filter.BestBandAwardFilter;
 import org.is.bandmanager.repository.filter.MusicBandFilter;
 import org.is.bandmanager.service.subscription.model.Subscription;
 import org.is.bandmanager.service.subscription.model.request.SubscriptionRequest;
-import org.is.bandmanager.util.pageable.PageableConfig;
+import org.is.util.pageable.PageableConfig;
+import org.is.exception.ServiceException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -120,7 +121,7 @@ class InMemorySubscriptionStorageTest {
 
         // When & Then
         assertThatThrownBy(() -> storage.updateSubscription(updateRequest))
-                .isInstanceOf(org.is.bandmanager.exception.ServiceException.class)
+                .isInstanceOf(ServiceException.class)
                 .hasMessageContaining("Ресурс 'Subscription' с ID: '" + nonExistentId + "' не был найден");
     }
 
@@ -134,7 +135,7 @@ class InMemorySubscriptionStorageTest {
 
         // When & Then
         assertThatThrownBy(() -> storage.updateSubscription(updateRequest))
-                .isInstanceOf(org.is.bandmanager.exception.ServiceException.class)
+                .isInstanceOf(ServiceException.class)
                 .hasMessageContaining("Ресурс 'Subscription.ID' не может быть пустым");
     }
 

@@ -2,7 +2,6 @@ package org.is.bandmanager.model;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EntityListeners;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
@@ -22,8 +21,6 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.util.Date;
 
@@ -34,9 +31,8 @@ import java.util.Date;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@EntityListeners(AuditingEntityListener.class)
 @Builder
-public class MusicBand {
+public class MusicBand extends AuditableEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -89,9 +85,5 @@ public class MusicBand {
     @ManyToOne(optional = false, fetch = FetchType.EAGER)
     @JoinColumn(name = "front_man_id", nullable = false)
     private Person frontMan;
-
-    @CreatedDate
-    @Column(name = "creation_date", nullable = false, updatable = false)
-    private Date creationDate;
 
 }

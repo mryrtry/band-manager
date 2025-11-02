@@ -2,8 +2,8 @@ package org.is.bandmanager.service.cleanup;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.is.bandmanager.event.EntityEvent;
-import org.is.bandmanager.event.EventType;
+import org.is.event.EntityEvent;
+import org.is.event.EventType;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;

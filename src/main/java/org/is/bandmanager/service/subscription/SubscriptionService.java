@@ -1,6 +1,6 @@
 package org.is.bandmanager.service.subscription;
 
-import org.is.bandmanager.event.EntityEvent;
+import org.is.event.EntityEvent;
 import org.is.bandmanager.service.subscription.model.request.SubscriptionRequest;
 
 import java.util.UUID;
