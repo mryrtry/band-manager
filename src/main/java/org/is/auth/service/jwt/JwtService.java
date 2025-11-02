@@ -6,10 +6,9 @@ import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
-import org.is.exception.ServiceException;
 import org.is.auth.exception.message.AuthErrorMessages;
+import org.is.exception.ServiceException;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import java.security.Key;
@@ -101,37 +100,6 @@ public class JwtService {
     public Boolean validateToken(String token) {
         try {
             return isTokenAlive(token);
-        } catch (Exception e) {
-            return false;
-        }
-    }
-
-    public Boolean validateToken(String token, UserDetails userDetails) {
-        try {
-            final String username = extractUsername(token);
-            return (username.equals(userDetails.getUsername()) && isTokenAlive(token));
-        } catch (Exception e) {
-            return false;
-        }
-    }
-
-    public long getRemainingTimeMillis(String token) {
-        try {
-            Date expiration = extractExpiration(token);
-            return expiration.getTime() - System.currentTimeMillis();
-        } catch (Exception e) {
-            return 0;
-        }
-    }
-
-    public Duration getRemainingTime(String token) {
-        return Duration.ofMillis(getRemainingTimeMillis(token));
-    }
-
-    public boolean isRefreshToken(String token) {
-        try {
-            Duration remainingTime = getRemainingTime(token);
-            return remainingTime.compareTo(accessTokenExpiration) > 0;
         } catch (Exception e) {
             return false;
         }
