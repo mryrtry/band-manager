@@ -8,7 +8,7 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 
-@Repository
+@Repository("CoordinatesRepository")
 public interface CoordinatesRepository extends JpaRepository<Coordinates, Long> {
 
     @Query("SELECT p FROM Coordinates p WHERE NOT EXISTS (SELECT 1 FROM MusicBand m WHERE m.coordinates.id = p.id)")

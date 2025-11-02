@@ -62,21 +62,21 @@ public class SecurityServiceImpl implements SecurityService {
 
     private boolean isOwnerOrSystem(Long entityId, String entityType) {
         AuditableEntity entity = getEntity(entityId, entityType);
+        if (entity == null) return true;
         String currentUsername = userService.getAuthenticatedUser().getUsername();
         String entityOwner = entity.getCreatedBy();
 
-        return "system".equals(entityOwner) || currentUsername.equals(entityOwner);
+        return entityOwner == null || "system".equals(entityOwner) || currentUsername.equals(entityOwner);
     }
 
     private AuditableEntity getEntity(Long entityId, String entityType) {
         JpaRepository<?, Long> repository = getRepository(entityType);
-        return (AuditableEntity) repository.findById(entityId)
-                .orElseThrow(() -> new AccessDeniedException(entityType + " not found"));
+        return (AuditableEntity) repository.findById(entityId).orElse(null);
     }
 
     @SuppressWarnings("unchecked")
     private JpaRepository<?, Long> getRepository(String entityType) {
-        String repositoryBeanName = entityType.toLowerCase() + "Repository";
+        String repositoryBeanName = entityType + "Repository";
         try {
             return (JpaRepository<?, Long>) applicationContext.getBean(repositoryBeanName);
         } catch (Exception e) {
