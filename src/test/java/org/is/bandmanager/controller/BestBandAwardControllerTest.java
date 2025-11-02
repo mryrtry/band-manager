@@ -148,8 +148,7 @@ class BestBandAwardControllerTest extends AbstractIntegrationTest {
                 .jsonPath("$.id").exists()
                 .jsonPath("$.bandId").isEqualTo(testBand.getId())
                 .jsonPath("$.bandName").isEqualTo("Test Band")
-                .jsonPath("$.genre").isEqualTo("ROCK")
-                .jsonPath("$.createdAt").exists();
+                .jsonPath("$.genre").isEqualTo("ROCK");
 
         // Verify database
         assertThat(bestBandAwardRepository.findAll()).hasSize(1);
@@ -163,7 +162,7 @@ class BestBandAwardControllerTest extends AbstractIntegrationTest {
         bestBandAwardRepository.saveAll(List.of(award1, award2));
 
         // When & Then - без фильтра, с пагинацией
-        getClient().get("/best-band-awards?page=0&size=1&sort=createdAt,DESC")
+        getClient().get("/best-band-awards?page=0&size=1&sort=createdDate,DESC")
                 .expectStatus().isOk()
                 .expectBody()
                 .jsonPath("$.content.length()").isEqualTo(1)
@@ -212,8 +211,7 @@ class BestBandAwardControllerTest extends AbstractIntegrationTest {
                 .jsonPath("$.id").isEqualTo(award.getId())
                 .jsonPath("$.bandId").isEqualTo(testBand.getId())
                 .jsonPath("$.bandName").isEqualTo("Test Band")
-                .jsonPath("$.genre").isEqualTo("ROCK")
-                .jsonPath("$.createdAt").exists();
+                .jsonPath("$.genre").isEqualTo("ROCK");
     }
 
     @Test
@@ -329,11 +327,10 @@ class BestBandAwardControllerTest extends AbstractIntegrationTest {
         return createBestBandAwardRequest(testBand.getId(), MusicGenre.ROCK);
     }
 
-    private BestBandAward createBestBandAward(MusicBand band, MusicGenre genre, LocalDateTime createdAt) {
+    private BestBandAward createBestBandAward(MusicBand band, MusicGenre genre, LocalDateTime ignored) {
         return BestBandAward.builder()
                 .band(band)
                 .genre(genre)
-                .createdAt(createdAt)
                 .build();
     }
 

@@ -9,7 +9,7 @@ public enum PageableType {
     // todo: Разобраться с bandName -> band.name
     BEST_BAND_AWARDS(Set.of(
             "id", "bandName", "genre", "createdAt", "bandId"
-    ), "createdAt"),
+    ), "createdDate"),
 
     MUSIC_BANDS(Set.of(
             "id", "name", "description", "genre", "numberOfParticipants",

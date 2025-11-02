@@ -3,9 +3,6 @@ package org.is.bandmanager.service.bestBandAward;
 import org.is.bandmanager.dto.BestBandAwardDto;
 import org.is.bandmanager.dto.BestBandAwardMapper;
 import org.is.bandmanager.dto.request.BestBandAwardRequest;
-import org.is.event.EntityEvent;
-import org.is.event.EventType;
-import org.is.exception.ServiceException;
 import org.is.bandmanager.exception.message.BandManagerErrorMessage;
 import org.is.bandmanager.model.BestBandAward;
 import org.is.bandmanager.model.MusicBand;
@@ -13,6 +10,9 @@ import org.is.bandmanager.model.MusicGenre;
 import org.is.bandmanager.repository.BestBandAwardRepository;
 import org.is.bandmanager.repository.filter.BestBandAwardFilter;
 import org.is.bandmanager.service.musicBand.MusicBandService;
+import org.is.event.EntityEvent;
+import org.is.event.EventType;
+import org.is.exception.ServiceException;
 import org.is.util.pageable.PageableConfig;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -320,22 +320,20 @@ class BestBandAwardServiceImplTest {
                 .build();
     }
 
-    private BestBandAward createBestBandAward(Long id, MusicBand band, MusicGenre genre, LocalDateTime createdAt) {
+    private BestBandAward createBestBandAward(Long id, MusicBand band, MusicGenre genre, LocalDateTime ignored) {
         return BestBandAward.builder()
                 .id(id)
                 .band(band)
                 .genre(genre)
-                .createdAt(createdAt)
                 .build();
     }
 
-    private BestBandAwardDto createBestBandAwardDto(Long id, MusicGenre genre, LocalDateTime createdAt) {
+    private BestBandAwardDto createBestBandAwardDto(Long id, MusicGenre genre, LocalDateTime ignored) {
         return BestBandAwardDto.builder()
                 .id(id)
                 .bandId(1L)
                 .bandName("Test Band")
                 .genre(genre)
-                .createdAt(createdAt)
                 .build();
     }
 

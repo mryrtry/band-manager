@@ -162,9 +162,9 @@ class MusicBandControllerTest extends AbstractIntegrationTest {
 
         Person p2 = personRepository.save(Person.builder().name("Man Yesterday").eyeColor(BLACK).hairColor(BLUE).location(location2).weight(213f).nationality(FRANCE).build());
 
-        MusicBand b1 = musicBandRepository.save(MusicBand.builder().name("Radiohead").coordinates(savedCoordinates).genre(ROCK).numberOfParticipants(5L).singlesCount(10L).description("Legendary rock band").bestAlbum(savedAlbum).albumsCount(9L).establishmentDate(new Date()).frontMan(savedPerson).creationDate(new Date()).build());
+        MusicBand b1 = musicBandRepository.save(MusicBand.builder().name("Radiohead").coordinates(savedCoordinates).genre(ROCK).numberOfParticipants(5L).singlesCount(10L).description("Legendary rock band").bestAlbum(savedAlbum).albumsCount(9L).establishmentDate(new Date()).frontMan(savedPerson).build());
 
-        MusicBand b2 = musicBandRepository.save(MusicBand.builder().name("Muse").coordinates(c2).genre(POST_ROCK).numberOfParticipants(3L).singlesCount(7L).description("British alt-rock band").bestAlbum(a2).albumsCount(5L).establishmentDate(new Date()).frontMan(p2).creationDate(new Date()).build());
+        MusicBand b2 = musicBandRepository.save(MusicBand.builder().name("Muse").coordinates(c2).genre(POST_ROCK).numberOfParticipants(3L).singlesCount(7L).description("British alt-rock band").bestAlbum(a2).albumsCount(5L).establishmentDate(new Date()).frontMan(p2).build());
 
         getClient().get("/music-bands")
                 .expectStatus().isOk()
@@ -176,7 +176,7 @@ class MusicBandControllerTest extends AbstractIntegrationTest {
 
     @Test
     void shouldGetMusicBandById() {
-        MusicBand saved = musicBandRepository.save(MusicBand.builder().name("Test Band").coordinates(savedCoordinates).genre(ROCK).numberOfParticipants(5L).singlesCount(10L).description("Some description").bestAlbum(savedAlbum).albumsCount(3L).establishmentDate(new Date()).frontMan(savedPerson).creationDate(new Date()).build());
+        MusicBand saved = musicBandRepository.save(MusicBand.builder().name("Test Band").coordinates(savedCoordinates).genre(ROCK).numberOfParticipants(5L).singlesCount(10L).description("Some description").bestAlbum(savedAlbum).albumsCount(3L).establishmentDate(new Date()).frontMan(savedPerson).build());
 
         getClient().get("/music-bands/{id}", saved.getId())
                 .expectStatus().isOk()
@@ -201,7 +201,7 @@ class MusicBandControllerTest extends AbstractIntegrationTest {
 
     @Test
     void shouldUpdateMusicBandSuccessfully() {
-        MusicBand saved = musicBandRepository.save(MusicBand.builder().name("Old Band").coordinates(savedCoordinates).genre(ROCK).numberOfParticipants(5L).singlesCount(10L).description("Old description").bestAlbum(savedAlbum).albumsCount(9L).establishmentDate(new Date()).frontMan(savedPerson).creationDate(new Date()).build());
+        MusicBand saved = musicBandRepository.save(MusicBand.builder().name("Old Band").coordinates(savedCoordinates).genre(ROCK).numberOfParticipants(5L).singlesCount(10L).description("Old description").bestAlbum(savedAlbum).albumsCount(9L).establishmentDate(new Date()).frontMan(savedPerson).build());
 
         Coordinates newCoordinates = coordinatesRepository.save(Coordinates.builder().x(100).y(50.5f).build());
 
@@ -243,7 +243,7 @@ class MusicBandControllerTest extends AbstractIntegrationTest {
 
     @Test
     void shouldDeleteMusicBandSuccessfully() {
-        MusicBand saved = musicBandRepository.save(MusicBand.builder().name("ToDelete").coordinates(savedCoordinates).genre(ROCK).numberOfParticipants(4L).singlesCount(7L).description("temp").bestAlbum(savedAlbum).albumsCount(3L).establishmentDate(new Date()).frontMan(savedPerson).creationDate(new Date()).build());
+        MusicBand saved = musicBandRepository.save(MusicBand.builder().name("ToDelete").coordinates(savedCoordinates).genre(ROCK).numberOfParticipants(4L).singlesCount(7L).description("temp").bestAlbum(savedAlbum).albumsCount(3L).establishmentDate(new Date()).frontMan(savedPerson).build());
 
         getClient().delete("/music-bands/{id}", saved.getId())
                 .expectStatus().isOk()
@@ -387,19 +387,19 @@ class MusicBandControllerTest extends AbstractIntegrationTest {
 
     // Вспомогательные методы
     private MusicBand createAndSaveBand(String name, Coordinates coordinates) {
-        return musicBandRepository.save(MusicBand.builder().name(name).coordinates(coordinates).genre(ROCK).numberOfParticipants(5L).singlesCount(10L).description("Description for " + name).bestAlbum(savedAlbum).albumsCount(5L).establishmentDate(new Date()).frontMan(savedPerson).creationDate(new Date()).build());
+        return musicBandRepository.save(MusicBand.builder().name(name).coordinates(coordinates).genre(ROCK).numberOfParticipants(5L).singlesCount(10L).description("Description for " + name).bestAlbum(savedAlbum).albumsCount(5L).establishmentDate(new Date()).frontMan(savedPerson).build());
     }
 
     private MusicBand createAndSaveBandWithParticipants(String name, Long numberOfParticipants) {
-        return musicBandRepository.save(MusicBand.builder().name(name).coordinates(savedCoordinates).genre(ROCK).numberOfParticipants(numberOfParticipants).singlesCount(10L).description("Description for " + name).bestAlbum(savedAlbum).albumsCount(5L).establishmentDate(new Date()).frontMan(savedPerson).creationDate(new Date()).build());
+        return musicBandRepository.save(MusicBand.builder().name(name).coordinates(savedCoordinates).genre(ROCK).numberOfParticipants(numberOfParticipants).singlesCount(10L).description("Description for " + name).bestAlbum(savedAlbum).albumsCount(5L).establishmentDate(new Date()).frontMan(savedPerson).build());
     }
 
     private MusicBand createAndSaveBandWithDate(String name, Date establishmentDate) {
-        return musicBandRepository.save(MusicBand.builder().name(name).coordinates(savedCoordinates).genre(ROCK).numberOfParticipants(5L).singlesCount(10L).description("Description for " + name).bestAlbum(savedAlbum).albumsCount(5L).establishmentDate(establishmentDate).frontMan(savedPerson).creationDate(new Date()).build());
+        return musicBandRepository.save(MusicBand.builder().name(name).coordinates(savedCoordinates).genre(ROCK).numberOfParticipants(5L).singlesCount(10L).description("Description for " + name).bestAlbum(savedAlbum).albumsCount(5L).establishmentDate(establishmentDate).frontMan(savedPerson).build());
     }
 
     private void createAndSaveBand(String name, Long albumsCount) {
-        musicBandRepository.save(MusicBand.builder().name(name).coordinates(savedCoordinates).genre(ROCK).numberOfParticipants(5L).singlesCount(10L).description("Description for " + name).bestAlbum(savedAlbum).albumsCount(albumsCount).establishmentDate(new Date()).frontMan(savedPerson).creationDate(new Date()).build());
+        musicBandRepository.save(MusicBand.builder().name(name).coordinates(savedCoordinates).genre(ROCK).numberOfParticipants(5L).singlesCount(10L).description("Description for " + name).bestAlbum(savedAlbum).albumsCount(albumsCount).establishmentDate(new Date()).frontMan(savedPerson).build());
     }
 
     @Test
@@ -644,19 +644,19 @@ class MusicBandControllerTest extends AbstractIntegrationTest {
     // Вспомогательные методы для тестов
 
     private void createAndSaveBand(String name, Long numberOfParticipants, Long singlesCount, Long albumsCount) {
-        musicBandRepository.save(MusicBand.builder().name(name).coordinates(savedCoordinates).genre(ROCK).numberOfParticipants(numberOfParticipants).singlesCount(singlesCount).description("Description for " + name).bestAlbum(savedAlbum).albumsCount(albumsCount).establishmentDate(new Date()).frontMan(savedPerson).creationDate(new Date()).build());
+        musicBandRepository.save(MusicBand.builder().name(name).coordinates(savedCoordinates).genre(ROCK).numberOfParticipants(numberOfParticipants).singlesCount(singlesCount).description("Description for " + name).bestAlbum(savedAlbum).albumsCount(albumsCount).establishmentDate(new Date()).frontMan(savedPerson).build());
     }
 
     private void createAndSaveBandWithGenre(String name, MusicGenre genre) {
-        musicBandRepository.save(MusicBand.builder().name(name).coordinates(savedCoordinates).genre(genre).numberOfParticipants(5L).singlesCount(10L).description("Description for " + name).bestAlbum(savedAlbum).albumsCount(5L).establishmentDate(new Date()).frontMan(savedPerson).creationDate(new Date()).build());
+        musicBandRepository.save(MusicBand.builder().name(name).coordinates(savedCoordinates).genre(genre).numberOfParticipants(5L).singlesCount(10L).description("Description for " + name).bestAlbum(savedAlbum).albumsCount(5L).establishmentDate(new Date()).frontMan(savedPerson).build());
     }
 
     private void createAndSaveBandWithFrontMan(String name, Person frontMan) {
-        musicBandRepository.save(MusicBand.builder().name(name).coordinates(savedCoordinates).genre(ROCK).numberOfParticipants(5L).singlesCount(10L).description("Description for " + name).bestAlbum(savedAlbum).albumsCount(5L).establishmentDate(new Date()).frontMan(frontMan).creationDate(new Date()).build());
+        musicBandRepository.save(MusicBand.builder().name(name).coordinates(savedCoordinates).genre(ROCK).numberOfParticipants(5L).singlesCount(10L).description("Description for " + name).bestAlbum(savedAlbum).albumsCount(5L).establishmentDate(new Date()).frontMan(frontMan).build());
     }
 
     private void createAndSaveBandWithAlbum(String name, Album album) {
-        musicBandRepository.save(MusicBand.builder().name(name).coordinates(savedCoordinates).genre(ROCK).numberOfParticipants(5L).singlesCount(10L).description("Description for " + name).bestAlbum(album).albumsCount(5L).establishmentDate(new Date()).frontMan(savedPerson).creationDate(new Date()).build());
+        musicBandRepository.save(MusicBand.builder().name(name).coordinates(savedCoordinates).genre(ROCK).numberOfParticipants(5L).singlesCount(10L).description("Description for " + name).bestAlbum(album).albumsCount(5L).establishmentDate(new Date()).frontMan(savedPerson).build());
     }
 
     private Person createPerson(String name) {
