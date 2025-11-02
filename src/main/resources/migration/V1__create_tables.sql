@@ -4,7 +4,6 @@ CREATE TABLE users
     id         BIGSERIAL PRIMARY KEY,
     username   VARCHAR(50) UNIQUE NOT NULL CHECK (LENGTH(username) BETWEEN 3 AND 50),
     password   VARCHAR(100)       NOT NULL CHECK (LENGTH(password) >= 6),
-    is_active  BOOLEAN            NOT NULL DEFAULT TRUE,
     created_at TIMESTAMP WITH TIME ZONE    DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE    DEFAULT CURRENT_TIMESTAMP
 );
@@ -110,7 +109,6 @@ CREATE TABLE best_band_award
 
 -- Индексы для улучшения производительности
 CREATE INDEX idx_users_username ON users (username);
-CREATE INDEX idx_users_active ON users (is_active);
 CREATE INDEX idx_user_roles_user ON user_roles (user_id);
 CREATE INDEX idx_user_roles_role ON user_roles (role);
 

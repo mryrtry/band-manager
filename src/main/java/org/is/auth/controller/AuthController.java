@@ -13,10 +13,6 @@ import org.is.auth.service.user.UserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -34,7 +30,6 @@ public class AuthController {
 
     private final UserService userService;
     private final JwtService jwtService;
-    private final AuthenticationManager authenticationManager;
 
     @PostMapping("/register")
     public ResponseEntity<Map<String, Object>> register(@Valid @RequestBody UserRequest request) {
@@ -53,34 +48,16 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<Map<String, Object>> login(@Valid @RequestBody LoginRequest request) {
-        try {
-            authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(
-                            request.getUsername(),
-                            request.getPassword()
-                    )
-            );
+        UserDto user = userService.get(request.getUsername());
+        Map<String, String> tokens = jwtService.generateTokenPair(request.getUsername());
 
-            UserDto user = userService.get(request.getUsername());
-            Map<String, String> tokens = jwtService.generateTokenPair(request.getUsername());
+        log.info("User {} successfully authenticated", request.getUsername());
+        request.clearPassword();
 
-            log.info("User {} successfully authenticated", request.getUsername());
-            request.clearPassword();
-
-            return ResponseEntity.ok(Map.of(
-                    "user", user,
-                    "tokens", tokens
-            ));
-
-        } catch (BadCredentialsException e) {
-            log.warn("Failed login attempt for user: {}", request.getUsername());
-            request.clearPassword();
-            throw new BadCredentialsException("Invalid username or password");
-        } catch (AuthenticationException e) {
-            log.warn("Authentication failed for user: {} - {}", request.getUsername(), e.getMessage());
-            request.clearPassword();
-            throw e;
-        }
+        return ResponseEntity.ok(Map.of(
+                "user", user,
+                "tokens", tokens
+        ));
     }
 
     @PostMapping("/refresh")
