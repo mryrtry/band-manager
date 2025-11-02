@@ -43,7 +43,7 @@ public class MusicBandController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<MusicBandDto> getMusicBand(@PathVariable Integer id) {
+    public ResponseEntity<MusicBandDto> getMusicBand(@PathVariable Long id) {
         MusicBandDto musicBand = musicBandService.get(id);
         return ResponseEntity.ok(musicBand);
     }
@@ -80,26 +80,26 @@ public class MusicBandController {
 
     @PutMapping("/{id}")
     public ResponseEntity<MusicBandDto> updateMusicBand(
-            @PathVariable Integer id,
+            @PathVariable Long id,
             @Valid @RequestBody MusicBandRequest request) {
         MusicBandDto updatedMusicBand = musicBandService.update(id, request);
         return ResponseEntity.ok(updatedMusicBand);
     }
 
     @PutMapping("/{id}/remove-participant")
-    public ResponseEntity<MusicBandDto> removeParticipant(@PathVariable Integer id) {
+    public ResponseEntity<MusicBandDto> removeParticipant(@PathVariable Long id) {
         MusicBandDto updatedBand = musicBandService.removeParticipant(id);
         return ResponseEntity.ok(updatedBand);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<MusicBandDto> deleteMusicBand(@PathVariable Integer id) {
+    public ResponseEntity<MusicBandDto> deleteMusicBand(@PathVariable Long id) {
         MusicBandDto deletedMusicBand = musicBandService.delete(id);
         return ResponseEntity.ok(deletedMusicBand);
     }
 
     @DeleteMapping()
-    public ResponseEntity<List<MusicBandDto>> deleteMusicBands(@RequestBody List<Integer> ids) {
+    public ResponseEntity<List<MusicBandDto>> deleteMusicBands(@RequestBody List<Long> ids) {
         List<MusicBandDto> deletedMusicBands = musicBandService.delete(ids);
         return ResponseEntity.ok(deletedMusicBands);
     }

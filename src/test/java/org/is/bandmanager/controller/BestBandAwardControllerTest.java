@@ -60,11 +60,11 @@ class BestBandAwardControllerTest extends AbstractIntegrationTest {
                 Arguments.of("Null music band id",
                         createBestBandAwardRequest(null, MusicGenre.ROCK), "musicBandId"),
                 Arguments.of("Null genre",
-                        createBestBandAwardRequest(1, null), "genre")
+                        createBestBandAwardRequest(1L, null), "genre")
         );
     }
 
-    private static BestBandAwardRequest createBestBandAwardRequest(Integer musicBandId, MusicGenre genre) {
+    private static BestBandAwardRequest createBestBandAwardRequest(Long musicBandId, MusicGenre genre) {
         return BestBandAwardRequest.builder()
                 .musicBandId(musicBandId)
                 .genre(genre)
@@ -278,7 +278,7 @@ class BestBandAwardControllerTest extends AbstractIntegrationTest {
 
     @Test
     void shouldReturnBadRequestWhenMusicBandNotFound() {
-        BestBandAwardRequest request = createBestBandAwardRequest(999, MusicGenre.ROCK);
+        BestBandAwardRequest request = createBestBandAwardRequest(999L, MusicGenre.ROCK);
 
         getClient().post("/best-band-awards", request)
                 .expectStatus().isNotFound()

@@ -78,7 +78,7 @@ CREATE TABLE person
 -- Таблица music_band
 CREATE TABLE music_band
 (
-    id                     SERIAL PRIMARY KEY,
+    id                     BIGSERIAL PRIMARY KEY,
     name                   VARCHAR(255)             NOT NULL CHECK (name <> ''),
     coordinates_id         BIGINT                   NOT NULL,
     genre                  VARCHAR(50)              NOT NULL CHECK (genre IN
@@ -113,7 +113,7 @@ CREATE TABLE music_band
 CREATE TABLE best_band_award
 (
     id                   BIGSERIAL PRIMARY KEY,
-    band_id              INTEGER                  NOT NULL,
+    band_id              BIGINT                  NOT NULL,
     genre                VARCHAR(50)              NOT NULL,
     created_by           VARCHAR(100),
     created_date         TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
