@@ -24,4 +24,8 @@ public class LoginRequest {
     @Size(min = UserConstants.PASSWORD_MIN_LENGTH, message = "User.password должен быть длиннее {min} символов")
     private String password;
 
+    public void clearPassword() {
+        this.password = null;
+    }
+
 }

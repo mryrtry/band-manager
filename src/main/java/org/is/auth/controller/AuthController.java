@@ -1,6 +1,8 @@
 package org.is.auth.controller;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.is.auth.dto.UserDto;
@@ -12,8 +14,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -30,9 +33,7 @@ import java.util.Map;
 public class AuthController {
 
     private final UserService userService;
-
     private final JwtService jwtService;
-
     private final AuthenticationManager authenticationManager;
 
     @PostMapping("/register")
@@ -42,6 +43,8 @@ public class AuthController {
         UserDto user = userService.create(request);
         Map<String, String> tokens = jwtService.generateTokenPair(user.getUsername());
 
+        request.clearPassword();
+
         return ResponseEntity.status(HttpStatus.CREATED).body(Map.of(
                 "user", user,
                 "tokens", tokens
@@ -50,38 +53,41 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<Map<String, Object>> login(@Valid @RequestBody LoginRequest request) {
-        log.info("Login attempt for user: {}", request.getUsername());
+        try {
+            authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(
+                            request.getUsername(),
+                            request.getPassword()
+                    )
+            );
 
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        request.getUsername(),
-                        request.getPassword()
-                )
-        );
+            UserDto user = userService.get(request.getUsername());
+            Map<String, String> tokens = jwtService.generateTokenPair(request.getUsername());
 
-        SecurityContextHolder.getContext().setAuthentication(authentication);
+            log.info("User {} successfully authenticated", request.getUsername());
+            request.clearPassword();
 
-        UserDto user = userService.get(request.getUsername());
-        Map<String, String> tokens = jwtService.generateTokenPair(request.getUsername());
+            return ResponseEntity.ok(Map.of(
+                    "user", user,
+                    "tokens", tokens
+            ));
 
-        log.info("User {} successfully logged in", request.getUsername());
-
-        return ResponseEntity.ok(Map.of(
-                "user", user,
-                "tokens", tokens
-        ));
+        } catch (BadCredentialsException e) {
+            log.warn("Failed login attempt for user: {}", request.getUsername());
+            request.clearPassword();
+            throw new BadCredentialsException("Invalid username or password");
+        } catch (AuthenticationException e) {
+            log.warn("Authentication failed for user: {} - {}", request.getUsername(), e.getMessage());
+            request.clearPassword();
+            throw e;
+        }
     }
 
     @PostMapping("/refresh")
-    public ResponseEntity<Map<String, String>> refresh(@RequestBody Map<String, String> request) {
-        String refreshToken = request.get("refresh_token");
+    public ResponseEntity<Map<String, String>> refresh(@RequestBody @NotBlank String refreshToken) {
         log.info("Refreshing token");
-
-        String newAccessToken = jwtService.refreshAccessToken(refreshToken);
-
-        return ResponseEntity.ok(Map.of(
-                "access_token", newAccessToken
-        ));
+        Map<String, String> tokens = jwtService.refreshAccessToken(refreshToken);
+        return ResponseEntity.ok(tokens);
     }
 
     @GetMapping("/me")
@@ -93,20 +99,33 @@ public class AuthController {
 
     @PostMapping("/logout")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<Void> logout() {
+    public ResponseEntity<Void> logout(HttpServletRequest request) {
+        String token = extractTokenFromRequest(request);
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        if (token != null) {
+            jwtService.invalidateToken(token, username);
+        }
         SecurityContextHolder.clearContext();
-
         log.info("User {} logged out", username);
         return ResponseEntity.ok().build();
     }
 
     @PostMapping("/validate")
-    public ResponseEntity<Map<String, Boolean>> validateToken(@RequestBody Map<String, String> request) {
-        String token = request.get("token");
+    public ResponseEntity<Map<String, Object>> validateToken(@RequestBody @NotBlank String token) {
         boolean isValid = jwtService.validateToken(token);
+        String username = isValid ? jwtService.extractUsername(token) : null;
+        return ResponseEntity.ok(Map.of(
+                "valid", isValid,
+                "username", username != null ? username : ""
+        ));
+    }
 
-        return ResponseEntity.ok(Map.of("valid", isValid));
+    private String extractTokenFromRequest(HttpServletRequest request) {
+        String bearerToken = request.getHeader("Authorization");
+        if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
+            return bearerToken.substring("Bearer ".length());
+        }
+        return null;
     }
 
 }

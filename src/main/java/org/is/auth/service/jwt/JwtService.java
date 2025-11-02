@@ -6,6 +6,8 @@ import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.is.auth.exception.message.AuthErrorMessages;
 import org.is.exception.ServiceException;
 import org.springframework.beans.factory.annotation.Value;
@@ -19,15 +21,16 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
+@Slf4j
 @Service
+@RequiredArgsConstructor
 public class JwtService {
 
+    private final TokenBlacklistService tokenBlacklistService;
     @Value("${band-manager.jwt.secret}")
     private String jwtSecret;
-
     @Value("${band-manager.jwt.access-token.expiration:15m}")
     private Duration accessTokenExpiration;
-
     @Value("${band-manager.jwt.refresh-token.expiration:7d}")
     private Duration refreshTokenExpiration;
 
@@ -59,12 +62,17 @@ public class JwtService {
         return tokens;
     }
 
-    public String refreshAccessToken(String refreshToken) {
+    public Map<String, String>  refreshAccessToken(String refreshToken) {
         if (!validateToken(refreshToken)) {
             throw new ServiceException(AuthErrorMessages.INVALID_CREDENTIALS, "refresh");
         }
+        if (tokenBlacklistService.isTokenBlacklisted(refreshToken)) {
+            throw new ServiceException(AuthErrorMessages.TOKEN_BLACKLISTED, "refresh");
+        }
         String username = extractUsername(refreshToken);
-        return generateAccessToken(username);
+        Instant expiresAt = extractExpiration(refreshToken).toInstant();
+        tokenBlacklistService.blacklistToken(refreshToken, username, expiresAt);
+        return generateTokenPair(username);
     }
 
     private <T> T extractClaim(String token, Function<Claims, T> claimsResolver) throws MalformedJwtException {
@@ -99,10 +107,20 @@ public class JwtService {
 
     public Boolean validateToken(String token) {
         try {
+            if (tokenBlacklistService.isTokenBlacklisted(token)) {
+                log.warn("Attempt to use blacklisted token");
+                return false;
+            }
             return isTokenAlive(token);
         } catch (Exception e) {
             return false;
         }
+    }
+
+    public void invalidateToken(String token, String username) {
+        Instant expiresAt = extractExpiration(token).toInstant();
+        tokenBlacklistService.blacklistToken(token, username, expiresAt);
+        log.info("Token invalidated for user: {}", username);
     }
 
 }
