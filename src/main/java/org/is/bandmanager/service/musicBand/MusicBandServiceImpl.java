@@ -4,37 +4,37 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.is.bandmanager.dto.MusicBandDto;
 import org.is.bandmanager.dto.MusicBandMapper;
-import org.is.bandmanager.repository.filter.MusicBandFilter;
 import org.is.bandmanager.dto.request.MusicBandRequest;
-import org.is.event.EntityEvent;
-import org.is.exception.ServiceException;
 import org.is.bandmanager.model.MusicBand;
 import org.is.bandmanager.repository.BestBandAwardRepository;
 import org.is.bandmanager.repository.MusicBandRepository;
-import org.is.bandmanager.service.person.PersonService;
+import org.is.bandmanager.repository.filter.MusicBandFilter;
 import org.is.bandmanager.service.album.AlbumService;
 import org.is.bandmanager.service.coordinates.CoordinatesService;
+import org.is.bandmanager.service.person.PersonService;
+import org.is.event.EntityEvent;
+import org.is.exception.ServiceException;
+import org.is.util.pageable.PageableConfig;
+import org.is.util.pageable.PageableCreator;
+import org.is.util.pageable.PageableType;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
-import org.is.util.pageable.PageableConfig;
-import org.is.util.pageable.PageableCreator;
-import org.is.util.pageable.PageableType;
 
 import java.util.Date;
 import java.util.List;
 
-import static org.is.event.EventType.BULK_DELETED;
-import static org.is.event.EventType.CREATED;
-import static org.is.event.EventType.DELETED;
-import static org.is.event.EventType.UPDATED;
 import static org.is.bandmanager.exception.message.BandManagerErrorMessage.CANNOT_REMOVE_LAST_PARTICIPANT;
 import static org.is.bandmanager.exception.message.BandManagerErrorMessage.ID_MUST_BE_POSITIVE;
 import static org.is.bandmanager.exception.message.BandManagerErrorMessage.MUST_BE_NOT_NULL;
 import static org.is.bandmanager.exception.message.BandManagerErrorMessage.SOURCE_NOT_FOUND;
 import static org.is.bandmanager.exception.message.BandManagerErrorMessage.SOURCE_WITH_ID_NOT_FOUND;
+import static org.is.event.EventType.BULK_DELETED;
+import static org.is.event.EventType.CREATED;
+import static org.is.event.EventType.DELETED;
+import static org.is.event.EventType.UPDATED;
 
 
 @Service
@@ -56,7 +56,7 @@ public class MusicBandServiceImpl implements MusicBandService {
 
     private final MusicBandMapper mapper;
 
-    private MusicBand findById(Integer id) {
+    private MusicBand findById(Long id) {
         if (id == null) {
             throw new ServiceException(MUST_BE_NOT_NULL, "MusicBand.id");
         }
@@ -75,7 +75,7 @@ public class MusicBandServiceImpl implements MusicBandService {
 
     @Transactional
     protected void checkDependencies(List<MusicBand> musicBands) {
-        List<Integer> bandIds = musicBands.stream().map(MusicBand::getId).toList();
+        List<Long> bandIds = musicBands.stream().map(MusicBand::getId).toList();
         bestBandAwardRepository.deleteAllByBandIdIn(bandIds);
     }
 
@@ -97,12 +97,12 @@ public class MusicBandServiceImpl implements MusicBandService {
     }
 
     @Override
-    public MusicBandDto get(Integer id) {
+    public MusicBandDto get(Long id) {
         return mapper.toDto(findById(id));
     }
 
     @Override
-    public MusicBand getEntity(Integer id) {
+    public MusicBand getEntity(Long id) {
         return findById(id);
     }
 
@@ -124,7 +124,7 @@ public class MusicBandServiceImpl implements MusicBandService {
 
     @Override
     @Transactional
-    public MusicBandDto update(Integer id, MusicBandRequest request) {
+    public MusicBandDto update(Long id, MusicBandRequest request) {
         MusicBand updatingBand = findById(id);
         mapper.updateEntityFromRequest(request, updatingBand);
         handleDependencies(request, updatingBand);
@@ -135,7 +135,7 @@ public class MusicBandServiceImpl implements MusicBandService {
 
     @Override
     @Transactional
-    public MusicBandDto delete(Integer id) {
+    public MusicBandDto delete(Long id) {
         MusicBand musicBand = findById(id);
         checkDependencies(List.of(musicBand));
         musicBandRepository.deleteById(id);
@@ -146,7 +146,7 @@ public class MusicBandServiceImpl implements MusicBandService {
 
     @Override
     @Transactional
-    public List<MusicBandDto> delete(List<Integer> ids) {
+    public List<MusicBandDto> delete(List<Long> ids) {
         if (ids == null || ids.isEmpty()) {
             return List.of();
         }
@@ -160,7 +160,7 @@ public class MusicBandServiceImpl implements MusicBandService {
 
     @Override
     @Transactional
-    public MusicBandDto removeParticipant(Integer id) {
+    public MusicBandDto removeParticipant(Long id) {
         MusicBand musicBand = findById(id);
         if (musicBand.getNumberOfParticipants() <= 1) {
             throw new ServiceException(CANNOT_REMOVE_LAST_PARTICIPANT);

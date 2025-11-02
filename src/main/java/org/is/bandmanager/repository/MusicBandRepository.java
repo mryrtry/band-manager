@@ -16,7 +16,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface MusicBandRepository extends JpaRepository<MusicBand, Integer>, JpaSpecificationExecutor<MusicBand> {
+public interface MusicBandRepository extends JpaRepository<MusicBand, Long>, JpaSpecificationExecutor<MusicBand> {
 
     default Page<MusicBand> findWithFilter(MusicBandFilter filter, Pageable pageable) {
         Specification<MusicBand> specification = MusicBandSpecifications.withFilter(filter);

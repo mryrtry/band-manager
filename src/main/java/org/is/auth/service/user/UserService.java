@@ -5,6 +5,7 @@ import org.is.auth.dto.UserDto;
 import org.is.auth.dto.request.LoginRequest;
 import org.is.auth.dto.request.RoleRequest;
 import org.is.auth.dto.request.UserRequest;
+import org.is.auth.model.Permission;
 import org.is.auth.model.User;
 import org.is.auth.repository.filter.UserFilter;
 import org.is.util.pageable.PageableConfig;
@@ -32,5 +33,7 @@ public interface UserService extends UserDetailsService {
     UserDto delete(Long id);
 
     boolean validateLogin(@Valid LoginRequest loginRequest);
+
+    boolean authenticatedUserPermission(Permission permission);
 
 }

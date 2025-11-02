@@ -6,6 +6,7 @@ import org.is.auth.dto.UserMapper;
 import org.is.auth.dto.request.LoginRequest;
 import org.is.auth.dto.request.RoleRequest;
 import org.is.auth.dto.request.UserRequest;
+import org.is.auth.model.Permission;
 import org.is.auth.model.Role;
 import org.is.auth.model.User;
 import org.is.auth.model.UserDetailsImpl;
@@ -159,6 +160,14 @@ public class UserServiceImpl implements UserService {
         User user = findUser(loginRequest.getUsername());
         if (passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) return true;
         throw new ServiceException(INCORRECT_PASSWORD);
+    }
+
+    @Override
+    public boolean authenticatedUserPermission(Permission permission) {
+        return getAuthenticatedUser()
+                .getRoles()
+                .stream()
+                .anyMatch(role -> role.getPermissions().contains(permission));
     }
 
 }

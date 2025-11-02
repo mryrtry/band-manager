@@ -46,7 +46,7 @@ import static org.mockito.Mockito.when;
 class BestBandAwardServiceImplTest {
 
     private final MusicBand testBand = MusicBand.builder()
-            .id(1)
+            .id(1L)
             .name("Test Band")
             .build();
 
@@ -74,7 +74,7 @@ class BestBandAwardServiceImplTest {
         BestBandAwardDto awardDto = createBestBandAwardDto(1L, MusicGenre.ROCK, LocalDateTime.now());
 
         when(mapper.toEntity(request)).thenReturn(award);
-        when(musicBandService.getEntity(1)).thenReturn(testBand);
+        when(musicBandService.getEntity(1L)).thenReturn(testBand);
         when(bestBandAwardRepository.save(award)).thenReturn(award);
         when(mapper.toDto(award)).thenReturn(awardDto);
 
@@ -234,7 +234,7 @@ class BestBandAwardServiceImplTest {
         BestBandAwardDto updatedDto = createBestBandAwardDto(awardId, MusicGenre.POST_PUNK, LocalDateTime.now());
 
         when(bestBandAwardRepository.findById(awardId)).thenReturn(Optional.of(existingAward));
-        when(musicBandService.getEntity(1)).thenReturn(testBand);
+        when(musicBandService.getEntity(1L)).thenReturn(testBand);
         when(bestBandAwardRepository.save(existingAward)).thenReturn(existingAward);
         when(mapper.toDto(existingAward)).thenReturn(updatedDto);
 
@@ -315,7 +315,7 @@ class BestBandAwardServiceImplTest {
 
     private BestBandAwardRequest createBestBandAwardRequest(MusicGenre genre) {
         return BestBandAwardRequest.builder()
-                .musicBandId(1)
+                .musicBandId(1L)
                 .genre(genre)
                 .build();
     }
