@@ -10,7 +10,6 @@ import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
-import java.time.Instant;
 
 @Component
 @Slf4j
@@ -31,7 +30,7 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
                 HttpServletResponse.SC_UNAUTHORIZED,
                 "UNAUTHORIZED",
                 "Эндпоинт защищён, требуется авторизация",
-                Instant.now()
+                System.currentTimeMillis()
         );
 
         objectMapper.writeValue(response.getWriter(), errorResponse);

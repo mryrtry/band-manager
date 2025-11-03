@@ -22,7 +22,6 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.time.Instant;
 import java.util.List;
 
 @Slf4j
@@ -31,7 +30,8 @@ import java.util.List;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private static final List<String> PUBLIC_PATHS = List.of(
-            "/auth/**"
+            "/auth/**",
+            "/health/**"
     );
 
     private final JwtService jwtService;
@@ -120,7 +120,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 HttpStatus.UNAUTHORIZED.value(),
                 "AUTHENTICATION_FAILED",
                 message,
-                Instant.now()
+                System.currentTimeMillis()
         );
 
         objectMapper.writeValue(response.getWriter(), errorResponse);

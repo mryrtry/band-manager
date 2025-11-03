@@ -59,7 +59,7 @@ public class AuthController {
                     "tokens", tokens
             ));
         }
-        return null;
+        return ResponseEntity.badRequest().build();
     }
 
     @PostMapping("/refresh")
