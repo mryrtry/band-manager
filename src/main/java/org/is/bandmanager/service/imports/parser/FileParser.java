@@ -13,6 +13,4 @@ public interface FileParser {
 
     List<String> getSupportedContentTypes();
 
-    List<String> getSupportedFileExtensions();
-
 }

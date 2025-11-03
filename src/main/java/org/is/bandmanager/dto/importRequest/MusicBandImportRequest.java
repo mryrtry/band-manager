@@ -8,10 +8,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.is.bandmanager.model.Album;
-import org.is.bandmanager.model.Coordinates;
 import org.is.bandmanager.model.MusicGenre;
-import org.is.bandmanager.model.Person;
 
 import java.util.Date;
 
