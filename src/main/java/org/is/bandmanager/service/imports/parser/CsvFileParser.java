@@ -48,9 +48,4 @@ public class CsvFileParser implements FileParser {
         return Arrays.asList("text/csv", "application/vnd.ms-excel");
     }
 
-    @Override
-    public List<String> getSupportedFileExtensions() {
-        return List.of(".csv");
-    }
-
 }

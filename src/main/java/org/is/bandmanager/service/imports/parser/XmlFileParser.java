@@ -47,11 +47,6 @@ public class XmlFileParser implements FileParser {
         return Arrays.asList("application/xml", "text/xml");
     }
 
-    @Override
-    public List<String> getSupportedFileExtensions() {
-        return List.of(".xml");
-    }
-
     @Setter
     @Getter
     public static class MusicBandImportListWrapper {

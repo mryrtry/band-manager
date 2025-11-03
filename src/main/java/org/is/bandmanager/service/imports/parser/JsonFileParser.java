@@ -40,9 +40,4 @@ public class JsonFileParser implements FileParser {
         return List.of("application/json");
     }
 
-    @Override
-    public List<String> getSupportedFileExtensions() {
-        return List.of(".json");
-    }
-
 }
