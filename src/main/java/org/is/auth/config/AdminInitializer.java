@@ -25,7 +25,7 @@ public class AdminInitializer {
             User admin = User.builder()
                     .username("admin")
                     .password(passwordEncoder.encode("admin-pass"))
-                    .roles(Set.of(Role.ROLE_ADMIN))
+                    .roles(Set.of(Role.ROLE_USER, Role.ROLE_ADMIN))
                     .build();
             userRepository.save(admin);
         }
