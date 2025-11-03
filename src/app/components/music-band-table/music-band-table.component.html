@@ -37,7 +37,7 @@
     [(value)]="filterOptions.minAlbumsCount"
     (onChange)="applyFilters()"
     [validator]="numberValid(0, 'Кол-во альбомов', true)"
-    >
+  >
   </app-input>
 
   <app-input
@@ -47,7 +47,7 @@
     [(value)]="filterOptions.maxAlbumsCount"
     (onChange)="applyFilters()"
     [validator]="numberValid(0, 'Кол-во альбомов', true)"
-    >
+  >
   </app-input>
 
   <app-input
@@ -57,7 +57,7 @@
     [(value)]="filterOptions.minSingles"
     (onChange)="applyFilters()"
     [validator]="numberValid(0, 'Кол-во cинглов', true)"
-    >
+  >
   </app-input>
 
   <app-input
@@ -67,7 +67,7 @@
     [(value)]="filterOptions.maxSingles"
     (onChange)="applyFilters()"
     [validator]="numberValid(0, 'Кол-во cинглов', true)"
-    >
+  >
   </app-input>
 
   <app-input
@@ -77,7 +77,7 @@
     [(value)]="filterOptions.minParticipants"
     (onChange)="applyFilters()"
     [validator]="numberValid(0, 'Кол-во участников', true)"
-    >
+  >
   </app-input>
 
   <app-input
@@ -87,7 +87,7 @@
     [(value)]="filterOptions.maxParticipants"
     (onChange)="applyFilters()"
     [validator]="numberValid(0, 'Кол-во участников', true)"
-    >
+  >
   </app-input>
 
   <app-input
@@ -97,7 +97,7 @@
     [(value)]="filterOptions.minCoordinateX"
     (onChange)="applyFilters()"
     [validator]="numberValid(-147, 'Координата X', true)"
-    >
+  >
   </app-input>
 
   <app-input
@@ -107,7 +107,7 @@
     [(value)]="filterOptions.maxCoordinateX"
     (onChange)="applyFilters()"
     [validator]="numberValid(-147, 'Координата X', true)"
-    >
+  >
   </app-input>
 
   <app-input
@@ -116,7 +116,7 @@
     type="number"
     [(value)]="filterOptions.minCoordinateY"
     (onChange)="applyFilters()"
-    >
+  >
   </app-input>
 
   <app-input
@@ -125,7 +125,7 @@
     type="number"
     [(value)]="filterOptions.maxCoordinateY"
     (onChange)="applyFilters()"
-    >
+  >
   </app-input>
 </div>
 
@@ -156,12 +156,43 @@
     Создать группу
   </app-custom-button>
 
+  <!-- Кнопка импорта -->
+  <div class="import-container">
+    <input
+      type="file"
+      id="importFile"
+      (change)="importFile($event)"
+      [accept]="supportedFormats.join(',')"
+      style="display: none"
+    >
+    <app-custom-button
+      (clicked)="document.getElementById('importFile')?.click()"
+      [disabled]="importLoading"
+      title="Импортировать из файла"
+      class="import-button"
+    >
+      @if (importLoading) {
+        <svg class="icon loading" xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+          <path d="M480-80q-82 0-155-31.5t-127.5-86Q143-252 111.5-325T80-480q0-83 31.5-155.5t86-127Q252-817 325-848.5T480-880q17 0 28.5 11.5T520-840q0 17-11.5 28.5T480-800q-133 0-226.5 93.5T160-480q0 133 93.5 226.5T480-160q133 0 226.5-93.5T800-480q0-17 11.5-28.5T840-520q17 0 28.5 11.5T880-480q0 82-31.5 155t-86 127.5q-54.5 54.5-127 86T480-80Z"/>
+        </svg>
+      } @else {
+      }
+      {{ importLoading ? 'Импорт...' : 'Импорт' }}
+    </app-custom-button>
+
+    @if (importError) {
+      <div class="import-error">
+        {{ importError }}
+      </div>
+    }
+  </div>
+
   @if (filtersToggle) {
-  <app-custom-button
-    (clicked)="toggleFiltersOpen()"
-    [disabled]="!filtersToggle">
-    {{ filtersOpen ? 'Скрыть фильтры' : 'Показать фильтры' }}
-  </app-custom-button>
+    <app-custom-button
+      (clicked)="toggleFiltersOpen()"
+      [disabled]="!filtersToggle">
+      {{ filtersOpen ? 'Скрыть фильтры' : 'Показать фильтры' }}
+    </app-custom-button>
   }
 
   <app-custom-button
@@ -274,7 +305,6 @@
   </div>
 
   <div class="pagination-controls">
-
     <button
       class="pagination-btn"
       (click)="goToPage(0)"
@@ -315,5 +345,4 @@
     <p>Найдено: {{ totalElements }}, страниц: {{ totalPages }}</p>
     <p>Сортировка: {{ sortOptions.sort }} / {{ sortOptions.direction == 'asc' ? "Возрастание" : "Убывание" }}</p>
   </div>
-
 }

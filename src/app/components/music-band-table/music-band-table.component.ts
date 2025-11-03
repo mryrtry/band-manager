@@ -1,20 +1,16 @@
-import { Component, HostListener, inject, OnInit, OnDestroy } from '@angular/core';
-import { CommonModule, DatePipe } from '@angular/common';
-import {
-  MusicBandFilter,
-  MusicBandGetConfig,
-  MusicBandPagination,
-  MusicBandService,
-  MusicBandSorting,
-} from '../../services/music-band.service';
-import { MusicBand } from '../../models/music-band.model';
-import { parseMusicGenre } from '../../models/enums/music-genre.model';
-import { FormsModule } from '@angular/forms';
-import { CustomSelectComponent } from '../select/select.component';
-import { CustomButtonComponent } from '../button/button.component';
-import { InputComponent, Validator } from '../input/input.component';
-import { PaginatedResponse } from '../../models/paginated-response.model';
-import { ModalService } from '../../services/modal.service';
+import {Component, HostListener, inject, OnDestroy, OnInit} from '@angular/core';
+import {CommonModule, DatePipe} from '@angular/common';
+import {FormsModule} from '@angular/forms';
+import {Router} from '@angular/router';
+import {MusicBandFilter, MusicBandGetConfig, MusicBandPagination, MusicBandService, MusicBandSorting,} from '../../services/music-band.service';
+import {ImportService} from '../../services/import.service';
+import {MusicBand} from '../../models/music-band.model';
+import {parseMusicGenre} from '../../models/enums/music-genre.model';
+import {CustomSelectComponent} from '../select/select.component';
+import {CustomButtonComponent} from '../button/button.component';
+import {InputComponent, Validator} from '../input/input.component';
+import {PaginatedResponse} from '../../models/paginated-response.model';
+import {ModalService} from '../../services/modal.service';
 
 @Component({
   selector: 'app-music-table',
@@ -24,9 +20,10 @@ import { ModalService } from '../../services/modal.service';
   styleUrls: ['./music-band-table.component.scss']
 })
 export class MusicBandTableComponent implements OnInit, OnDestroy {
-
   private modalService = inject(ModalService);
   private musicBandService: MusicBandService = inject(MusicBandService);
+  private importService = inject(ImportService);
+  private router = inject(Router);
 
   protected bands: MusicBand[] = [];
   protected loading: boolean = false;
@@ -71,16 +68,21 @@ export class MusicBandTableComponent implements OnInit, OnDestroy {
   protected filtersToggle: boolean = false;
   protected filtersOpen: boolean = true;
 
+  // Импорт
+  protected importLoading: boolean = false;
+  protected importError: string | null = null;
+  protected supportedFormats: string[] = ['.json', 'application/json'];
+
   private refreshIntervalId: any;
 
   ngOnInit() {
     this.checkScreenSize();
     this.restoreStateFromLocalStorage();
     this.getMusicBands();
+    this.loadSupportedFormats();
 
-    // Тихое обновление каждые 5 секунд
     this.refreshIntervalId = setInterval(() => {
-      this.getMusicBands(true); // true = "тихое" обновление
+      this.getMusicBands(true);
     }, 2000);
   }
 
@@ -104,6 +106,17 @@ export class MusicBandTableComponent implements OnInit, OnDestroy {
     localStorage.setItem('musicBandsPagination', JSON.stringify(this.paginationOption));
     localStorage.setItem('musicBandsSorting', JSON.stringify(this.sortOptions));
     localStorage.setItem('musicBandsFilters', JSON.stringify(this.filterOptions));
+  }
+
+  private loadSupportedFormats(): void {
+    this.importService.getSupportedFormats().subscribe({
+      next: (formats) => {
+        this.supportedFormats = formats;
+      },
+      error: (error) => {
+        console.error('Error loading supported formats:', error);
+      }
+    });
   }
 
   protected getConfig(): MusicBandGetConfig {
@@ -333,5 +346,64 @@ export class MusicBandTableComponent implements OnInit, OnDestroy {
     }
   }
 
+  // Импорт методов
+  protected async importFile(event: any): Promise<void> {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const fileExtension = file.name.toLowerCase().split('.').pop();
+    const fileType = file.type;
+
+    if (!this.supportedFormats.includes(`.${fileExtension}`) &&
+      !this.supportedFormats.includes(fileType)) {
+      this.importError = `Неподдерживаемый формат файла. Поддерживаемые форматы: ${this.supportedFormats.join(', ')}`;
+      event.target.value = '';
+      return;
+    }
+
+    this.importLoading = true;
+    this.importError = null;
+
+    try {
+      this.importService.importMusicBands(file).subscribe({
+        next: (operation) => {
+          this.importLoading = false;
+          console.log('Import started:', operation);
+          alert(`Импорт начат. Статус: ${this.getImportStatusText(operation.status)}`);
+          // Обновляем таблицу через некоторое время
+          setTimeout(() => this.getMusicBands(), 3000);
+        },
+        error: (error) => {
+          this.importLoading = false;
+          this.importError = error.error?.message || 'Ошибка при импорте файла';
+          console.error('Import error:', error);
+        }
+      });
+    } catch (error) {
+      this.importLoading = false;
+      this.importError = 'Ошибка при импорте файла';
+      console.error('Import error:', error);
+    }
+
+    event.target.value = '';
+  }
+
+  protected navigateToImportHistory(): void {
+    this.router.navigate(['/import-history']);
+  }
+
+  protected getImportStatusText(status: string): string {
+    const statusMap: { [key: string]: string } = {
+      'PENDING': 'В ожидании',
+      'PROCESSING': 'В обработке',
+      'COMPLETED': 'Завершено',
+      'FAILED': 'Ошибка',
+      'VALIDATION_FAILED': 'Ошибка валидации'
+    };
+    return statusMap[status] || status;
+  }
+
   protected readonly parseMusicGenre = parseMusicGenre;
+
+  protected readonly document = document;
 }

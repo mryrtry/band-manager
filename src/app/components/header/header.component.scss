@@ -1,18 +1,146 @@
-header {
+// components/header/header.component.scss
+.header {
   padding: 20px;
   border-radius: var(--border-radius);
-  text-transform: uppercase;
   border: var(--border);
   margin-bottom: var(--component-margin);
 }
 
-h1 {
-  font-weight: bold;
-  letter-spacing: -0.05em;
-  margin-bottom: 3px;
+.header-main {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 20px;
 }
 
-h2 {
-  color: var(--disabled-color);
-  font-size: 12px;
+.header-info {
+  flex: 1;
+
+  h1 {
+    font-weight: bold;
+    letter-spacing: -0.05em;
+    margin-bottom: 3px;
+    text-transform: uppercase;
+  }
+
+  h2 {
+    color: var(--disabled-color);
+    font-size: 12px;
+    text-transform: uppercase;
+  }
+}
+
+.header-auth {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  flex-shrink: 0;
+}
+
+.user-info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+
+  .username {
+    font-weight: 500;
+    font-size: 14px;
+    text-transform: none;
+  }
+
+  .user-role {
+    font-size: 11px;
+    color: var(--disabled-color);
+    text-transform: lowercase;
+  }
+}
+
+.logout-btn {
+  padding: 8px;
+  border: var(--border);
+  border-radius: var(--border-radius);
+  background: none;
+  cursor: pointer;
+  transition: var(--transition);
+  flex-shrink: 0;
+
+  &:hover {
+    background: var(--error-bg);
+    border-color: var(--error-color);
+
+    svg {
+      fill: var(--error-color);
+    }
+  }
+
+  svg {
+    fill: var(--disabled-color);
+    transition: var(--transition);
+  }
+}
+
+.login-link {
+  padding: 10px 20px;
+  border: var(--active-border);
+  border-radius: var(--border-radius);
+  color: var(--active-color);
+  text-decoration: none;
+  transition: var(--transition);
+  font-size: 14px;
+  text-transform: uppercase;
+  flex-shrink: 0;
+
+  &:hover {
+    background: var(--active-bg);
+  }
+}
+
+/* Адаптивность для мобильных устройств */
+@media screen and (max-width: 768px) {
+  .header-main {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 15px;
+  }
+
+  .header-auth {
+    justify-content: space-between;
+    border-top: var(--border);
+    padding-top: 15px;
+  }
+
+  .user-info {
+    align-items: flex-start;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .header {
+    padding: 15px;
+  }
+
+  .header-info {
+    h1 {
+      font-size: 16px;
+    }
+
+    h2 {
+      font-size: 11px;
+    }
+  }
+
+  .user-info {
+    .username {
+      font-size: 13px;
+    }
+
+    .user-role {
+      font-size: 10px;
+    }
+  }
+
+  .login-link {
+    padding: 8px 16px;
+    font-size: 13px;
+  }
 }

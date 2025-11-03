@@ -1,6 +1,7 @@
-import {Component} from '@angular/core';
+import {Component, inject} from '@angular/core';
 import {RouterLink, RouterLinkActive} from '@angular/router';
 import {CommonModule} from '@angular/common';
+import {AuthService} from '../../services/auth.service';
 
 @Component({
   selector: 'app-navigation',
@@ -10,4 +11,9 @@ import {CommonModule} from '@angular/common';
   styleUrls: ['./nav.component.scss']
 })
 export class NavigationComponent {
+
+  private authService = inject(AuthService);
+
+  protected isAdmin: boolean = this.authService.isAdmin();
+
 }

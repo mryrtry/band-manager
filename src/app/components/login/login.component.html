@@ -1,0 +1,56 @@
+<div class="login-container">
+  <div class="login-card">
+    <div class="login-header">
+      <h2>Вход в систему</h2>
+      <p>Band Manager</p>
+    </div>
+
+    <form (ngSubmit)="onSubmit()" class="login-form">
+      @if (errorMessage) {
+        <div class="global-error">
+          {{ errorMessage }}
+        </div>
+      }
+
+      <div class="form-group">
+        <label>Имя пользователя</label>
+        <input
+          [(ngModel)]="credentials.username"
+          class="input-field"
+          name="username"
+          placeholder="Введите имя пользователя"
+          type="text"
+        >
+      </div>
+
+      <div class="form-group">
+        <label>Пароль</label>
+        <input
+          [(ngModel)]="credentials.password"
+          class="input-field"
+          name="password"
+          placeholder="Введите пароль"
+          type="password"
+        >
+      </div>
+
+      <div class="form-actions">
+        <button
+          [disabled]="isLoading"
+          class="btn btn-primary"
+          type="submit"
+        >
+          @if (isLoading) {
+            <span>Вход...</span>
+          } @else {
+            <span>Войти</span>
+          }
+        </button>
+      </div>
+    </form>
+
+    <div class="login-footer">
+      <p>Нет аккаунта? <a class="link" routerLink="/register">Зарегистрироваться</a></p>
+    </div>
+  </div>
+</div>
