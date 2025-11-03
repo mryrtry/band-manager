@@ -12,6 +12,8 @@ import org.is.util.pageable.PageableConfig;
 import org.springframework.data.domain.Page;
 import org.springframework.security.core.userdetails.UserDetailsService;
 
+import java.util.List;
+
 public interface UserService extends UserDetailsService {
 
     UserDto create(@Valid UserRequest request);
@@ -21,6 +23,8 @@ public interface UserService extends UserDetailsService {
     UserDto get(Long id);
 
     UserDto get(String username);
+
+    List<String> getPermissions();
 
     UserDto getAuthenticatedUser();
 
@@ -35,7 +39,5 @@ public interface UserService extends UserDetailsService {
     boolean validateLogin(@Valid LoginRequest loginRequest);
 
     boolean authenticatedUserHasPermission(Permission permission);
-
-    boolean authenticatedUserHasPermission(Permission... permissions);
 
 }

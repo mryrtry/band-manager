@@ -21,6 +21,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
+
 @Slf4j
 @RestController
 @RequestMapping("/users")
@@ -43,6 +45,13 @@ public class UserController {
     public ResponseEntity<UserDto> getCurrentUser() {
         UserDto user = userService.getAuthenticatedUser();
         return ResponseEntity.ok(user);
+    }
+
+    @GetMapping("/permissions")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<List<String>> getPermissions() {
+        List<String> permissions = userService.getPermissions();
+        return ResponseEntity.ok(permissions);
     }
 
     @GetMapping("/{id}")
