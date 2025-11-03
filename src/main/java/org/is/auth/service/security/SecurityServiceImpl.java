@@ -60,6 +60,11 @@ public class SecurityServiceImpl implements SecurityService {
                 hasPermission("OWN_ENTITY_BULK_DELETE");
     }
 
+    public boolean canReadImport(Long importId, String entityType) {
+        return hasPermission("READ_ALL_IMPORT") ||
+                hasPermission("READ_OWN_IMPORT") && isOwnerOrSystem(importId, entityType);
+    }
+
     private boolean isOwnerOrSystem(Long entityId, String entityType) {
         AuditableEntity entity = getEntity(entityId, entityType);
         if (entity == null) return true;

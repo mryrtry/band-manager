@@ -19,7 +19,8 @@ public enum PageableType {
 
     USERS(Set.of(
             "id", "username", "createdAt", "updatedAt"
-    ), "id");
+    ), "id"),
+    IMPORT_OPERATION(Set.of("id"), "id");
 
     private final Set<String> allowedFields;
     private final String defaultField;
