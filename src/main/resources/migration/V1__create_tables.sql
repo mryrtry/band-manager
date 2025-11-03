@@ -20,55 +20,55 @@ CREATE TABLE user_roles
 -- Таблица location
 CREATE TABLE location
 (
-    id                   BIGSERIAL PRIMARY KEY,
-    x                    INTEGER,
-    y                    BIGINT NOT NULL,
-    z                    BIGINT NOT NULL,
-    created_by           VARCHAR(100),
-    created_date         TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    last_modified_by     VARCHAR(100),
-    last_modified_date   TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+    id                 BIGSERIAL PRIMARY KEY,
+    x                  INTEGER,
+    y                  BIGINT NOT NULL,
+    z                  BIGINT NOT NULL,
+    created_by         VARCHAR(100),
+    created_date       TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    last_modified_by   VARCHAR(100),
+    last_modified_date TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Таблица coordinates
 CREATE TABLE coordinates
 (
-    id                   BIGSERIAL PRIMARY KEY,
-    x                    INTEGER NOT NULL CHECK (x > -147),
-    y                    REAL,
-    created_by           VARCHAR(100),
-    created_date         TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    last_modified_by     VARCHAR(100),
-    last_modified_date   TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+    id                 BIGSERIAL PRIMARY KEY,
+    x                  INTEGER NOT NULL CHECK (x > -147),
+    y                  REAL,
+    created_by         VARCHAR(100),
+    created_date       TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    last_modified_by   VARCHAR(100),
+    last_modified_date TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Таблица album
 CREATE TABLE album
 (
-    id                   BIGSERIAL PRIMARY KEY,
-    name                 VARCHAR(255) NOT NULL CHECK (name <> ''),
-    tracks               BIGINT       NOT NULL CHECK (tracks > 0),
-    sales                INTEGER      NOT NULL CHECK (sales > 0),
-    created_by           VARCHAR(100),
-    created_date         TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    last_modified_by     VARCHAR(100),
-    last_modified_date   TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+    id                 BIGSERIAL PRIMARY KEY,
+    name               VARCHAR(255) NOT NULL CHECK (name <> ''),
+    tracks             BIGINT       NOT NULL CHECK (tracks > 0),
+    sales              INTEGER      NOT NULL CHECK (sales > 0),
+    created_by         VARCHAR(100),
+    created_date       TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    last_modified_by   VARCHAR(100),
+    last_modified_date TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Таблица person
 CREATE TABLE person
 (
-    id                   BIGSERIAL PRIMARY KEY,
-    name                 VARCHAR(255) NOT NULL CHECK (name <> ''),
-    eye_color            VARCHAR(50)  NOT NULL CHECK (eye_color IN ('BLACK', 'ORANGE', 'BROWN', 'GREEN', 'BLUE')),
-    hair_color           VARCHAR(50)  NOT NULL CHECK (hair_color IN ('BLACK', 'ORANGE', 'BROWN', 'GREEN', 'BLUE')),
-    location_id          BIGINT       NOT NULL,
-    weight               REAL         NOT NULL CHECK (weight > 0),
-    nationality          VARCHAR(50)  NOT NULL CHECK (nationality IN ('FRANCE', 'INDIA', 'THAILAND', 'USA', 'UK')),
-    created_by           VARCHAR(100),
-    created_date         TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    last_modified_by     VARCHAR(100),
-    last_modified_date   TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    id                 BIGSERIAL PRIMARY KEY,
+    name               VARCHAR(255) NOT NULL CHECK (name <> ''),
+    eye_color          VARCHAR(50)  NOT NULL CHECK (eye_color IN ('BLACK', 'ORANGE', 'BROWN', 'GREEN', 'BLUE')),
+    hair_color         VARCHAR(50)  NOT NULL CHECK (hair_color IN ('BLACK', 'ORANGE', 'BROWN', 'GREEN', 'BLUE')),
+    location_id        BIGINT       NOT NULL,
+    weight             REAL         NOT NULL CHECK (weight > 0),
+    nationality        VARCHAR(50)  NOT NULL CHECK (nationality IN ('FRANCE', 'INDIA', 'THAILAND', 'USA', 'UK')),
+    created_by         VARCHAR(100),
+    created_date       TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    last_modified_by   VARCHAR(100),
+    last_modified_date TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT fk_person_location
         FOREIGN KEY (location_id) REFERENCES location (id)
@@ -112,17 +112,35 @@ CREATE TABLE music_band
 -- Таблица best_band_award
 CREATE TABLE best_band_award
 (
-    id                   BIGSERIAL PRIMARY KEY,
-    band_id              BIGINT                  NOT NULL,
-    genre                VARCHAR(50)              NOT NULL,
-    created_by           VARCHAR(100),
-    created_date         TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    last_modified_by     VARCHAR(100),
-    last_modified_date   TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    id                 BIGSERIAL PRIMARY KEY,
+    band_id            BIGINT                   NOT NULL,
+    genre              VARCHAR(50)              NOT NULL,
+    created_by         VARCHAR(100),
+    created_date       TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    last_modified_by   VARCHAR(100),
+    last_modified_date TIMESTAMP WITH TIME ZONE          DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT fk_best_band_award_band
         FOREIGN KEY (band_id) REFERENCES music_band (id)
             ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+CREATE TABLE import_operations
+(
+    id                     BIGSERIAL PRIMARY KEY,
+    user_id                BIGINT                   NOT NULL REFERENCES users (id) ON DELETE CASCADE,
+    filename               VARCHAR(255)             NOT NULL,
+    status                 VARCHAR(50)              NOT NULL CHECK (status IN
+                                                                    ('PENDING', 'PROCESSING', 'COMPLETED', 'FAILED',
+                                                                     'VALIDATION_FAILED')),
+    created_entities_count INTEGER                  DEFAULT 0,
+    error_message          TEXT,
+    started_at             TIMESTAMP WITH TIME ZONE NOT NULL,
+    completed_at           TIMESTAMP WITH TIME ZONE,
+    created_by             VARCHAR(100),
+    created_date           TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    last_modified_by       VARCHAR(100),
+    last_modified_date     TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Индексы для улучшения производительности
@@ -155,11 +173,19 @@ CREATE INDEX idx_music_band_front_man ON music_band (front_man_id);
 CREATE INDEX idx_music_band_participants ON music_band (number_of_participants);
 CREATE INDEX idx_music_band_albums_count ON music_band (albums_count);
 
--- Составные индексы для часто используемых запросов
+CREATE INDEX idx_import_operations_user_id ON import_operations (user_id);
+CREATE INDEX idx_import_operations_status ON import_operations (status);
+CREATE INDEX idx_import_operations_created_date ON import_operations (created_date DESC);
+CREATE INDEX idx_import_operations_started_at ON import_operations (started_at DESC);
+CREATE INDEX idx_import_operations_completed_at ON import_operations (completed_at DESC);
+CREATE INDEX idx_import_operations_created_by ON import_operations (created_by);
+
+
 CREATE INDEX idx_music_band_genre_participants ON music_band (genre, number_of_participants);
 CREATE INDEX idx_music_band_date_genre ON music_band (establishment_date, genre);
 CREATE INDEX idx_music_band_genre_establishment ON music_band (genre, establishment_date);
-
--- Индексы для полей аудита (если нужно искать по ним)
 CREATE INDEX idx_audit_created_by ON music_band (created_by);
 CREATE INDEX idx_audit_created_date ON music_band (created_date);
+CREATE INDEX idx_import_operations_user_status ON import_operations (user_id, status);
+CREATE INDEX idx_import_operations_user_created ON import_operations (user_id, created_date DESC);
+CREATE INDEX idx_import_operations_status_created ON import_operations (status, created_date DESC);
