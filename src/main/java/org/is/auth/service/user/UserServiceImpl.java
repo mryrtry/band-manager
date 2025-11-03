@@ -29,9 +29,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Arrays;
+import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import static org.is.auth.exception.message.AuthErrorMessages.INCORRECT_PASSWORD;
 import static org.is.auth.exception.message.AuthErrorMessages.USER_NOT_AUTHENTICATED;
@@ -110,6 +109,14 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public List<String> getPermissions() {
+        return getAuthenticatedUser().getRoles()
+                .stream()
+                .flatMap(role -> role.getPermissions().stream().map(Object::toString))
+                .toList();
+    }
+
+    @Override
     public UserDto getAuthenticatedUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null || !authentication.isAuthenticated() ||
@@ -170,18 +177,6 @@ public class UserServiceImpl implements UserService {
                 .getRoles()
                 .stream()
                 .anyMatch(role -> role.getPermissions().contains(permission));
-    }
-
-    @Override
-    public boolean authenticatedUserHasPermission(Permission... permissions) {
-        Set<Permission> userPermissions = getAuthenticatedUser()
-                .getRoles()
-                .stream()
-                .flatMap(role -> role.getPermissions().stream())
-                .collect(Collectors.toSet());
-
-        return Arrays.stream(permissions)
-                .anyMatch(userPermissions::contains);
     }
 
 }
