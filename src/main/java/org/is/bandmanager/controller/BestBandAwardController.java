@@ -6,7 +6,7 @@ import org.is.bandmanager.dto.BestBandAwardDto;
 import org.is.bandmanager.dto.request.BestBandAwardRequest;
 import org.is.bandmanager.repository.filter.BestBandAwardFilter;
 import org.is.bandmanager.service.bestBandAward.BestBandAwardService;
-import org.is.util.pageable.PageableConfig;
+import org.is.util.pageable.PageableRequest;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -32,7 +32,7 @@ public class BestBandAwardController {
     @PreAuthorize("@securityService.canReadEntity()")
     public ResponseEntity<Page<BestBandAwardDto>> getAllBestBandAwardsFiltered(
             @ModelAttribute BestBandAwardFilter filter,
-            @ModelAttribute PageableConfig config) {
+            @ModelAttribute PageableRequest config) {
         Page<BestBandAwardDto> awards = bestBandAwardService.getAll(filter, config);
         return ResponseEntity.ok(awards);
     }

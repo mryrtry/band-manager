@@ -4,30 +4,29 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.is.bandmanager.dto.BestBandAwardDto;
 import org.is.bandmanager.dto.BestBandAwardMapper;
-import org.is.bandmanager.repository.filter.BestBandAwardFilter;
 import org.is.bandmanager.dto.request.BestBandAwardRequest;
-import org.is.event.EntityEvent;
-import org.is.exception.ServiceException;
 import org.is.bandmanager.model.BestBandAward;
 import org.is.bandmanager.repository.BestBandAwardRepository;
+import org.is.bandmanager.repository.filter.BestBandAwardFilter;
 import org.is.bandmanager.service.musicBand.MusicBandService;
+import org.is.event.EntityEvent;
+import org.is.exception.ServiceException;
+import org.is.util.pageable.PageableFactory;
+import org.is.util.pageable.PageableRequest;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
-import org.is.util.pageable.PageableConfig;
-import org.is.util.pageable.PageableCreator;
-import org.is.util.pageable.PageableType;
 
 import java.util.List;
 
-import static org.is.event.EventType.BULK_DELETED;
-import static org.is.event.EventType.CREATED;
-import static org.is.event.EventType.UPDATED;
 import static org.is.bandmanager.exception.message.BandManagerErrorMessage.ID_MUST_BE_POSITIVE;
 import static org.is.bandmanager.exception.message.BandManagerErrorMessage.MUST_BE_NOT_NULL;
 import static org.is.bandmanager.exception.message.BandManagerErrorMessage.SOURCE_WITH_ID_NOT_FOUND;
+import static org.is.event.EventType.BULK_DELETED;
+import static org.is.event.EventType.CREATED;
+import static org.is.event.EventType.UPDATED;
 
 
 @Service
@@ -42,6 +41,8 @@ public class BestBandAwardServiceImpl implements BestBandAwardService {
     private final ApplicationEventPublisher eventPublisher;
 
     private final BestBandAwardMapper mapper;
+
+    private final PageableFactory pageableFactory;
 
     private BestBandAward findById(Long id) {
         if (id == null) {
@@ -68,8 +69,8 @@ public class BestBandAwardServiceImpl implements BestBandAwardService {
     }
 
     @Override
-    public Page<BestBandAwardDto> getAll(BestBandAwardFilter filter, PageableConfig config) {
-        Pageable pageable = PageableCreator.create(config, PageableType.BEST_BAND_AWARDS);
+    public Page<BestBandAwardDto> getAll(BestBandAwardFilter filter, PageableRequest config) {
+        Pageable pageable = pageableFactory.create(config, BestBandAward.class);
         Page<BestBandAward> awards = bestBandAwardRepository.findWithFilter(filter, pageable);
         return awards.map(mapper::toDto);
     }

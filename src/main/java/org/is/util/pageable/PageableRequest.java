@@ -4,7 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.is.bandmanager.constants.PageableConstants;
+import org.is.util.pageable.constants.PageableConstants;
 
 import java.util.List;
 
@@ -12,7 +12,7 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class PageableConfig {
+public class PageableRequest {
 
     private int page = PageableConstants.DEFAULT_PAGE;
 

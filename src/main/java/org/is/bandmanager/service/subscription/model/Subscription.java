@@ -3,8 +3,8 @@ package org.is.bandmanager.service.subscription.model;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.ToString;
-import org.is.util.pageable.EntityFilter;
-import org.is.util.pageable.PageableConfig;
+import org.is.bandmanager.repository.filter.EntityFilter;
+import org.is.util.pageable.PageableRequest;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -20,7 +20,7 @@ public class Subscription<T extends EntityFilter> {
 
     private T filter;
 
-    private PageableConfig pageableConfig;
+    private PageableRequest pageableRequest;
 
     private Instant createdAt;
 

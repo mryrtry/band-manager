@@ -8,7 +8,7 @@ import org.is.bandmanager.dto.MusicBandDto;
 import org.is.bandmanager.dto.request.MusicBandRequest;
 import org.is.bandmanager.repository.filter.MusicBandFilter;
 import org.is.bandmanager.service.musicBand.MusicBandService;
-import org.is.util.pageable.PageableConfig;
+import org.is.util.pageable.PageableRequest;
 import org.springframework.data.domain.Page;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
@@ -39,7 +39,7 @@ public class MusicBandController {
     @PreAuthorize("@securityService.canReadEntity()")
     public ResponseEntity<Page<MusicBandDto>> getAllMusicBands(
             @ModelAttribute @Valid MusicBandFilter filter,
-            @ModelAttribute PageableConfig config) {
+            @ModelAttribute PageableRequest config) {
         Page<MusicBandDto> bands = musicBandService.getAll(filter, config);
         return ResponseEntity.ok(bands);
     }

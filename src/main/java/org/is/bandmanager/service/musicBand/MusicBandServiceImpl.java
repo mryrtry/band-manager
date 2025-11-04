@@ -14,9 +14,8 @@ import org.is.bandmanager.service.coordinates.CoordinatesService;
 import org.is.bandmanager.service.person.PersonService;
 import org.is.event.EntityEvent;
 import org.is.exception.ServiceException;
-import org.is.util.pageable.PageableConfig;
-import org.is.util.pageable.PageableCreator;
-import org.is.util.pageable.PageableType;
+import org.is.util.pageable.PageableFactory;
+import org.is.util.pageable.PageableRequest;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -56,6 +55,8 @@ public class MusicBandServiceImpl implements MusicBandService {
 
     private final MusicBandMapper mapper;
 
+    private final PageableFactory pageableFactory;
+
     private MusicBand findById(Long id) {
         if (id == null) {
             throw new ServiceException(MUST_BE_NOT_NULL, "MusicBand.id");
@@ -90,8 +91,8 @@ public class MusicBandServiceImpl implements MusicBandService {
     }
 
     @Override
-    public Page<MusicBandDto> getAll(MusicBandFilter filter, PageableConfig config) {
-        Pageable pageable = PageableCreator.create(config, PageableType.MUSIC_BANDS);
+    public Page<MusicBandDto> getAll(MusicBandFilter filter, PageableRequest config) {
+        Pageable pageable = pageableFactory.create(config, MusicBand.class);
         Page<MusicBand> bands = musicBandRepository.findWithFilter(filter, pageable);
         return bands.map(mapper::toDto);
     }

@@ -11,7 +11,7 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 @Configuration
 @EnableAsync
 @EnableScheduling
-public class AsyncConfig {
+public class BandManagerAsyncConfig {
 
     private final static int CORE_POOL_SIZE = 5;
 
@@ -46,7 +46,7 @@ public class AsyncConfig {
         executor.setCorePoolSize(CORE_POOL_SIZE);
         executor.setMaxPoolSize(MAX_POOL_SIZE);
         executor.setQueueCapacity(QUEUE_CAPACITY);
-        executor.setThreadNamePrefix("subscription-");
+        executor.setThreadNamePrefix("import-");
         return executor;
     }
 

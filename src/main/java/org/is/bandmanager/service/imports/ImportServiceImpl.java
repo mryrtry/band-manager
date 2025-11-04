@@ -11,9 +11,8 @@ import org.is.bandmanager.service.imports.model.ImportStatus;
 import org.is.bandmanager.service.imports.parser.FileParserFacade;
 import org.is.bandmanager.service.imports.processor.MusicBandImportProcessor;
 import org.is.bandmanager.service.imports.repository.ImportOperationRepository;
-import org.is.util.pageable.PageableConfig;
-import org.is.util.pageable.PageableCreator;
-import org.is.util.pageable.PageableType;
+import org.is.util.pageable.PageableFactory;
+import org.is.util.pageable.PageableRequest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.scheduling.annotation.Async;
@@ -29,10 +28,16 @@ import java.util.List;
 public class ImportServiceImpl implements ImportService {
 
     private static final int MAX_ERROR_MESSAGE_LENGTH = 1000;
+
     private final ImportOperationRepository repository;
+
     private final FileParserFacade fileParserFacade;
+
     private final MusicBandImportProcessor processor;
+
     private final UserService userService;
+
+    private final PageableFactory pageableFactory;
 
     @Override
     @Transactional
@@ -86,15 +91,15 @@ public class ImportServiceImpl implements ImportService {
     }
 
     @Override
-    public Page<ImportOperation> getUserImportHistory(PageableConfig config) {
+    public Page<ImportOperation> getUserImportHistory(PageableRequest config) {
         String username = userService.getAuthenticatedUser().getUsername();
-        Pageable pageable = PageableCreator.create(config, PageableType.IMPORT_OPERATION);
+        Pageable pageable = pageableFactory.create(config, ImportOperation.class);
         return repository.findByUsernameOrderByCreatedDateDesc(username, pageable);
     }
 
     @Override
-    public Page<ImportOperation> getAllImportHistory(PageableConfig config) {
-        Pageable pageable = PageableCreator.create(config, PageableType.IMPORT_OPERATION);
+    public Page<ImportOperation> getAllImportHistory(PageableRequest config) {
+        Pageable pageable = pageableFactory.create(config, ImportOperation.class);
         return repository.findAllByOrderByCreatedDateDesc(pageable);
     }
 

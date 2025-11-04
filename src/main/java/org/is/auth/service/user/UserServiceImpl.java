@@ -14,9 +14,8 @@ import org.is.auth.repository.UserRepository;
 import org.is.auth.repository.filter.UserFilter;
 import org.is.event.EntityEvent;
 import org.is.exception.ServiceException;
-import org.is.util.pageable.PageableConfig;
-import org.is.util.pageable.PageableCreator;
-import org.is.util.pageable.PageableType;
+import org.is.util.pageable.PageableFactory;
+import org.is.util.pageable.PageableRequest;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -52,6 +51,8 @@ public class UserServiceImpl implements UserService {
     private final UserMapper mapper;
 
     private final ApplicationEventPublisher eventPublisher;
+
+    private final PageableFactory pageableFactory;
 
     private User findUser(Long id) {
         if (id == null) {
@@ -92,8 +93,8 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Page<UserDto> getAll(UserFilter filter, PageableConfig config) {
-        Pageable pageable = PageableCreator.create(config, PageableType.USERS);
+    public Page<UserDto> getAll(UserFilter filter, PageableRequest config) {
+        Pageable pageable = pageableFactory.create(config, User.class);
         Page<User> users = userRepository.findWithFilter(filter, pageable);
         return users.map(mapper::toDto);
     }

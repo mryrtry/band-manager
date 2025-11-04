@@ -5,7 +5,7 @@ import org.is.bandmanager.repository.filter.BestBandAwardFilter;
 import org.is.bandmanager.repository.filter.MusicBandFilter;
 import org.is.bandmanager.service.subscription.model.Subscription;
 import org.is.bandmanager.service.subscription.model.request.SubscriptionRequest;
-import org.is.util.pageable.PageableConfig;
+import org.is.util.pageable.PageableRequest;
 import org.is.exception.ServiceException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -43,7 +43,7 @@ class InMemorySubscriptionStorageTest {
         assertThat(result.getPrincipalId()).isEqualTo(PRINCIPAL_ID);
         assertThat(result.getFilter().getGenre()).isEqualTo(MusicGenre.ROCK);
         assertThat(result.getFilter().getBandName()).isEqualTo("Test Band");
-        assertThat(result.getPageableConfig()).isNotNull();
+        assertThat(result.getPageableRequest()).isNotNull();
         assertThat(result.getCreatedAt()).isBeforeOrEqualTo(Instant.now());
         assertThat(result.getTouchedAt()).isBeforeOrEqualTo(Instant.now());
     }
@@ -74,9 +74,9 @@ class InMemorySubscriptionStorageTest {
         Subscription<BestBandAwardFilter> result = storage.createSubscription(PRINCIPAL_ID, request);
 
         // Then
-        assertThat(result.getPageableConfig()).isNotNull();
-        assertThat(result.getPageableConfig().getPage()).isEqualTo(0);
-        assertThat(result.getPageableConfig().getSize()).isEqualTo(10);
+        assertThat(result.getPageableRequest()).isNotNull();
+        assertThat(result.getPageableRequest().getPage()).isEqualTo(0);
+        assertThat(result.getPageableRequest().getSize()).isEqualTo(10);
     }
 
     @Test
@@ -93,7 +93,7 @@ class InMemorySubscriptionStorageTest {
                         .genre(MusicGenre.POST_PUNK)
                         .bandName("Updated Band")
                         .build())
-                .pageableConfig(new PageableConfig())
+                .pageableRequest(new PageableRequest())
                 .build();
 
         // When
@@ -105,8 +105,8 @@ class InMemorySubscriptionStorageTest {
         assertThat(result.getPrincipalId()).isEqualTo(PRINCIPAL_ID);
         assertThat(result.getFilter().getGenre()).isEqualTo(MusicGenre.POST_PUNK);
         assertThat(result.getFilter().getBandName()).isEqualTo("Updated Band");
-        assertThat(result.getPageableConfig().getPage()).isEqualTo(0);
-        assertThat(result.getPageableConfig().getSize()).isEqualTo(10);
+        assertThat(result.getPageableRequest().getPage()).isEqualTo(0);
+        assertThat(result.getPageableRequest().getSize()).isEqualTo(10);
         assertThat(result.getCreatedAt()).isEqualTo(created.getCreatedAt());
     }
 
@@ -286,14 +286,14 @@ class InMemorySubscriptionStorageTest {
     private SubscriptionRequest<BestBandAwardFilter> createBestBandAwardSubscriptionRequest() {
         return SubscriptionRequest.<BestBandAwardFilter>builder()
                 .filter(createBestBandAwardFilter())
-                .pageableConfig(new PageableConfig())
+                .pageableRequest(new PageableRequest())
                 .build();
     }
 
     private SubscriptionRequest<MusicBandFilter> createMusicBandSubscriptionRequest() {
         return SubscriptionRequest.<MusicBandFilter>builder()
                 .filter(createMusicBandFilter())
-                .pageableConfig(new PageableConfig())
+                .pageableRequest(new PageableRequest())
                 .build();
     }
 

@@ -7,7 +7,7 @@ import org.is.auth.service.security.SecurityService;
 import org.is.bandmanager.service.imports.ImportService;
 import org.is.bandmanager.service.imports.model.ImportOperation;
 import org.is.bandmanager.service.imports.model.dto.ImportOperationDto;
-import org.is.util.pageable.PageableConfig;
+import org.is.util.pageable.PageableRequest;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -53,7 +53,7 @@ public class ImportController {
     @GetMapping("/operations")
     @PreAuthorize("@securityService.hasAnyPermission('READ_OWN_IMPORT', 'READ_ALL_IMPORT')")
     public ResponseEntity<Page<ImportOperationDto>> getImportOperations(
-            @ModelAttribute @Valid PageableConfig config) {
+            @ModelAttribute @Valid PageableRequest config) {
 
         Page<ImportOperationDto> operations;
         if (securityService.hasPermission("READ_ALL_IMPORT")) {

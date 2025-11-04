@@ -1,7 +1,7 @@
 package org.is.bandmanager.service.imports;
 
 import org.is.bandmanager.service.imports.model.ImportOperation;
-import org.is.util.pageable.PageableConfig;
+import org.is.util.pageable.PageableRequest;
 import org.springframework.data.domain.Page;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -13,9 +13,9 @@ public interface ImportService {
 
     void processImportAsync(Long operationId, MultipartFile file);
 
-    Page<ImportOperation> getUserImportHistory(PageableConfig pageable);
+    Page<ImportOperation> getUserImportHistory(PageableRequest pageable);
 
-    Page<ImportOperation> getAllImportHistory(PageableConfig pageable);
+    Page<ImportOperation> getAllImportHistory(PageableRequest pageable);
 
     ImportOperation getImportOperation(Long id);
 

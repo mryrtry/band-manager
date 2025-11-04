@@ -4,7 +4,7 @@ import jakarta.validation.Valid;
 import org.is.bandmanager.dto.BestBandAwardDto;
 import org.is.bandmanager.dto.request.BestBandAwardRequest;
 import org.is.bandmanager.repository.filter.BestBandAwardFilter;
-import org.is.util.pageable.PageableConfig;
+import org.is.util.pageable.PageableRequest;
 import org.springframework.data.domain.Page;
 
 import java.util.List;
@@ -14,7 +14,7 @@ public interface BestBandAwardService {
 
     BestBandAwardDto create(@Valid BestBandAwardRequest request);
 
-    Page<BestBandAwardDto> getAll(BestBandAwardFilter filter, PageableConfig config);
+    Page<BestBandAwardDto> getAll(BestBandAwardFilter filter, PageableRequest config);
 
     BestBandAwardDto get(Long id);
 
