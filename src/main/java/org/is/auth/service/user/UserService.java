@@ -36,7 +36,7 @@ public interface UserService extends UserDetailsService {
 
     UserDto delete(Long id);
 
-    boolean validateLogin(@Valid LoginRequest loginRequest);
+    void validateLogin(@Valid LoginRequest loginRequest);
 
     boolean authenticatedUserHasPermission(Permission permission);
 

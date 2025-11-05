@@ -6,6 +6,7 @@ import org.is.auth.dto.UserMapper;
 import org.is.auth.dto.request.LoginRequest;
 import org.is.auth.dto.request.RoleRequest;
 import org.is.auth.dto.request.UserRequest;
+import org.is.auth.exception.AuthCredNotValidException;
 import org.is.auth.model.Permission;
 import org.is.auth.model.Role;
 import org.is.auth.model.User;
@@ -29,6 +30,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import static org.is.auth.exception.message.AuthErrorMessages.INCORRECT_PASSWORD;
@@ -166,10 +168,10 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public boolean validateLogin(LoginRequest loginRequest) {
+    public void validateLogin(LoginRequest loginRequest) {
         User user = findUser(loginRequest.getUsername());
-        if (passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) return true;
-        throw new ServiceException(INCORRECT_PASSWORD);
+        if (!passwordEncoder.matches(loginRequest.getPassword(), user.getPassword()))
+            throw new AuthCredNotValidException(Map.of("password", INCORRECT_PASSWORD.getFormattedMessage()));
     }
 
     @Override
