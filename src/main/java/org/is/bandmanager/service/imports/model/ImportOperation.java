@@ -17,7 +17,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.is.auth.model.User;
-import org.is.bandmanager.model.AuditableEntity;
+import org.is.model.AuditableEntity;
 
 import java.time.LocalDateTime;
 

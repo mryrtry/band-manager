@@ -2,17 +2,18 @@ package org.is.auth.controller;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.is.auth.dto.UserDto;
 import org.is.auth.dto.request.LoginRequest;
+import org.is.auth.dto.request.TokenRequest;
 import org.is.auth.dto.request.UserRequest;
-import org.is.auth.service.jwt.JwtService;
+import org.is.auth.service.jwt.DefaultJwtService;
 import org.is.auth.service.user.UserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -28,17 +29,15 @@ import java.util.Map;
 public class AuthController {
 
     private final UserService userService;
-    private final JwtService jwtService;
+
+    private final DefaultJwtService jwtService;
 
     @PostMapping("/register")
     public ResponseEntity<Map<String, Object>> register(@Valid @RequestBody UserRequest request) {
         log.info("Registering new user: {}", request.getUsername());
-
         UserDto user = userService.create(request);
         Map<String, String> tokens = jwtService.generateTokenPair(user.getUsername());
-
         request.clearPassword();
-
         return ResponseEntity.status(HttpStatus.CREATED).body(Map.of(
                 "user", user,
                 "tokens", tokens
@@ -50,22 +49,20 @@ public class AuthController {
         if (userService.validateLogin(request)) {
             UserDto user = userService.get(request.getUsername());
             Map<String, String> tokens = jwtService.generateTokenPair(request.getUsername());
-
             log.info("User {} successfully authenticated", request.getUsername());
             request.clearPassword();
-
             return ResponseEntity.ok(Map.of(
                     "user", user,
                     "tokens", tokens
             ));
         }
-        return ResponseEntity.badRequest().build();
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
     }
 
     @PostMapping("/refresh")
-    public ResponseEntity<Map<String, String>> refresh(@RequestBody @NotBlank String refreshToken) {
+    public ResponseEntity<Map<String, String>> refresh(@Valid @RequestBody TokenRequest request) {
         log.info("Refreshing token");
-        Map<String, String> tokens = jwtService.refreshAccessToken(refreshToken);
+        Map<String, String> tokens = jwtService.refreshAccessToken(request.getToken());
         return ResponseEntity.ok(tokens);
     }
 
@@ -73,7 +70,8 @@ public class AuthController {
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> logout(HttpServletRequest request) {
         String token = extractTokenFromRequest(request);
-        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String username = (auth != null) ? auth.getName() : "unknown";
         if (token != null) {
             jwtService.invalidateToken(token, username);
         }
@@ -83,9 +81,9 @@ public class AuthController {
     }
 
     @PostMapping("/validate")
-    public ResponseEntity<Map<String, Object>> validateToken(@RequestBody @NotBlank String token) {
-        boolean isValid = jwtService.validateToken(token);
-        String username = isValid ? jwtService.extractUsername(token) : null;
+    public ResponseEntity<Map<String, Object>> validateToken(@Valid @RequestBody TokenRequest request) {
+        boolean isValid = jwtService.validateToken(request.getToken());
+        String username = isValid ? jwtService.extractUsername(request.getToken()) : null;
         return ResponseEntity.ok(Map.of(
                 "valid", isValid,
                 "username", username != null ? username : ""

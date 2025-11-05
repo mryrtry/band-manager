@@ -1,4 +1,4 @@
-package org.is.bandmanager.model;
+package org.is.model;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.EntityListeners;

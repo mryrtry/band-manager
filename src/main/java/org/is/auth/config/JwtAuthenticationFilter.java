@@ -7,7 +7,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.is.auth.dto.ErrorResponse;
-import org.is.auth.service.jwt.JwtService;
+import org.is.auth.service.jwt.DefaultJwtService;
 import org.is.exception.ServiceException;
 import org.springframework.http.HttpStatus;
 import org.springframework.lang.NonNull;
@@ -30,14 +30,18 @@ import java.util.List;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private static final List<String> PUBLIC_PATHS = List.of(
-            "/auth/**",
+            "/auth/login",
+            "/auth/register",
             "/health/**"
     );
 
-    private final JwtService jwtService;
+    private final DefaultJwtService jwtService;
+
     private final UserDetailsService userDetailsService;
-    private final ObjectMapper objectMapper;
+
     private final AntPathMatcher pathMatcher = new AntPathMatcher();
+
+    private final ObjectMapper objectMapper;
 
     @Override
     public void doFilterInternal(

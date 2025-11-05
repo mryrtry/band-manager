@@ -3,6 +3,7 @@ package org.is.auth.config;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.is.auth.dto.ErrorResponse;
 import org.springframework.security.core.AuthenticationException;
@@ -11,11 +12,13 @@ import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 
-@Component
+
 @Slf4j
+@Component
+@RequiredArgsConstructor
 public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
 
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final ObjectMapper objectMapper;
 
     @Override
     public void commence(HttpServletRequest request, HttpServletResponse response,
@@ -29,7 +32,7 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
         ErrorResponse errorResponse = new ErrorResponse(
                 HttpServletResponse.SC_UNAUTHORIZED,
                 "UNAUTHORIZED",
-                "Эндпоинт защищён, требуется авторизация",
+                "Эндпоинт защищён, требуется авторизация или дополнительные права",
                 System.currentTimeMillis()
         );
 

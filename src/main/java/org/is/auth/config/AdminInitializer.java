@@ -11,6 +11,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.Set;
 
+
 @Component
 @RequiredArgsConstructor
 public class AdminInitializer {
@@ -24,7 +25,7 @@ public class AdminInitializer {
         if (!userRepository.existsByUsername("admin")) {
             User admin = User.builder()
                     .username("admin")
-                    .password(passwordEncoder.encode("admin-pass"))
+                    .password(passwordEncoder.encode("password"))
                     .roles(Set.of(Role.ROLE_USER, Role.ROLE_ADMIN))
                     .build();
             userRepository.save(admin);

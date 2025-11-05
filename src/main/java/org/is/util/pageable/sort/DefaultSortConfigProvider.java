@@ -12,7 +12,8 @@ public class DefaultSortConfigProvider implements SortConfigProvider {
     private final Map<Class<?>, SortConfig> sortConfigs;
 
     public DefaultSortConfigProvider(List<SortConfig> configs) {
-        this.sortConfigs = configs.stream().collect(Collectors.toMap(SortConfig::getEntityClass, config -> config));
+        this.sortConfigs = configs.stream()
+                .collect(Collectors.toMap(SortConfig::getEntityClass, config -> config));
     }
 
     @Override
