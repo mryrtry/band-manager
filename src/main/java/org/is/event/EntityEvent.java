@@ -24,11 +24,10 @@ public class EntityEvent<T> {
         this.timestamp = Instant.now();
     }
 
-    @SafeVarargs
-    public EntityEvent(EventType eventType, T... entities) {
+    public EntityEvent(EventType eventType, List<T> entities) {
         this.eventType = eventType;
-        this.entities = List.of(entities);
-        this.entityType = entities.length > 0 ? entities[0].getClass() : null;
+        this.entities = entities;
+        this.entityType = !entities.isEmpty() ? entities.get(0).getClass() : null;
         this.timestamp = Instant.now();
     }
 
