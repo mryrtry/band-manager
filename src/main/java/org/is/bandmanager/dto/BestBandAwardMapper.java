@@ -12,10 +12,6 @@ public interface BestBandAwardMapper {
 
     @Mapping(target = "bandId", source = "band.id")
     @Mapping(target = "bandName", source = "band.name")
-    @Mapping(target = "createdBy", ignore = true)
-    @Mapping(target = "createdDate", ignore = true)
-    @Mapping(target = "lastModifiedBy", ignore = true)
-    @Mapping(target = "lastModifiedDate", ignore = true)
     BestBandAwardDto toDto(BestBandAward award);
 
     @Mapping(target = "id", ignore = true)
