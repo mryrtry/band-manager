@@ -33,7 +33,7 @@ public class AuthController {
     private final DefaultJwtService jwtService;
 
     @PostMapping("/register")
-    public ResponseEntity<Map<String, Object>> register(@RequestBody UserRequest request) {
+    public ResponseEntity<Map<String, Object>> register(@Valid @RequestBody UserRequest request) {
         log.info("Registering new user: {}", request.getUsername());
         UserDto user = userService.create(request);
         Map<String, String> tokens = jwtService.generateTokenPair(user.getUsername());
@@ -45,7 +45,7 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<Map<String, Object>> login(@RequestBody LoginRequest request) {
+    public ResponseEntity<Map<String, Object>> login(@Valid @RequestBody LoginRequest request) {
         userService.validateLogin(request);
         UserDto user = userService.get(request.getUsername());
         Map<String, String> tokens = jwtService.generateTokenPair(request.getUsername());
