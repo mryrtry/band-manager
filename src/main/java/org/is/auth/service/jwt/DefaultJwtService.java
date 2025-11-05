@@ -88,8 +88,8 @@ public class DefaultJwtService implements JwtService {
     @Override
     public Map<String, String> generateTokenPair(String username) {
         Map<String, String> tokens = new HashMap<>();
-        tokens.put("access_token", generateAccessToken(username));
-        tokens.put("refresh_token", generateRefreshToken(username));
+        tokens.put("accessToken", generateAccessToken(username));
+        tokens.put("refreshToken", generateRefreshToken(username));
         return tokens;
     }
 
