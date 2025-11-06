@@ -1,0 +1,82 @@
+<div class="login-container">
+  <div class="login-card">
+    <h2>Вход</h2>
+
+    <form (ngSubmit)="onSubmit()" [formGroup]="loginForm">
+      <mat-form-field appearance="fill">
+        <mat-label>Имя пользователя</mat-label>
+        <input
+          [errorStateMatcher]="usernameErrorMatcher"
+          formControlName="username"
+          matInput
+          maxlength="50"
+          placeholder="Введите имя пользователя"
+        />
+        <mat-hint>Максимум 50 символов</mat-hint>
+        @if (username.invalid) {
+          <mat-error>
+            @if (username.hasError('required')) {
+              Имя пользователя обязательно
+            }
+            @if (username.hasError('minlength')) {
+              Минимум 3 символа
+            }
+            @if (username.hasError('server')) {
+              {{ username.errors?.['server'] }}
+            }
+          </mat-error>
+        } @else {
+        }
+      </mat-form-field>
+
+      <mat-form-field appearance="fill">
+        <mat-label>Пароль</mat-label>
+        <input
+          [errorStateMatcher]="passwordErrorMatcher"
+          formControlName="password"
+          matInput
+          placeholder="Введите пароль"
+          type="password"
+        />
+        <mat-hint>Миниум 6 символов</mat-hint>
+        @if (password.invalid) {
+          <mat-error>
+            @if (password.hasError('required')) {
+              Пароль обязателен
+            }
+            @if (password.hasError('minlength')) {
+              Минимум 6 символов
+            }
+            @if (password.hasError('server')) {
+              {{ password.errors?.['server'] }}
+            }
+          </mat-error>
+        }
+      </mat-form-field>
+
+      <button
+        [disabled]="loading() || loginForm.invalid"
+        class="login-btn"
+        color="primary"
+        mat-raised-button
+        type="submit"
+      >
+        @if (loading()) {
+          Вход...
+        } @else {
+          Войти
+        }
+      </button>
+    </form>
+
+    @if (generalError()) {
+      <div class="error-message general-error">
+        {{ generalError() }}
+      </div>
+    }
+
+    <div class="register-link">
+      <p>Нет аккаунта? <a routerLink="/register">Зарегистрироваться</a></p>
+    </div>
+  </div>
+</div>

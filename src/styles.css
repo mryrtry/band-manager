@@ -18,7 +18,7 @@
 
   --component-margin: 10px;
 
-  --transition: 0.2s ease-in-out;
+  --transition: 0.15s ease-in-out;
 
   --border: 1px solid #ececec;
   --wide-border: 2px solid #ececec;
@@ -59,8 +59,6 @@ aside {
 
 html,
 body {
-  font-family: arial, sans-serif;
-  padding: 5px 5px;
   height: 100%;
   width: 100%;
   line-height: 1;
@@ -68,6 +66,7 @@ body {
   -ms-text-size-adjust: 100%;
   -moz-text-size-adjust: 100%;
   -webkit-text-size-adjust: 100%;
+  font-family: Arial, Helvetica, sans-serif;
 }
 
 input,
@@ -122,30 +121,4 @@ button {
   padding: 0;
   margin: 0;
   text-align: left;
-
-  &:disabled {
-    background: none;
-    border: none;
-    box-shadow: none;
-    color: inherit;
-  }
-}
-
-.hidden_img {
-  display: none;
-}
-
-.container {
-  max-width: 1400px;
-  margin: 0 auto;
-}
-
-input[type="number"]::-webkit-outer-spin-button,
-input[type="number"]::-webkit-inner-spin-button {
-  -webkit-appearance: none;
-  margin: 0;
-}
-
-input[type="number"] {
-  -moz-appearance: textfield;
 }
