@@ -1,82 +1,74 @@
-<div class="login-container">
-  <div class="login-card">
-    <h2>Вход</h2>
-
-    <form (ngSubmit)="onSubmit()" [formGroup]="loginForm">
-      <mat-form-field appearance="fill">
-        <mat-label>Имя пользователя</mat-label>
-        <input
-          [errorStateMatcher]="usernameErrorMatcher"
-          formControlName="username"
-          matInput
-          maxlength="50"
-          placeholder="Введите имя пользователя"
-        />
-        <mat-hint>Максимум 50 символов</mat-hint>
-        @if (username.invalid) {
-          <mat-error>
-            @if (username.hasError('required')) {
-              Имя пользователя обязательно
+<div class="wrapper">
+  <div style="position: absolute; top: 0; right: 0; padding: 15px">
+    <app-theme-toggle></app-theme-toggle>
+  </div>
+  <p-fieldset>
+    <ng-template #header>
+      <p style="font-weight: 700; letter-spacing: -0.05em; font-size: 17px;">
+        ВХОД</p>
+    </ng-template>
+    <form (ngSubmit)="onSubmit()" [formGroup]="loginForm" autofocus>
+      <div class="flex flex-column gap-1">
+        <label for="username">Имя пользователя</label>
+        <input [invalid]="isInvalid('username')"
+               fluid
+               formControlName="username"
+               id="username"
+               pInputText
+               placeholder="Username"
+               type="text"/>
+        @if (isInvalid('username')) {
+          <p-message severity="error" size="small" variant="simple">
+            @if (loginForm.get('username')?.errors?.['required']) {
+              Это поле обязательно
             }
-            @if (username.hasError('minlength')) {
+            @if (loginForm.get('username')?.errors?.['minlength']) {
               Минимум 3 символа
             }
-            @if (username.hasError('server')) {
-              {{ username.errors?.['server'] }}
+            @if (loginForm.get('username')?.errors?.['maxlength']) {
+              Максимум 50 символов
             }
-          </mat-error>
-        } @else {
+            @if (loginForm.get('username')?.errors?.['serverError']) {
+              {{ loginForm.get('username')?.errors?.['serverError'] }}
+            }
+          </p-message>
         }
-      </mat-form-field>
-
-      <mat-form-field appearance="fill">
-        <mat-label>Пароль</mat-label>
-        <input
-          [errorStateMatcher]="passwordErrorMatcher"
-          formControlName="password"
-          matInput
-          placeholder="Введите пароль"
-          type="password"
-        />
-        <mat-hint>Миниум 6 символов</mat-hint>
-        @if (password.invalid) {
-          <mat-error>
-            @if (password.hasError('required')) {
-              Пароль обязателен
+      </div>
+      <div class="flex flex-column gap-1">
+        <label for="password">Пароль</label>
+        <input [invalid]="isInvalid('password')"
+               fluid
+               formControlName="password"
+               id="password"
+               pInputText
+               placeholder="Password"
+               type="password"/>
+        @if (isInvalid('password')) {
+          <p-message severity="error" size="small" variant="simple">
+            @if (loginForm.get('password')?.errors?.['required']) {
+              Это поле обязательно
             }
-            @if (password.hasError('minlength')) {
+            @if (loginForm.get('password')?.errors?.['minlength']) {
               Минимум 6 символов
             }
-            @if (password.hasError('server')) {
-              {{ password.errors?.['server'] }}
+            @if (loginForm.get('password')?.errors?.['serverError']) {
+              {{ loginForm.get('password')?.errors?.['serverError'] }}
             }
-          </mat-error>
+          </p-message>
         }
-      </mat-form-field>
-
-      <button
-        [disabled]="loading() || loginForm.invalid"
-        class="login-btn"
-        color="primary"
-        mat-raised-button
-        type="submit"
-      >
-        @if (loading()) {
-          Вход...
-        } @else {
-          Войти
-        }
+      </div>
+      <button [disabled]="loginForm.invalid || isLoading"
+              pButton
+              severity="primary"
+              type="submit">
+            <span pButtonLabel>
+                @if (isLoading) {
+                  <i class="pi pi-spinner pi-spin"></i>
+                } @else {
+                  ВОЙТИ
+                }
+            </span>
       </button>
     </form>
-
-    @if (generalError()) {
-      <div class="error-message general-error">
-        {{ generalError() }}
-      </div>
-    }
-
-    <div class="register-link">
-      <p>Нет аккаунта? <a routerLink="/register">Зарегистрироваться</a></p>
-    </div>
-  </div>
+  </p-fieldset>
 </div>

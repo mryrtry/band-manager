@@ -1,84 +1,33 @@
-.login-container {
+.wrapper {
   display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 100vh;
+  height: calc(100vh - var(--body-padding) * 2);
+  margin: 0 auto;
 }
 
-.login-card {
-  width: 100%;
-  max-width: 400px;
-  padding: 30px;
-  border: var(--border);
-  border-radius: var(--border-radius);
-}
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 300px;
 
-h2 {
-  text-transform: uppercase;
-  text-align: center;
-  margin-bottom: var(--component-margin);
-}
-
-mat-form-field {
-  width: 100%;
-  margin-bottom: var(--component-margin);
-}
-
-.login-btn {
-  width: 100%;
-  border: var(--border);
-  border-radius: var(--border-radius);
-  transition: var(--transition);
-
-  &:focus,
-  &:hover {
-    border: var(--active-border);
-    background-color: var(--active-bg);
-    color: var(--active-color);
-  }
-
-  &:disabled {
-    opacity: 0.5;
-    color: var(--disabled-color);
-    cursor: not-allowed;
-    pointer-events: none;
+  label {
+    text-transform: uppercase;
+    font-size: 10px;
+    opacity: 0.7;
+    letter-spacing: -0.05em;
   }
 }
 
-mat-hint {
+p-message {
   text-transform: uppercase;
-  font-size: 11px;
-  color: var(--color-disabled);
+  --p-message-text-sm-font-size: 10px;
+  max-width: 100%;
 }
 
-mat-error {
-  text-transform: uppercase;
-  font-size: 11px;
-  color: var(--error-color);
-}
-
-.error-message {
-  padding: 12px;
-  margin-top: var(--component-margin);
-  border-radius: 4px;
-  text-align: center;
-
-  &.general-error {
-    background-color: var(--error-bg);
-    color: var(--error-color);
-    border: var(--error-border);
+@media screen and (max-width: 450px) {
+  .wrapper {
   }
-}
-
-.register-link {
-  text-align: center;
-  margin-top: calc(var(--component-margin) * 2);
-
-  a {
-    text-decoration: none;
-
-    &:hover {
-      text-decoration: underline;
-    }
+  form {
+    min-width: 100%;
   }
 }
