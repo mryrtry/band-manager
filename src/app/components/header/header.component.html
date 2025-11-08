@@ -7,15 +7,8 @@
       <p style="text-transform: uppercase; letter-spacing: -0.05em">Лабораторная работа №2</p>
       <p style="text-transform: uppercase; opacity: 0.5; font-size: 11px; letter-spacing: -0.05em;">Рыцев Максим Георгиевич</p>
     </div>
-    <app-theme-toggle></app-theme-toggle>
+    <div class="flex gap-2 align-items-center">
+      <app-user-avatar-menu></app-user-avatar-menu>
+    </div>
   </div>
 </p-fieldset>
-
-<p-toolbar style="margin-top: 10px">
-  <ng-template #start>
-    <a pButton routerLink="login">
-      <span class="pi pi-user" pButtonIcon></span>
-      <span pButtonLabel>Авторизация</span>
-    </a>
-  </ng-template>
-</p-toolbar>

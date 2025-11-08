@@ -1,0 +1,89 @@
+<ng-template #header>
+  <p style="font-weight: 700; letter-spacing: -0.05em; font-size: 17px;">
+    РЕГИСТРАЦИЯ
+  </p>
+</ng-template>
+
+<form (ngSubmit)="onSubmit()" [formGroup]="registerForm" autofocus>
+  <div class="flex flex-column gap-1">
+    <label for="username">Имя пользователя</label>
+    <input [invalid]="isInvalid('username')"
+           fluid
+           formControlName="username"
+           id="username"
+           pInputText
+           placeholder="Username"
+           type="text"/>
+    @if (isInvalid('username')) {
+      <p-message severity="error" size="small" variant="simple">
+        @if (registerForm.get('username')?.errors?.['required']) {
+          Это поле обязательно
+        }
+        @if (registerForm.get('username')?.errors?.['minlength']) {
+          Минимум 3 символа
+        }
+        @if (registerForm.get('username')?.errors?.['maxlength']) {
+          Максимум 50 символов
+        }
+        @if (registerForm.get('username')?.errors?.['serverError']) {
+          {{ registerForm.get('username')?.errors?.['serverError'] }}
+        }
+      </p-message>
+    }
+  </div>
+
+  <div class="flex flex-column gap-1">
+    <label for="password">Пароль</label>
+    <input [invalid]="isInvalid('password')"
+           fluid
+           formControlName="password"
+           id="password"
+           pInputText
+           placeholder="Password"
+           type="password"/>
+    @if (isInvalid('password')) {
+      <p-message severity="error" size="small" variant="simple">
+        @if (registerForm.get('password')?.errors?.['required']) {
+          Это поле обязательно
+        }
+        @if (registerForm.get('password')?.errors?.['minlength']) {
+          Минимум 6 символов
+        }
+        @if (registerForm.get('password')?.errors?.['serverError']) {
+          {{ registerForm.get('password')?.errors?.['serverError'] }}
+        }
+      </p-message>
+    }
+  </div>
+
+  <div class="flex flex-column gap-1">
+    <label for="confirmPassword">Подтверждение пароля</label>
+    <input [invalid]="isInvalid('confirmPassword') || registerForm.hasError('passwordMismatch')"
+           fluid
+           formControlName="confirmPassword"
+           id="confirmPassword"
+           pInputText
+           placeholder="Confirm Password"
+           type="password"/>
+    @if (isInvalid('confirmPassword') || registerForm.hasError('passwordMismatch')) {
+      <p-message severity="error" size="small" variant="simple">
+        @if (registerForm.hasError('passwordMismatch')) {
+          Пароли не совпадают
+        }
+      </p-message>
+    }
+  </div>
+
+  <button [disabled]="registerForm.invalid || isLoading"
+          pButton
+          severity="primary"
+          type="submit">
+        <span pButtonLabel>
+            @if (isLoading) {
+              <i class="pi pi-spinner pi-spin"></i>
+            } @else {
+              ЗАРЕГИСТРИРОВАТЬСЯ
+            }
+        </span>
+  </button>
+</form>

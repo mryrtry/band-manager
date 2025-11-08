@@ -38,9 +38,11 @@ export class AuthService {
   }
 
   logout(): Observable<void> {
-    return this.http.post<void>(`${this.apiUrl}/logout`, {}).pipe(
+    const response: Observable<void> = this.http.post<void>(`${this.apiUrl}/logout`, {}).pipe(
       tap(() => this.clearTokens())
     );
+    this.clearTokens();
+    return response;
   }
 
   validateToken(request: TokenRequest): Observable<{ valid: boolean; username: string }> {
@@ -64,7 +66,7 @@ export class AuthService {
     return localStorage.getItem('refreshToken');
   }
 
-  private clearTokens(): void {
+  public clearTokens(): void {
     localStorage.removeItem('accessToken');
     localStorage.removeItem('refreshToken');
     this.tokenSubject.next(null);

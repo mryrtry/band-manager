@@ -1,0 +1,9 @@
+<div class="flex align-items-center">
+  <p-avatar
+    (click)="menu.toggle($event)"
+    [label]="userLetter"
+    style="--p-avatar-width:40px; --p-avatar-height:40px; cursor:pointer">
+  </p-avatar>
+
+  <p-tieredMenu #menu [model]="menuItems" [popup]="true"></p-tieredMenu>
+</div>

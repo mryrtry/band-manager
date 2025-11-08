@@ -1,0 +1,27 @@
+<div class="wrapper">
+  <div class="form">
+    <p-fieldset>
+      <ng-template #header>
+        <p class="auth-title">
+          АВТОРИЗАЦИЯ
+        </p>
+      </ng-template>
+
+      <p-tabs [(value)]="activeTab">
+        <p-tablist>
+          <p-tab value="login">Вход</p-tab>
+          <p-tab value="register">Регистрация</p-tab>
+        </p-tablist>
+
+        <p-tabpanels>
+          <p-tabpanel value="login">
+            <app-login></app-login>
+          </p-tabpanel>
+          <p-tabpanel value="register">
+            <app-register></app-register>
+          </p-tabpanel>
+        </p-tabpanels>
+      </p-tabs>
+    </p-fieldset>
+  </div>
+</div>

@@ -8,15 +8,11 @@ import {
 } from '@angular/forms';
 import {AuthService} from '../../../services/auth.service';
 import {Router} from '@angular/router';
-import {Fieldset} from 'primeng/fieldset';
 import {MessageService} from 'primeng/api';
 import {ButtonDirective, ButtonLabel} from 'primeng/button';
 import {InputText} from 'primeng/inputtext';
 import {Message} from 'primeng/message';
 import {LoginRequest} from '../../../model/auth/request/login.request';
-import {
-  ThemeToggleComponent
-} from '../../header/theme-toggle/theme-toggle.component';
 import {ErrorDetail} from '../../../model/error-response.model';
 
 @Component({
@@ -31,8 +27,6 @@ import {ErrorDetail} from '../../../model/error-response.model';
     ButtonDirective,
     InputText,
     Message,
-    Fieldset,
-    ThemeToggleComponent,
   ]
 })
 export class LoginComponent {
@@ -78,11 +72,6 @@ export class LoginComponent {
       this.authService.login(loginRequest).subscribe({
         next: (_ignored) => {
           this.isLoading = false;
-          this.messageService.add({
-            severity: 'success',
-            summary: 'Success',
-            detail: 'Login successful!'
-          });
           this.router.navigate(['/']).then();
         },
         error: (error) => {
