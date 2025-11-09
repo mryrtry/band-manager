@@ -6,7 +6,7 @@ import { Router } from '@angular/router';
 import { Observable } from 'rxjs';
 import {AuthService} from '../../../services/auth.service';
 import { UserService } from "../../../services/user.service";
-import {Role, User} from '../../../model/user/user.model';
+import {Role, User} from '../../../model/auth/user.model';
 
 @Component({
   selector: 'app-user-avatar-menu',

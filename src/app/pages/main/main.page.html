@@ -1,1 +1,26 @@
 <app-header></app-header>
+<p-tabs value="0">
+  <p-tablist>
+    <p-tab value="0" class="flex align-items-center">
+      <span class="pi pi-headphones"></span>
+      Музыкальные группы
+    </p-tab>
+    <p-tab value="1" class="flex align-items-center">
+      <span class="pi pi-star"></span>
+      Специальные операции
+    </p-tab>
+    <p-tab value="2" class="flex align-items-center" [disabled]="!isAdmin">
+      <span class="pi pi-user"></span>
+      Пользователи
+    </p-tab>
+  </p-tablist>
+  <p-tabpanels class="p-0">
+    <p-tabpanel value="0">
+      <app-music-band-table></app-music-band-table>
+    </p-tabpanel>
+    <p-tabpanel value="1">
+    </p-tabpanel>
+    <p-tabpanel value="2">
+    </p-tabpanel>
+  </p-tabpanels>
+</p-tabs>

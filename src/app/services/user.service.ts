@@ -3,7 +3,7 @@ import {HttpClient, HttpParams} from '@angular/common/http';
 import {
   BehaviorSubject,
   catchError,
-  filter,
+  filter, map,
   Observable,
   of,
   switchMap,
@@ -11,11 +11,11 @@ import {
   throwError
 } from 'rxjs';
 import {environment} from '../../environments/environment';
-import {Role, User} from '../model/user/user.model';
+import {Role, User} from '../model/auth/user.model';
 import {PageableRequest} from '../model/pageable-request.model';
 import {Page} from '../model/page.model';
-import {UserFilter} from '../model/user/user-filter.model';
-import {RoleRequest} from '../model/user/request/role.request';
+import {UserFilter} from '../model/auth/user-filter.model';
+import {RoleRequest} from '../model/auth/request/role.request';
 import {UserRequest} from '../model/auth/request/user.request';
 
 @Injectable({
@@ -31,7 +31,7 @@ export class UserService {
   private currentUserLoadingSubject = new BehaviorSubject<boolean>(false);
   public currentUserLoading$ = this.currentUserLoadingSubject.asObservable();
 
-  getAllUsers(filter: UserFilter = {}, config: PageableRequest = {}): Observable<Page<User>> {
+  getAllUsers(filter: UserFilter = {}, config: PageableRequest): Observable<Page<User>> {
     let params = new HttpParams();
     if (filter.username) params = params.set('username', filter.username);
     if (filter.createdAtAfter) params = params.set('createdAtAfter', filter.createdAtAfter);
@@ -112,7 +112,6 @@ export class UserService {
   updateUser(id: number, request: UserRequest): Observable<User> {
     return this.http.put<User>(`${this.apiUrl}/${id}`, request).pipe(
       tap(updatedUser => {
-        // Если обновили текущего пользователя - обновляем кэш
         if (this.currentUserCache && this.currentUserCache.id === id) {
           this.currentUserCache = updatedUser;
           this.currentUserSubject.next(updatedUser);
@@ -149,4 +148,17 @@ export class UserService {
   hasRole(user: User, role: Role): boolean {
     return user.roles.includes(role);
   }
+
+  isAdmin(): Observable<boolean> {
+    return this.getCurrentUser().pipe(
+      map(user => user.roles.includes(Role.ROLE_ADMIN)),
+      catchError(() => of(false))
+    );
+  }
+
+  isAdminSync(): boolean {
+    const currentUser = this.getCurrentUserSync();
+    return currentUser ? currentUser.roles.includes(Role.ROLE_ADMIN) : false;
+  }
+
 }

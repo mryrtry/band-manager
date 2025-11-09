@@ -1,0 +1,100 @@
+<p-panel showHeader="false" class="mt-3">
+  <p-table
+    #dt
+    (onSort)="customSort($event)"
+    [breakpoint]="'768px'"
+    [lazy]="true"
+    [loading]="loading"
+    [value]="bands"
+    [customSort]="true"
+    class="mt-2 table"
+    dataKey="id"
+  >
+
+    <ng-template #header>
+      <tr>
+        <th pSortableColumn="id" style="min-width:4rem">
+          <div class="flex items-center gap-2">
+            Id
+            <p-sortIcon field="id" />
+          </div>
+        </th>
+        <th pSortableColumn="name" style="min-width:12rem">
+          <div class="flex items-center gap-2">
+            Name
+            <p-sortIcon field="name" />
+          </div>
+        </th>
+        <th pSortableColumn="genre" style="min-width:13rem">
+          <div class="flex items-center gap-2">
+            Genre
+            <p-sortIcon field="genre" />
+          </div>
+        </th>
+        <th pSortableColumn="numberOfParticipants" style="min-width:5rem">
+          <div class="flex items-center gap-2">
+            Participants
+            <p-sortIcon field="numberOfParticipants" />
+          </div>
+        </th>
+        <th pSortableColumn="singlesCount" style="min-width:5rem">
+          <div class="flex items-center gap-2">
+            Singles
+            <p-sortIcon field="singlesCount" />
+          </div>
+        </th>
+        <th pSortableColumn="albumsCount" style="min-width:5rem">
+          <div class="flex items-center gap-2">
+            Albums
+            <p-sortIcon field="albumsCount" />
+          </div>
+        </th>
+        <th pSortableColumn="establishmentDate" style="min-width:10rem">
+          <div class="flex items-center gap-2">
+            Established
+            <p-sortIcon field="establishmentDate" />
+          </div>
+        </th>
+        <th pSortableColumn="frontMan.name" style="min-width:12rem">
+          <div class="flex items-center gap-2">
+            Front Man
+            <p-sortIcon field="frontMan.name" />
+          </div>
+        </th>
+        <th pSortableColumn="bestAlbum.name" style="min-width:15rem">
+          <div class="flex items-center gap-2">
+            Best Album
+            <p-sortIcon field="bestAlbum.name" />
+          </div>
+        </th>
+      </tr>
+    </ng-template>
+
+    <ng-template #body let-band>
+      <tr>
+        <td>{{ band.id }}</td>
+        <td>{{ band.name }}</td>
+        <td>{{ band.genre }}</td>
+        <td>{{ band.numberOfParticipants }}</td>
+        <td>{{ band.singlesCount }}</td>
+        <td>{{ band.albumsCount }}</td>
+        <td>{{ band.establishmentDate | date: 'MM/dd/yyyy' }}</td>
+        <td>{{ band.frontMan?.name }}</td>
+        <td>{{ band.bestAlbum?.name }}</td>
+      </tr>
+    </ng-template>
+
+    <ng-template #emptymessage>
+      <tr>
+        <td colspan="8">No music bands found.</td>
+      </tr>
+    </ng-template>
+  </p-table>
+</p-panel>
+
+<app-paginator
+  [page]="pageableRequest.page"
+  [size]="pageableRequest.size"
+  [totalRecords]="totalRecords"
+  (pageChange)="onPageChange($event)"
+></app-paginator>

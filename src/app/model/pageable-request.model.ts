@@ -1,6 +1,6 @@
 export interface PageableRequest {
-  page?: number;
-  size?: number;
+  page: number;
+  size: number;
   sort?: string[];
-  direction?: string;
+  direction?: 'DESC' | 'ASC';
 }
