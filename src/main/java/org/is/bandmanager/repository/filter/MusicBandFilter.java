@@ -59,4 +59,6 @@ public class MusicBandFilter implements EntityFilter {
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     private Date establishmentDateAfter;
 
+    private String createdBy;
+
 }
