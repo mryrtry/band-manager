@@ -91,6 +91,11 @@ public class MusicBandServiceImpl implements MusicBandService {
     }
 
     @Override
+    public List<MusicBandDto> getAll() {
+        return musicBandRepository.findAll().stream().map(mapper::toDto).toList();
+    }
+
+    @Override
     public Page<MusicBandDto> getAll(MusicBandFilter filter, PageableRequest config) {
         Pageable pageable = pageableFactory.create(config, MusicBand.class);
         Page<MusicBand> bands = musicBandRepository.findWithFilter(filter, pageable);

@@ -35,6 +35,13 @@ public class MusicBandController {
 
     private final MusicBandService musicBandService;
 
+    @GetMapping("/all")
+    @PreAuthorize("@securityService.canReadEntity()")
+    public ResponseEntity<List<MusicBandDto>> getAllMusicBands() {
+        List<MusicBandDto> bands = musicBandService.getAll();
+        return ResponseEntity.ok(bands);
+    }
+
     @GetMapping()
     @PreAuthorize("@securityService.canReadEntity()")
     public ResponseEntity<Page<MusicBandDto>> getAllMusicBands(

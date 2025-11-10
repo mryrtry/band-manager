@@ -16,6 +16,8 @@ public interface MusicBandService {
 
     MusicBandDto create(@Valid MusicBandRequest request);
 
+    List<MusicBandDto> getAll();
+
     Page<MusicBandDto> getAll(@Valid MusicBandFilter filter, PageableRequest config);
 
     MusicBandDto get(Long id);
