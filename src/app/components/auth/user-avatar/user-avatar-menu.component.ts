@@ -78,4 +78,5 @@ export class UserAvatarMenuComponent implements OnInit {
     this.menu.toggle($event);
   }
 
+  protected readonly alert = alert;
 }

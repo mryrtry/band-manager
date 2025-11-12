@@ -17,6 +17,10 @@ import { Role, User } from '../../model/auth/user.model';
 import { Dialog } from 'primeng/dialog';
 import { MusicBandFormComponent } from '../forms/music-band-form/music-band-form.component';
 import { TooltipModule } from 'primeng/tooltip';
+import {MusicBandFilterComponent} from './music-band-filter/music-band-filter.component';
+import {
+  MusicBandFilter
+} from '../../model/core/music-band/music-band-filter.model';
 
 @Component({
   selector: 'app-music-band-table',
@@ -33,6 +37,7 @@ import { TooltipModule } from 'primeng/tooltip';
     Dialog,
     MusicBandFormComponent,
     TooltipModule,
+    MusicBandFilterComponent,
   ],
   templateUrl: './music-band-table.component.html',
   styleUrls: ['./music-band-table.component.scss']
@@ -40,6 +45,7 @@ import { TooltipModule } from 'primeng/tooltip';
 export class MusicBandTableComponent implements OnInit {
   @ViewChild('dt') dt!: Table;
   @ViewChild('cm') cm!: ContextMenu;
+  @ViewChild('mf') mf!: MusicBandFilterComponent;
 
   private readonly musicBandService = inject(MusicBandService);
   private readonly messageService = inject(MessageService);
@@ -52,11 +58,12 @@ export class MusicBandTableComponent implements OnInit {
 
   pageableRequest: PageableRequest = {
     page: 0,
-    size: 10
+    size: 5
   };
 
   contextMenuItems: MenuItem[] = [];
   contextMenuBand: MusicBand | null = null;
+  filter: MusicBandFilter = {};
 
   canDeleteSelectedBands = true;
   private _selectItemsAction: MenuItem[] = [];
@@ -120,7 +127,7 @@ export class MusicBandTableComponent implements OnInit {
     this.generalError = undefined;
     this.loading = true;
 
-    this.musicBandService.getAllMusicBands({}, this.pageableRequest).subscribe({
+    this.musicBandService.getAllMusicBands(this.filter, this.pageableRequest).subscribe({
       next: (page) => {
         this.bands = page.content;
         this.totalRecords = page.page.totalElements;
@@ -348,4 +355,19 @@ export class MusicBandTableComponent implements OnInit {
       this.loadMusicBands();
     }
   }
+
+  onFilter($event: MusicBandFilter) {
+      this.filter = $event;
+      this.loadMusicBands();
+  }
+
+  onFilterClear(): void {
+    this.mf.clearFilters();
+  }
+
+  get isFilterEmpty(): boolean {
+    if (!this.mf) return true;
+    return this.mf.emptyFilter();
+  }
+
 }
