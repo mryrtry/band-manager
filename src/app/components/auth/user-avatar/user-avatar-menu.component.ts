@@ -1,11 +1,11 @@
-import { Component, inject, OnInit } from '@angular/core';
-import { AvatarModule } from 'primeng/avatar';
-import { TieredMenuModule } from 'primeng/tieredmenu';
-import { MenuItem } from 'primeng/api';
-import { Router } from '@angular/router';
-import { Observable } from 'rxjs';
-import {AuthService} from '../../../services/auth.service';
-import { UserService } from "../../../services/user.service";
+import {Component, inject, OnInit, ViewChild} from '@angular/core';
+import {AvatarModule} from 'primeng/avatar';
+import {TieredMenu, TieredMenuModule} from 'primeng/tieredmenu';
+import {MenuItem} from 'primeng/api';
+import {Router} from '@angular/router';
+import {Observable} from 'rxjs';
+import {AuthService} from '../../../services/auth/auth.service';
+import {UserService} from "../../../services/auth/user.service";
 import {Role, User} from '../../../model/auth/user.model';
 
 @Component({
@@ -16,6 +16,8 @@ import {Role, User} from '../../../model/auth/user.model';
   styleUrls: ['./user-avatar-menu.component.scss']
 })
 export class UserAvatarMenuComponent implements OnInit {
+  @ViewChild('menu') menu!: TieredMenu;
+
   userService: UserService = inject(UserService);
   authService: AuthService = inject(AuthService);
   router = inject(Router);
@@ -70,4 +72,10 @@ export class UserAvatarMenuComponent implements OnInit {
     this.authService.logout();
     this.router.navigate(['/auth']).then();
   }
+
+  onMenuToggle($event: PointerEvent) {
+    this.userService.getCurrentUser(true).subscribe();
+    this.menu.toggle($event);
+  }
+
 }

@@ -45,12 +45,12 @@ export class PaginatorComponent implements OnInit, OnDestroy {
 
   @Output() pageChange = new EventEmitter<{ page: number; size: number }>();
 
-  rowsPerPageOptions: number[] = [10, 25, 50];
+  rowsPerPageOptions: number[] = [5, 10, 25, 50];
   showFirstLastButtons: boolean = true;
   showPageLinks: boolean = true;
   showCurrentPageReport: boolean = false;
   showJumpToPageDropdown: boolean = true;
-  currentPageReportTemplate: string = 'Total: {totalRecords} ({first} - {last})';
+  currentPageReportTemplate: string = 'Total: {totalRecords}';
   pageLinkSize: number = 5;
 
   ngOnInit(): void {
@@ -87,15 +87,16 @@ export class PaginatorComponent implements OnInit, OnDestroy {
           this.showCurrentPageReport = false;
           this.showJumpToPageDropdown = false;
         } else if (state.breakpoints[CustomBreakpoints.Medium]) {
-          this.rowsPerPageOptions = [10, 25, 50];
+          this.rowsPerPageOptions = [5, 10, 25, 50];
           this.showFirstLastButtons = true;
           this.showPageLinks = true;
           this.showCurrentPageReport = false;
           this.showJumpToPageDropdown = false;
         } else {
-          this.rowsPerPageOptions = [10, 25, 50, 100];
+          this.rowsPerPageOptions = [5, 10, 25, 50, 100];
           this.showFirstLastButtons = true;
           this.showPageLinks = true;
+          this.pageLinkSize = 5;
           this.showCurrentPageReport = true;
           this.showJumpToPageDropdown = false;
         }

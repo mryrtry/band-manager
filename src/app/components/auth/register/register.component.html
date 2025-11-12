@@ -34,13 +34,16 @@
 
   <div class="flex flex-column gap-1">
     <label for="password">Пароль</label>
-    <input [invalid]="isInvalid('password')"
-           fluid
-           formControlName="password"
-           id="password"
-           pInputText
-           placeholder="Password"
-           type="password"/>
+    <p-password
+      [feedback]="true"
+      [inputId]="'password'"
+      [invalid]="isInvalid('password')"
+      [toggleMask]="true"
+      fluid
+      formControlName="password"
+      placeholder="Password"
+    />
+
     @if (isInvalid('password')) {
       <p-message severity="error" size="small" variant="simple">
         @if (registerForm.get('password')?.errors?.['required']) {
@@ -58,13 +61,16 @@
 
   <div class="flex flex-column gap-1">
     <label for="confirmPassword">Подтверждение пароля</label>
-    <input [invalid]="isInvalid('confirmPassword') || registerForm.hasError('passwordMismatch')"
-           fluid
-           formControlName="confirmPassword"
-           id="confirmPassword"
-           pInputText
-           placeholder="Confirm Password"
-           type="password"/>
+    <p-password
+      [feedback]="false"
+      [inputId]="'confirmPassword'"
+      [invalid]="isInvalid('confirmPassword') || registerForm.hasError('passwordMismatch')"
+      [toggleMask]="true"
+      fluid
+      formControlName="confirmPassword"
+      placeholder="Confirm Password"
+    />
+
     @if (isInvalid('confirmPassword') || registerForm.hasError('passwordMismatch')) {
       <p-message severity="error" size="small" variant="simple">
         @if (registerForm.hasError('passwordMismatch')) {

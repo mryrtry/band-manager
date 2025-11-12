@@ -31,13 +31,16 @@
       </div>
       <div class="flex flex-column gap-1">
         <label for="password">Пароль</label>
-        <input [invalid]="isInvalid('password')"
-               fluid
-               formControlName="password"
-               id="password"
-               pInputText
-               placeholder="Password"
-               type="password"/>
+        <p-password
+          [inputId]="'password'"
+          [invalid]="isInvalid('password')"
+          [toggleMask]="true"
+          [feedback]="false"
+          formControlName="password"
+          placeholder="Password"
+          fluid
+        />
+
         @if (isInvalid('password')) {
           <p-message severity="error" size="small" variant="simple">
             @if (loginForm.get('password')?.errors?.['required']) {

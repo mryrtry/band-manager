@@ -8,13 +8,14 @@ import {
   AbstractControl
 } from '@angular/forms';
 import {Router} from '@angular/router';
-import {AuthService} from '../../../services/auth.service';
+import {AuthService} from '../../../services/auth/auth.service';
 import {MessageService} from 'primeng/api';
 import {ButtonDirective, ButtonLabel} from 'primeng/button';
 import {InputText} from 'primeng/inputtext';
 import {Message} from 'primeng/message';
 import {UserRequest} from '../../../model/auth/request/user.request';
 import {ErrorDetail} from '../../../model/error-response.model';
+import {Password} from 'primeng/password';
 
 @Component({
   selector: 'app-register',
@@ -26,6 +27,7 @@ import {ErrorDetail} from '../../../model/error-response.model';
     ButtonDirective,
     InputText,
     Message,
+    Password,
   ],
   templateUrl: './register.component.html',
   styleUrls: ['./register.component.scss']
@@ -98,8 +100,8 @@ export class RegisterComponent {
           } else {
             this.messageService.add({
               severity: 'error',
-              summary: 'Ошибка регистрации',
-              detail: 'Сервер недоступен'
+              summary: 'Login failed',
+              detail: 'Server unavailable'
             });
           }
         }
@@ -107,8 +109,8 @@ export class RegisterComponent {
     } else {
       this.messageService.add({
         severity: 'error',
-        summary: 'Ошибка валидации',
-        detail: 'Исправьте ошибки в форме'
+        summary: 'Validation Error',
+        detail: 'Please fix the errors in the form'
       });
     }
   }

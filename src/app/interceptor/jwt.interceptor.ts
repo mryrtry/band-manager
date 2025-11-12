@@ -13,7 +13,7 @@ import {
   take,
   throwError
 } from 'rxjs';
-import {AuthService} from '../services/auth.service';
+import {AuthService} from '../services/auth/auth.service';
 import {Router} from '@angular/router';
 
 export const jwtInterceptor: HttpInterceptorFn = (req, next) => {

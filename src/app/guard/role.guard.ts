@@ -1,8 +1,8 @@
 import {CanActivateFn, Router} from '@angular/router';
 import {inject} from '@angular/core';
 import {catchError, map, of} from 'rxjs';
-import {AuthService} from '../services/auth.service';
-import {UserService} from '../services/user.service';
+import {AuthService} from '../services/auth/auth.service';
+import {UserService} from '../services/auth/user.service';
 
 export const roleGuard: CanActivateFn = (route, state) => {
   const authService = inject(AuthService);

@@ -1,5 +1,6 @@
 import {Color} from '../color.enum';
 import {Country} from '../country.enum';
+import {Location} from '../location/location.model';
 
 export interface Person {
   id: number;

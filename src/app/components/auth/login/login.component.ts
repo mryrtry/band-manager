@@ -6,7 +6,7 @@ import {
   ReactiveFormsModule,
   Validators
 } from '@angular/forms';
-import {AuthService} from '../../../services/auth.service';
+import {AuthService} from '../../../services/auth/auth.service';
 import {Router} from '@angular/router';
 import {MessageService} from 'primeng/api';
 import {ButtonDirective, ButtonLabel} from 'primeng/button';
@@ -14,6 +14,7 @@ import {InputText} from 'primeng/inputtext';
 import {Message} from 'primeng/message';
 import {LoginRequest} from '../../../model/auth/request/login.request';
 import {ErrorDetail} from '../../../model/error-response.model';
+import {Password} from 'primeng/password';
 
 @Component({
   selector: 'app-login',
@@ -27,6 +28,7 @@ import {ErrorDetail} from '../../../model/error-response.model';
     ButtonDirective,
     InputText,
     Message,
+    Password,
   ]
 })
 export class LoginComponent {
