@@ -3,6 +3,13 @@
 
 :root {
   --body-padding: 10px;
+  --p-scrollbar: 0;
+}
+
+body.p-overflow-hidden {
+  padding-right: var(--p-scrollbar) !important;
+  overflow: hidden !important;
+  width: calc(100vw - var(--p-scrollbar));
 }
 
 * {

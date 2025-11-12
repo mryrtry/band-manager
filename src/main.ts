@@ -7,7 +7,7 @@ import {provideAnimations} from '@angular/platform-browser/animations';
 import {providePrimeNG} from 'primeng/config';
 import Aura from '@primeuix/themes/aura';
 import {definePreset} from '@primeuix/themes';
-import {MessageService} from 'primeng/api';
+import {ConfirmationService, MessageService} from 'primeng/api';
 import {jwtInterceptor} from './app/interceptor/jwt.interceptor';
 
 const MyPreset = definePreset(Aura, {
@@ -27,6 +27,7 @@ bootstrapApplication(AppComponent, {
         }
       }
     }),
-    MessageService
+    MessageService,
+    ConfirmationService
   ]
 }).catch(err => console.error(err));
