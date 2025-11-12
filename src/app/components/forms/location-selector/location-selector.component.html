@@ -1,0 +1,98 @@
+<div class="location-selector">
+  <!-- Location Select Dropdown with Addons -->
+  <p-inputgroup class="min-w-full">
+    <p-select
+      (ngModelChange)="emitLocationChange($event)"
+      [(ngModel)]="selectedLocation"
+      [disabled]="disabled"
+      [filterFields]="['id', 'x', 'y', 'z']"
+      [filter]="true"
+      [invalid]="!isLoading && !selectedLocation"
+      [options]="locations"
+      [showClear]="true"
+      (onClear)="emitLocationChange({})"
+      [loading]="isLoading"
+      appendTo="body"
+      fluid
+      optionLabel="x"
+      placeholder="Выберите локацию"
+    >
+      <!-- Selected Item Template -->
+      <ng-template #selectedItem let-selectedLocation>
+        @if (selectedLocation) {
+          <div class="selected-location">
+            {{ selectedLocation.x ? selectedLocation.x : 'null' }}, {{ selectedLocation.y }}, {{ selectedLocation.z }}
+            <span class="id">ID: {{ selectedLocation.id }}</span>
+          </div>
+        }
+      </ng-template>
+
+      <!-- Dropdown Icon Template -->
+      <ng-template #dropdownicon>
+        @if (disabled) {
+          <i class="pi pi-headphones"></i>
+        } @else {
+          <i class="pi pi-chevron-down"></i>
+        }
+      </ng-template>
+
+      <!-- Item Template -->
+      <ng-template #item let-location>
+        <div class="location-item">
+          {{ location.x ? location.x : 'null' }}, {{ location.y }}, {{ location.z }}
+          <span class="id">ID: {{ location.id }}</span>
+        </div>
+      </ng-template>
+    </p-select>
+
+    @if (!disabled) {
+      @if (selectedLocation) {
+        <p-inputgroup-addon>
+          <p-button
+            (click)="showEditForm()"
+            [disabled]="!selectedLocation || !canUpdate()"
+            icon="pi pi-pencil"
+            outlined
+            severity="secondary"
+          />
+        </p-inputgroup-addon>
+      } @else {
+        <p-inputgroup-addon>
+          <p-button
+            (click)="showCreateForm()"
+            icon="pi pi-plus"
+            severity="secondary"
+            outlined
+          />
+        </p-inputgroup-addon>
+      }
+    }
+  </p-inputgroup>
+
+  <!-- Warning Message -->
+  @if (!canUpdate()) {
+    <p class="not-selected-own-warn">
+      Это не ваш объект, редактировать невозможно
+    </p>
+  }
+</div>
+
+<!-- Модальное окно для формы -->
+<p-dialog
+  header="{{ formLocation ? 'РЕДАКТИРОВАТЬ ЛОКАЦИЮ' : 'СОЗДАТЬ ЛОКАЦИЮ' }}"
+  [(visible)]="showForm"
+  [modal]="true"
+  (onHide)="hideForm()"
+  [focusOnShow]="false"
+  [draggable]="false"
+  [breakpoints]="{ '640px': '95vw' }"
+  [style]="{ width: '300px' }"
+>
+  @if (showForm) {
+    <app-location-form
+      (cancel)="hideForm()"
+      (locationSubmit)="handleLocationSubmit($event)"
+      [location]="formLocation"
+    ></app-location-form>
+  }
+</p-dialog>

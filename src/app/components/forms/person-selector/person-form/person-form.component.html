@@ -1,0 +1,151 @@
+<form (ngSubmit)="onSubmit()" [formGroup]="personForm" class="person-form">
+
+  <!-- Name Field -->
+  <div class="form-field flex flex-column gap-1 mt-2">
+    <label for="name">Имя *</label>
+    <input
+      [invalid]="isInvalid('name')"
+      fluid
+      formControlName="name"
+      id="name"
+      pInputText
+      placeholder="Введите имя"
+      type="text"
+    />
+    @if (isInvalid('name')) {
+      <p-message severity="error" size="small" variant="simple">
+        {{ getFieldError('name') }}
+      </p-message>
+    }
+  </div>
+
+  <!-- Eye Color Field -->
+  <div class="form-field flex flex-column gap-1 mt-2">
+    <label for="eyeColor">Цвет глаз *</label>
+    <p-select
+      [invalid]="isInvalid('eyeColor')"
+      [options]="colors"
+      appendTo="body"
+      fluid
+      formControlName="eyeColor"
+      id="eyeColor"
+      placeholder="Выберите цвет глаз"
+    ></p-select>
+    @if (isInvalid('eyeColor')) {
+      <p-message severity="error" size="small" variant="simple">
+        {{ getFieldError('eyeColor') }}
+      </p-message>
+    }
+  </div>
+
+  <!-- Hair Color Field -->
+  <div class="form-field flex flex-column gap-1 mt-2">
+    <label for="hairColor">Цвет волос *</label>
+    <p-select
+      [invalid]="isInvalid('hairColor')"
+      [options]="colors"
+      appendTo="body"
+      fluid
+      formControlName="hairColor"
+      id="hairColor"
+      placeholder="Выберите цвет волос"
+    ></p-select>
+    @if (isInvalid('hairColor')) {
+      <p-message severity="error" size="small" variant="simple">
+        {{ getFieldError('hairColor') }}
+      </p-message>
+    }
+  </div>
+
+  <!-- Location Field -->
+  <div class="form-field flex flex-column gap-1 mt-2">
+    <label for="location">Локация *</label>
+    <app-location-selector
+      (locationIdChange)="onLocationChange($event)"
+      [currentUser]="currentUser"
+      [disabled]="false"
+      [locationId]="person?.location?.id"
+      id="location"
+    ></app-location-selector>
+    @if (isInvalid('locationId')) {
+      <p-message severity="error" size="small" variant="simple">
+        {{ getFieldError('locationId') }}
+      </p-message>
+    }
+  </div>
+
+  <!-- Weight Field -->
+  <div class="form-field flex flex-column gap-1 mt-2">
+    <label for="weight">Вес *</label>
+    <p-inputNumber
+      [invalid]="isInvalid('weight')"
+      [maxFractionDigits]="10"
+      [minFractionDigits]="0"
+      [min]="0.000001"
+      [suffix]="' кг'"
+      class="w-full"
+      fluid
+      formControlName="weight"
+      id="weight"
+      mode="decimal"
+      placeholder="Введите вес"
+    />
+    @if (isInvalid('weight')) {
+      <p-message severity="error" size="small" variant="simple">
+        {{ getFieldError('weight') }}
+      </p-message>
+    }
+  </div>
+
+  <!-- Nationality Field -->
+  <div class="form-field flex flex-column gap-1 mt-2">
+    <label for="nationality">Национальность *</label>
+    <p-select
+      [invalid]="isInvalid('nationality')"
+      [options]="countries"
+      appendTo="body"
+      fluid
+      formControlName="nationality"
+      id="nationality"
+      placeholder="Выберите национальность"
+    ></p-select>
+    @if (isInvalid('nationality')) {
+      <p-message severity="error" size="small" variant="simple">
+        {{ getFieldError('nationality') }}
+      </p-message>
+    }
+  </div>
+
+  <!-- Action Buttons -->
+  <div class="action-buttons flex gap-2 mt-5">
+    <!-- Submit Button -->
+    <button
+      [disabled]="personForm.invalid || isLoading"
+      class="flex-1 align-items-center submit-button"
+      pButton
+      type="submit"
+    >
+      @if (isLoading) {
+        <i class="pi pi-spinner pi-spin"></i>
+      } @else {
+        <span pButtonIcon>
+          <i [class]="submitButtonIcon"></i>
+        </span>
+        <span pButtonLabel>
+          {{ submitButtonText }}
+        </span>
+      }
+    </button>
+
+    <!-- Cancel Button -->
+    <p-button
+      (click)="onCancel()"
+      icon="pi pi-times"
+      label="Отмена"
+      outlined
+      severity="secondary"
+      text
+    ></p-button>
+  </div>
+
+</form>

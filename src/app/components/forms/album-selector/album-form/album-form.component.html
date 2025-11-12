@@ -1,0 +1,98 @@
+<form (ngSubmit)="onSubmit()" [formGroup]="albumForm" class="album-form">
+
+  <!-- Name (Required) -->
+  <div class="form-field flex flex-column gap-1 mt-2">
+    <label for="name">Название *</label>
+    <input
+      pInputText
+      [invalid]="isInvalid('name')"
+      class="w-full"
+      fluid
+      formControlName="name"
+      id="name"
+      placeholder="Введите название"
+    />
+    @if (isInvalid('name')) {
+      <p-message severity="error" size="small" variant="simple">
+        {{ getFieldError('name') }}
+      </p-message>
+    }
+  </div>
+
+  <!-- Tracks (Required) -->
+  <div class="form-field flex flex-column gap-1 mt-2">
+    <label for="tracks">Количество треков *</label>
+    <p-inputNumber
+      [invalid]="isInvalid('tracks')"
+      class="w-full"
+      fluid
+      formControlName="tracks"
+      id="tracks"
+      mode="decimal"
+      placeholder="Введите количество треков"
+      [min]="0.1"
+      [minFractionDigits]="0"
+      [maxFractionDigits]="0"
+    />
+    @if (isInvalid('tracks')) {
+      <p-message severity="error" size="small" variant="simple">
+        {{ getFieldError('tracks') }}
+      </p-message>
+    }
+  </div>
+
+  <!-- Sales (Optional) -->
+  <div class="form-field flex flex-column gap-1 mt-2">
+    <label for="sales">Продажи (необязательно)</label>
+    <p-inputNumber
+      [invalid]="isInvalid('sales')"
+      class="w-full"
+      fluid
+      formControlName="sales"
+      id="sales"
+      mode="decimal"
+      placeholder="Введите продажи (необязательно)"
+      [min]="0.1"
+      [minFractionDigits]="0"
+      [maxFractionDigits]="0"
+    />
+    @if (isInvalid('sales')) {
+      <p-message severity="error" size="small" variant="simple">
+        {{ getFieldError('sales') }}
+      </p-message>
+    }
+  </div>
+
+  <!-- Action Buttons -->
+  <div class="action-buttons flex gap-2 mt-5">
+    <!-- Submit Button -->
+    <button
+      [disabled]="albumForm.invalid || isLoading"
+      class="flex-1 align-items-center submit-button"
+      pButton
+      type="submit"
+    >
+      @if (isLoading) {
+        <i class="pi pi-spinner pi-spin"></i>
+      } @else {
+        <span pButtonIcon>
+          <i [class]="submitButtonIcon"></i>
+        </span>
+        <span pButtonLabel>
+          {{ submitButtonText }}
+        </span>
+      }
+    </button>
+
+    <!-- Cancel Button -->
+    <p-button
+      (click)="onCancel()"
+      icon="pi pi-times"
+      label="Отмена"
+      outlined
+      severity="secondary"
+      text
+    ></p-button>
+  </div>
+
+</form>
