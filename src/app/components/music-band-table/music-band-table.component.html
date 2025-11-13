@@ -19,6 +19,8 @@
     (click)="openCreateDialog()"
   />
 
+  <music-band-import [disabled]="!bands.length || loading"></music-band-import>
+
   <p-splitbutton
     [disabled]="!selectedBands.length || loading"
     [model]="selectItemsAction"

@@ -1,0 +1,62 @@
+[
+  {
+    "name": "The Cosmic Guitars",
+    "coordinates": {
+      "x": -146,
+      "y": 123.99
+    },
+    "genre": "PROGRESSIVE_ROCK",
+    "numberOfParticipants": 8,
+    "singlesCount": 15,
+    "description": "An innovative progressive rock band known for their cosmic themes.",
+    "bestAlbum": {
+      "name": "Stellar Echoes",
+      "tracks": 12,
+      "sales": 500000
+    },
+    "albumsCount": 7,
+    "establishmentDate": "2010-05-17T00:00:00.000+00:00",
+    "frontMan": {
+      "name": "Alex Stellar",
+      "eyeColor": "BLUE",
+      "hairColor": "GREEN",
+      "location": {
+        "x": 500,
+        "y": 100000,
+        "z": 30000
+      },
+      "weight": 75.5,
+      "nationality": "USA"
+    }
+  },
+  {
+    "name": "Midnight Velocity",
+    "coordinates": {
+      "x": 0,
+      "y": -999.1
+    },
+    "genre": "PUNK_ROCK",
+    "numberOfParticipants": 4,
+    "singlesCount": 22,
+    "description": "Fast-paced punk rockers from the underground scene.",
+    "bestAlbum": {
+      "name": "Neon Nights",
+      "tracks": 14,
+      "sales": 200000
+    },
+    "albumsCount": 5,
+    "establishmentDate": "2015-11-23T00:00:00.000+00:00",
+    "frontMan": {
+      "name": "Riley Dash",
+      "eyeColor": "BROWN",
+      "hairColor": "BLACK",
+      "location": {
+        "x": null,
+        "y": 50000,
+        "z": 1000
+      },
+      "weight": 68.0,
+      "nationality": "UK"
+    }
+  }
+]

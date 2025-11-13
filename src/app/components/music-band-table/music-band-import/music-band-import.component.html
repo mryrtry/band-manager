@@ -1,0 +1,87 @@
+<p-button
+  (click)="openDialog()"
+  [disabled]="disabled"
+  icon="pi pi-upload"
+  label="Импортировать группы"
+  outlined
+  severity="secondary"
+/>
+
+<p-dialog
+  (onHide)="hideDialog()"
+  [(visible)]="showDialog"
+  [breakpoints]="{ '640px': '95vw' }"
+  [draggable]="false"
+  [focusOnShow]="false"
+  [modal]="true"
+  [style]="{ width: '500px' }"
+  header="ИМПОРТ ГРУПП"
+>
+  @if (formType === 'import') {
+    <p-fileupload
+      #fu
+      (onSelect)="select($event)"
+      [multiple]="false"
+      [styleClass]="hasFiles ? 'no-border' : 'with-border'"
+      class="upload-card"
+      [disabled]="loading"
+    >
+      <ng-template #content
+                   let-files
+                   let-removeFileCallback="removeFileCallback"
+      >
+        <div>
+          @for (file of files; track file.name) {
+            <div class="file-wrapper">
+              <div class="file-item">
+                {{ file.name }}
+                <span>({{ formatFileSize(file.size) }})</span>
+              </div>
+            </div>
+          }
+        </div>
+        @if (hasFiles) {
+          <div class="flex gap-2">
+            <p-button
+              class="flex-1"
+              label="Загрузить"
+              outlined
+              icon="pi pi-upload"
+              fluid
+              (click)="upload()"
+              [loading]="loading"
+            />
+            <p-button
+              icon="pi pi-file"
+              label="Другой файл"
+              outlined
+              severity="secondary"
+              (click)="removeFileCallback()"
+              [disabled]="loading"
+            />
+          </div>
+        }
+      </ng-template>
+      <ng-template #empty>
+        <div (click)="choose()" class="empty-card">
+          <i class="pi pi-upload" style="font-size: 4rem; opacity: 0.3"></i>
+          <p
+            style="text-transform: uppercase; font-size: 12px; opacity: 0.3; max-width: 60%; text-align: center; line-height: 1.1rem">
+            Нажмите для выбора или перетащите сюда файл
+          </p>
+        </div>
+        <p class="supported-formats">Поддерживаемые форматы: ({{supportedFormats}})</p>
+      </ng-template>
+    </p-fileupload>
+  } @else if (importOperation) {
+    <p>
+      {{importOperation.id}}
+    </p>
+    <p>
+      {{importOperation.filename}}
+    </p>
+    <p>
+      {{importOperation.status}}
+    </p>
+  }
+</p-dialog>
