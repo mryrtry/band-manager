@@ -38,7 +38,7 @@ public class TestClient {
             throw new IllegalStateException("Tokens not found in response");
         }
 
-        this.authToken = tokens.get("access_token");
+        this.authToken = tokens.get("accessToken");
 
         if (this.authToken == null) {
             throw new IllegalStateException("Access token not found in tokens");

@@ -53,20 +53,16 @@ public class ImportServiceImpl implements ImportService {
 
         ImportOperation savedOperation = repository.save(operation);
 
-        processImportAsync(savedOperation.getId(), file);
+        processImportAsync(savedOperation, file);
 
         return savedOperation;
     }
 
     @Override
     @Async("importTaskExecutor")
-    @Transactional
-    public void processImportAsync(Long operationId, MultipartFile file) {
-        ImportOperation operation = repository.findById(operationId)
-                .orElseThrow(() -> new RuntimeException("Import operation not found: " + operationId));
-
+    public void processImportAsync(ImportOperation operation, MultipartFile file) {
         try {
-            log.info("Starting import processing for operation {}: {}", operationId, file.getOriginalFilename());
+            log.info("Starting import processing for operation {}: {}", operation.getId(), file.getOriginalFilename());
             operation.setStatus(ImportStatus.PROCESSING);
             repository.save(operation);
             List<MusicBandImportRequest> importRequests = fileParserFacade.parseFile(file);
@@ -79,14 +75,13 @@ public class ImportServiceImpl implements ImportService {
             operation.setCreatedEntitiesCount(createdBandIds.size());
             operation.setCompletedAt(LocalDateTime.now());
             log.info("Import operation {} completed successfully. Created {} MusicBand entities",
-                    operationId, createdBandIds.size());
+                    operation.getId(), createdBandIds.size());
         } catch (Exception e) {
-            log.error("Import operation {} failed: {}", operationId, e.getMessage(), e);
+            log.error("Import operation {} failed: {}", operation.getId(), e.getMessage(), e);
             operation.setStatus(ImportStatus.FAILED);
             operation.setErrorMessage(getErrorMessage(e));
             operation.setCompletedAt(LocalDateTime.now());
             repository.save(operation);
-            throw new RuntimeException("Import failed for operation: " + operationId, e);
         }
     }
 
@@ -94,13 +89,13 @@ public class ImportServiceImpl implements ImportService {
     public Page<ImportOperation> getUserImportHistory(PageableRequest config) {
         String username = userService.getAuthenticatedUser().getUsername();
         Pageable pageable = pageableFactory.create(config, ImportOperation.class);
-        return repository.findByUsernameOrderByCreatedDateDesc(username, pageable);
+        return repository.findByUserUsername(username, pageable);
     }
 
     @Override
     public Page<ImportOperation> getAllImportHistory(PageableRequest config) {
         Pageable pageable = pageableFactory.create(config, ImportOperation.class);
-        return repository.findAllByOrderByCreatedDateDesc(pageable);
+        return repository.find(pageable);
     }
 
     @Override
@@ -120,8 +115,7 @@ public class ImportServiceImpl implements ImportService {
         if (message != null && message.length() > MAX_ERROR_MESSAGE_LENGTH) {
             message = message.substring(0, MAX_ERROR_MESSAGE_LENGTH) + "... [truncated]";
         }
-        String errorType = e.getClass().getSimpleName();
-        return String.format("[%s] %s", errorType, message);
+        return message;
     }
 
 }

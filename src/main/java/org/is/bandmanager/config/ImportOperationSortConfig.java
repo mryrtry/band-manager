@@ -17,7 +17,7 @@ public class ImportOperationSortConfig implements SortConfig {
 
     @Override
     public Set<String> getAllowedSortFields() {
-        return Set.of("id");
+        return Set.of("id", "filename", "createdEntitiesCount", "errorMessage", "startedAt", "completedAt", "status", "user.username");
     }
 
     @Override

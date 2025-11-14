@@ -11,7 +11,7 @@ public interface ImportService {
 
     ImportOperation startImport(MultipartFile file);
 
-    void processImportAsync(Long operationId, MultipartFile file);
+    void processImportAsync(ImportOperation operation, MultipartFile file);
 
     Page<ImportOperation> getUserImportHistory(PageableRequest pageable);
 

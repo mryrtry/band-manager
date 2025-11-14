@@ -31,7 +31,7 @@ public class JsonFileParser implements FileParser {
             return objectMapper.readValue(inputStream,
                     objectMapper.getTypeFactory().constructCollectionType(List.class, MusicBandImportRequest.class));
         } catch (IOException e) {
-            throw new RuntimeException("Failed to parse JSON file", e);
+            throw new RuntimeException("Failed to parse JSON file");
         }
     }
 

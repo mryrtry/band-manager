@@ -1,6 +1,5 @@
 package org.is.bandmanager.service.imports.processor;
 
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.is.bandmanager.dto.importRequest.AlbumImportRequest;
@@ -42,13 +41,10 @@ public class MusicBandImportProcessor {
 
     private final SmartValidator validator;
 
-    @Transactional
     public List<Long> processImport(List<MusicBandImportRequest> importRequests) {
         List<Long> createdBandIds = new ArrayList<>();
-
         for (int i = 0; i < importRequests.size(); i++) {
             MusicBandImportRequest request = importRequests.get(i);
-
             try {
                 validateImportRequest(request, i);
                 MusicBand musicBand = createMusicBandFromImport(request);
@@ -60,7 +56,6 @@ public class MusicBandImportProcessor {
                 throw new RuntimeException("Import failed at record " + (i + 1) + ": " + e.getMessage(), e);
             }
         }
-
         return createdBandIds;
     }
 

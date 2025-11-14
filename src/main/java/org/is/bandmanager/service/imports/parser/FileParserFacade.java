@@ -21,7 +21,6 @@ public class FileParserFacade {
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException(
                         "Unsupported file format. Supported formats: " + getSupportedFormats()));
-
         log.info("Using parser: {} for file: {}", parser.getClass().getSimpleName(), file.getOriginalFilename());
         return parser.parse(file);
     }

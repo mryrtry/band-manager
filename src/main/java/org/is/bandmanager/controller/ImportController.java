@@ -71,7 +71,7 @@ public class ImportController {
     @PreAuthorize("@securityService.canReadImport(#id, 'ImportOperation')")
     public ResponseEntity<ImportOperationDto> getImportOperation(@PathVariable Long id) {
         ImportOperation operation = importService.getImportOperation(id);
-        return ResponseEntity.ok(org.is.bandmanager.service.imports.model.dto.ImportOperationDto.toDto(operation));
+        return ResponseEntity.ok(ImportOperationDto.toDto(operation));
     }
 
     @GetMapping("/supported-formats")
