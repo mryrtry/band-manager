@@ -9,7 +9,11 @@
       <span class="pi pi-star"></span>
       Специальные операции
     </p-tab>
-    <p-tab value="2" class="flex align-items-center" [disabled]="!isAdmin">
+    <p-tab value="2" class="flex align-items-center">
+      <span class="pi pi-upload"></span>
+      Импорты
+    </p-tab>
+    <p-tab value="3" class="flex align-items-center" [disabled]="!isAdmin">
       <span class="pi pi-user"></span>
       Пользователи
     </p-tab>
@@ -19,8 +23,12 @@
       <app-music-band-table></app-music-band-table>
     </p-tabpanel>
     <p-tabpanel value="1">
+      <app-music-band-special></app-music-band-special>
     </p-tabpanel>
     <p-tabpanel value="2">
+      <app-import-table></app-import-table>
+    </p-tabpanel>
+    <p-tabpanel value="3">
     </p-tabpanel>
   </p-tabpanels>
 </p-tabs>

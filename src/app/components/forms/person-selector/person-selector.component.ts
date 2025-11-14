@@ -1,25 +1,33 @@
-import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, inject, Input, OnInit, Output } from '@angular/core';
-import { FormsModule } from '@angular/forms';
-import { HttpErrorResponse } from '@angular/common/http';
-import { MessageService } from 'primeng/api';
+import {CommonModule} from '@angular/common';
+import {
+  Component,
+  EventEmitter,
+  inject,
+  Input,
+  OnInit,
+  Output
+} from '@angular/core';
+import {FormsModule} from '@angular/forms';
+import {HttpErrorResponse} from '@angular/common/http';
+import {MessageService} from 'primeng/api';
 
-import { PersonService } from '../../../services/core/person.service';
-import { Person } from '../../../model/core/person/person.model';
-import { PersonRequest } from '../../../model/core/person/person.request';
-import { PersonFormComponent } from './person-form/person-form.component';
-import { Button } from 'primeng/button';
-import { Select } from 'primeng/select';
-import { Role, User } from '../../../model/auth/user.model';
-import { DialogModule } from 'primeng/dialog';
+import {PersonService} from '../../../services/core/person.service';
+import {Person} from '../../../model/core/person/person.model';
+import {PersonRequest} from '../../../model/core/person/person.request';
+import {PersonFormComponent} from './person-form/person-form.component';
+import {Button} from 'primeng/button';
+import {Select} from 'primeng/select';
+import {Role, User} from '../../../model/auth/user.model';
+import {DialogModule} from 'primeng/dialog';
 import {InputGroup} from 'primeng/inputgroup';
 import {InputGroupAddon} from 'primeng/inputgroupaddon';
+import {TooltipModule} from 'primeng/tooltip';
 
 @Component({
   selector: 'app-person-selector',
   templateUrl: './person-selector.component.html',
   styleUrls: ['../selector.component.scss'],
-  imports: [CommonModule, Select, Button, PersonFormComponent, DialogModule, FormsModule, InputGroup, InputGroupAddon],
+  imports: [CommonModule, Select, Button, PersonFormComponent, DialogModule, FormsModule, InputGroup, InputGroupAddon, TooltipModule],
   standalone: true
 })
 export class PersonSelectorComponent implements OnInit {
@@ -56,8 +64,7 @@ export class PersonSelectorComponent implements OnInit {
         this.persons = persons;
         this.syncSelectedPersonWithInput();
         this.isLoading = false;
-      },
-      error: (error: HttpErrorResponse) => {
+      }, error: (error: HttpErrorResponse) => {
         this.handleError('Персоны не загрузились', 'Сервер недоступен, повторите попытку позже.', error);
         this.isLoading = false;
       }
@@ -81,9 +88,7 @@ export class PersonSelectorComponent implements OnInit {
   }
 
   handlePersonSubmit(personRequest: PersonRequest): void {
-    this.formPerson
-      ? this.updatePerson(this.formPerson.id, personRequest)
-      : this.createPerson(personRequest);
+    this.formPerson ? this.updatePerson(this.formPerson.id, personRequest) : this.createPerson(personRequest);
   }
 
   // Handler for when the selection changes in the dropdown
@@ -157,9 +162,7 @@ export class PersonSelectorComponent implements OnInit {
     this.isLoading = false;
 
     // Update the person in the list
-    this.persons = this.persons.map(person =>
-      person.id === updatedPerson.id ? updatedPerson : person
-    );
+    this.persons = this.persons.map(person => person.id === updatedPerson.id ? updatedPerson : person);
 
     // If the updated person is the currently selected one, update the reference
     if (this.selectedPerson?.id === updatedPerson.id) {
@@ -183,7 +186,7 @@ export class PersonSelectorComponent implements OnInit {
 
   private handleError(summary: string, detail: string, error: HttpErrorResponse): void {
     this.isLoading = false;
-    this.messageService.add({ severity: 'error', summary, detail });
+    this.messageService.add({severity: 'error', summary, detail});
     console.error(`${summary}:`, error);
   }
 }

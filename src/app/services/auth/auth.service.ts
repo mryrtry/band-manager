@@ -7,6 +7,7 @@ import {LoginResponse} from '../../model/auth/response/login.response';
 import {Tokens} from '../../model/auth/response/tokens.response';
 import {LoginRequest} from '../../model/auth/request/login.request';
 import {TokenRequest} from '../../model/auth/request/token.request';
+import {UserService} from './user.service';
 
 @Injectable({
   providedIn: 'root'
@@ -14,6 +15,7 @@ import {TokenRequest} from '../../model/auth/request/token.request';
 export class AuthService {
 
   private http = inject(HttpClient);
+  private userService = inject(UserService);
   private apiUrl = `${environment.apiUrl}/auth`;
   private tokenSubject = new BehaviorSubject<string | null>(this.getAccessToken());
   public token$ = this.tokenSubject.asObservable();
@@ -41,6 +43,7 @@ export class AuthService {
     const response: Observable<void> = this.http.post<void>(`${this.apiUrl}/logout`, {}).pipe(
       tap(() => this.clearTokens())
     );
+    this.userService.clearCurrentUserCache();
     this.clearTokens();
     return response;
   }

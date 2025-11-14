@@ -1,0 +1,27 @@
+<div class="flex flex-column gap-2 mt-3 pb-3">
+  <p-panel [toggleable]="true" [collapsed]="false">
+    <ng-template #header>
+      <p class="header">МАКСИМАЛЬНЫЕ КООРДИНАТЫ</p>
+    </ng-template>
+    <music-band-max-coordinates/>
+  </p-panel>
+  <p-panel [toggleable]="true" [collapsed]="true">
+    <ng-template #header>
+      <p class="header">УДАЛИТЬ УЧАСТНИКА</p>
+    </ng-template>
+    <music-band-remove-participant/>
+  </p-panel>
+  <p-panel [toggleable]="true" [collapsed]="true">
+    <ng-template #header>
+      <p class="header">УНИКАЛЬНОЕ ЧИСЛО АЛЬБОМОВ</p>
+    </ng-template>
+    <music-band-distinct-albums/>
+  </p-panel>
+  <p-panel [toggleable]="true" [collapsed]="true">
+    <ng-template #header>
+      <p class="header">ОСНОВАНА ДО ДАТЫ</p>
+    </ng-template>
+    <music-band-established-before/>
+  </p-panel>
+</div>
+

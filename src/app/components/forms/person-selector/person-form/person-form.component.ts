@@ -32,7 +32,7 @@ import { User } from '../../../../model/auth/user.model';
     LocationSelectorComponent,
     ButtonLabel,
     ButtonIcon,
-    ButtonDirective
+    ButtonDirective,
   ],
   standalone: true
 })

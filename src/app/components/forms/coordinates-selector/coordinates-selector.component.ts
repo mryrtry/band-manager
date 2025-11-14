@@ -14,12 +14,13 @@ import { DialogModule } from 'primeng/dialog';
 import { FormsModule } from '@angular/forms';
 import {InputGroupAddon} from 'primeng/inputgroupaddon';
 import {InputGroup} from 'primeng/inputgroup';
+import {Tooltip} from 'primeng/tooltip';
 
 @Component({
   selector: 'app-coordinates-selector',
   templateUrl: './coordinates-selector.component.html',
   styleUrls: ['../selector.component.scss'],
-  imports: [CommonModule, Select, Button, CoordinatesFormComponent, DialogModule, FormsModule, InputGroupAddon, InputGroup],
+  imports: [CommonModule, Select, Button, CoordinatesFormComponent, DialogModule, FormsModule, InputGroupAddon, InputGroup, Tooltip],
   standalone: true
 })
 export class CoordinatesSelectorComponent implements OnInit {

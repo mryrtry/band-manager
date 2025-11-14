@@ -207,23 +207,30 @@
     }
   </div>
 
-  @if (isViewMode && !canUpdate()) {
-    <p class="not-selected-own-warn">
-      Это не ваш объект, редактировать невозможно
-    </p>
-  }
-
   <div class="flex mt-5 gap-2">
     @if (isViewMode) {
-      <p-button
-        class="flex-1"
-        icon="pi pi-pencil"
-        label="Редактировать"
-        outlined
-        fluid
-        (click)="enterEditMode()"
-        [disabled]="!canUpdate()"
-      />
+      @if (!canUpdate()) {
+        <p-button
+          class="flex-1"
+          icon="pi pi-pencil"
+          label="Редактировать"
+          outlined
+          fluid
+          (click)="enterEditMode()"
+          [disabled]="true"
+          pTooltip="Это не ваш объект, редактировать невозможно"
+        />
+      } @else {
+        <p-button
+          class="flex-1"
+          icon="pi pi-pencil"
+          label="Редактировать"
+          outlined
+          fluid
+          (click)="enterEditMode()"
+          [disabled]="false"
+        />
+      }
     } @else {
       <p-button
         class="flex-1"

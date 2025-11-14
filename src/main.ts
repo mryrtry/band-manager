@@ -10,6 +10,10 @@ import {definePreset} from '@primeuix/themes';
 import {ConfirmationService, MessageService} from 'primeng/api';
 import {jwtInterceptor} from './app/interceptor/jwt.interceptor';
 
+//todo: История импорта
+//todo: Таблица пользователей (admin)
+//todo: Фикс ошибок в транзакциях с бэкенда
+
 const MyPreset = definePreset(Aura, {
   semantic: {
   }

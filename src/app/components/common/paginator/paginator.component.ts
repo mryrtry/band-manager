@@ -40,7 +40,7 @@ export class PaginatorComponent implements OnInit, OnDestroy {
   private breakpointSubscription!: Subscription;
 
   @Input() page: number = 0;
-  @Input() size: number = 10;
+  @Input() size: number = 5;
   @Input() totalRecords: number = 0;
 
   @Output() pageChange = new EventEmitter<{ page: number; size: number }>();
@@ -104,12 +104,12 @@ export class PaginatorComponent implements OnInit, OnDestroy {
   }
 
   get first(): number {
-    return (this.page || 0) * (this.size || 10)
+    return (this.page || 0) * (this.size || 5)
   }
 
   onPageChange(event: PaginatorState): void {
     const page = event.first && event.rows ? Math.floor(event.first / event.rows) : 0;
-    const size = event.rows || 10;
+    const size = event.rows || 5;
 
     this.pageChange.emit({ page, size });
   }

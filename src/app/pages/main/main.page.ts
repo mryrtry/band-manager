@@ -11,11 +11,17 @@ import { MusicBand } from '../../model/core/music-band/music-band.model';
 import { MusicBandRequest } from '../../model/core/music-band/music-band.request';
 import { DialogModule } from 'primeng/dialog';
 import { HttpErrorResponse } from '@angular/common/http';
+import {
+  MusicBandSpecialComponent
+} from '../../components/music-band-special/music-band-special.component';
+import {
+  ImportTableComponent
+} from '../../components/import-table/import-table.component';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, HeaderComponent, MusicBandTableComponent, Tabs, TabPanels, TabPanel, TabList, Tab, DialogModule
+  imports: [CommonModule, HeaderComponent, MusicBandTableComponent, Tabs, TabPanels, TabPanel, TabList, Tab, DialogModule, MusicBandSpecialComponent, ImportTableComponent
   ],
   templateUrl: './main.page.html',
 })

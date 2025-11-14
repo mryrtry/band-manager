@@ -14,12 +14,13 @@ import { DialogModule } from 'primeng/dialog';
 import { FormsModule } from '@angular/forms';
 import {InputGroup} from 'primeng/inputgroup';
 import {InputGroupAddon} from 'primeng/inputgroupaddon';
+import {Tooltip} from 'primeng/tooltip';
 
 @Component({
   selector: 'app-album-selector',
   templateUrl: './album-selector.component.html',
   styleUrls: ['../selector.component.scss'],
-  imports: [CommonModule, Select, Button, AlbumFormComponent, DialogModule, FormsModule, InputGroup, InputGroupAddon],
+  imports: [CommonModule, Select, Button, AlbumFormComponent, DialogModule, FormsModule, InputGroup, InputGroupAddon, Tooltip],
   standalone: true
 })
 export class AlbumSelectorComponent implements OnInit {

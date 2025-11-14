@@ -88,6 +88,7 @@
         id="minParticipants"
         inputId="minParticipants"
         placeholder="Минимум"
+        [showClear]="true"
       ></p-inputNumber>
       @if (getError('minParticipants')) {
         <p-message severity="error" variant="simple">{{ getError('minParticipants') }}</p-message>
@@ -106,6 +107,7 @@
         id="maxParticipants"
         inputId="maxParticipants"
         placeholder="Максимум"
+        [showClear]="true"
       ></p-inputNumber>
       @if (getError('maxParticipants')) {
         <p-message severity="error" variant="simple">{{ getError('maxParticipants') }}</p-message>
@@ -126,6 +128,7 @@
         id="minSingles"
         inputId="minSingles"
         placeholder="Минимум"
+        [showClear]="true"
       ></p-inputNumber>
       @if (getError('minSingles')) {
         <p-message severity="error" variant="simple">{{ getError('minSingles') }}</p-message>
@@ -144,6 +147,7 @@
         id="maxSingles"
         inputId="maxSingles"
         placeholder="Максимум"
+        [showClear]="true"
       ></p-inputNumber>
       @if (getError('maxSingles')) {
         <p-message severity="error" variant="simple">{{ getError('maxSingles') }}</p-message>
@@ -164,6 +168,7 @@
         id="minAlbumsCount"
         inputId="minAlbumsCount"
         placeholder="Минимум"
+        [showClear]="true"
       ></p-inputNumber>
       @if (getError('minAlbumsCount')) {
         <p-message severity="error" variant="simple">{{ getError('minAlbumsCount') }}</p-message>
@@ -182,6 +187,7 @@
         id="maxAlbumsCount"
         inputId="maxAlbumsCount"
         placeholder="Максимум"
+        [showClear]="true"
       ></p-inputNumber>
       @if (getError('maxAlbumsCount')) {
         <p-message severity="error" variant="simple">{{ getError('maxAlbumsCount') }}</p-message>
@@ -202,6 +208,7 @@
         id="minCoordinateX"
         inputId="minCoordinateX"
         placeholder="Минимум"
+        [showClear]="true"
       ></p-inputNumber>
       @if (getError('minCoordinateX')) {
         <p-message severity="error" variant="simple">{{ getError('minCoordinateX') }}</p-message>
@@ -220,6 +227,7 @@
         id="maxCoordinateX"
         inputId="maxCoordinateX"
         placeholder="Максимум"
+        [showClear]="true"
       ></p-inputNumber>
       @if (getError('maxCoordinateX')) {
         <p-message severity="error" variant="simple">{{ getError('maxCoordinateX') }}</p-message>
@@ -242,6 +250,7 @@
         id="minCoordinateY"
         inputId="minCoordinateY"
         placeholder="Минимум"
+        [showClear]="true"
       ></p-inputNumber>
       @if (getError('minCoordinateY')) {
         <p-message severity="error" variant="simple">{{ getError('minCoordinateY') }}</p-message>
@@ -262,6 +271,7 @@
         id="maxCoordinateY"
         inputId="maxCoordinateY"
         placeholder="Максимум"
+        [showClear]="true"
       ></p-inputNumber>
       @if (getError('maxCoordinateY')) {
         <p-message severity="error" variant="simple">{{ getError('maxCoordinateY') }}</p-message>
@@ -280,6 +290,7 @@
         fluid
         id="establishmentDateAfter"
         placeholder="Выберите дату"
+        [showClear]="true"
       ></p-datePicker>
       @if (getError('establishmentDateAfter')) {
         <p-message severity="error" variant="simple">{{ getError('establishmentDateAfter') }}</p-message>
@@ -298,6 +309,7 @@
         fluid
         id="establishmentDateBefore"
         placeholder="Выберите дату"
+        [showClear]="true"
       ></p-datePicker>
       @if (getError('establishmentDateBefore')) {
         <p-message severity="error" variant="simple">{{ getError('establishmentDateBefore') }}</p-message>
@@ -320,4 +332,13 @@
       />
     </div>
   </div>
+
+  <p-button
+    class="block pt-2"
+    icon="pi pi-filter"
+    label="Применить фильтр"
+    outlined
+    (click)="applyFilters()"
+    [disabled]="emptyFilter() || this.getValidationErrors().length > 0"
+  />
 </p-panel>

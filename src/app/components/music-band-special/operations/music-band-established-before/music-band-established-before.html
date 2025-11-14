@@ -1,0 +1,54 @@
+<div class="grid-container">
+  <p-panel [showHeader]="false" class="p-0" style="height: fit-content;">
+    <div class="flex flex-column gap-2 p-3">
+      <div class="flex flex-column gap-1">
+        <label for="establishmentDate">Дата основания</label>
+        <p-datePicker
+          [(ngModel)]="establishedBeforeDate"
+          [showButtonBar]="true"
+          id="establishmentDate"
+          placeholder="Выберите дату основания"
+          dateFormat="dd.mm.yy"
+          appendTo="body"
+          fluid
+        ></p-datePicker>
+        @if (errorMessage) {
+          <p-message severity="error" size="small" variant="simple">
+            {{ errorMessage }}
+          </p-message>
+        }
+      </div>
+      <p-button
+        (click)="onRemoveParticipant()"
+        fluid
+        [disabled]="!establishedBeforeDate"
+        icon="pi pi-calendar-clock"
+        label="Найти группы"
+        outlined
+        [loading]="isLoading"
+      />
+    </div>
+  </p-panel>
+
+  @if (musicBands) {
+    <p-panel>
+      <ng-template #header>
+        <p class="mt-2 font-bold" style="font-size: 1.1rem;">РЕЗУЛЬТАТ</p>
+      </ng-template>
+      <p-scroll-panel [style]="{ width: '100%', height: '150px' }">
+        @for (band of musicBands; track band.id) {
+          <div class="music-band-panel flex flex-column gap-1 mt-2">
+            <p><span>Название:</span> {{ band.name }} / {{ band.id }}</p>
+            <p><span>Основана:</span> {{ band.establishmentDate | date: 'dd.MM.yyyy' }}</p>
+          </div>
+        }
+      </p-scroll-panel>
+    </p-panel>
+  } @else {
+    <p-panel [showHeader]="false" class="p-0 flex align-items-center justify-content-center">
+      <p class="empty-result p-3">
+        РЕЗУЛЬТАТА ЕЩЁ НЕТ
+      </p>
+    </p-panel>
+  }
+</div>

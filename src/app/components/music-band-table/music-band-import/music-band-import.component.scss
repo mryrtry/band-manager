@@ -78,3 +78,20 @@
   opacity: 0.2;
   margin-bottom: 10px;
 }
+
+.import-header {
+  letter-spacing:  -0.05em;
+
+  span {
+    opacity: 0.3;
+  }
+}
+
+.import-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  letter-spacing: -0.05em;
+  text-transform: uppercase;
+  font-size: 12px;
+}

@@ -112,7 +112,7 @@ export class MusicBandTableComponent implements OnInit, OnDestroy {
   // --- Pagination ---
   onPageChange(event: any): void {
     this.pageableRequest.page = event.page ?? 0;
-    this.pageableRequest.size = event.rows ?? 10;
+    this.pageableRequest.size = event.rows ?? 5;
     this.loadMusicBands();
   }
 
@@ -252,11 +252,9 @@ export class MusicBandTableComponent implements OnInit, OnDestroy {
   // --- Permissions ---
   canUpdate(band: MusicBand): boolean {
     if (!this.currentUser || !band) return false;
-
     const isOwner = band.createdBy === this.currentUser.username;
     const isSystem = band.createdBy === 'system';
     const isAdmin = this.currentUser.roles.includes(Role.ROLE_ADMIN);
-
     return isOwner || isSystem || isAdmin;
   }
 

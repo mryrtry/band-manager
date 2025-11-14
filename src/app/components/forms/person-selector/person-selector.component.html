@@ -47,13 +47,25 @@
     @if (!disabled) {
       @if (selectedPerson) {
         <p-inputgroup-addon>
-          <p-button
-            (click)="showEditForm()"
-            [disabled]="!selectedPerson || !canUpdate()"
-            icon="pi pi-pencil"
-            outlined
-            severity="secondary"
-          />
+          @if(!selectedPerson || !canUpdate()) {
+            <p-button
+              (click)="showEditForm()"
+              [disabled]="true"
+              pTooltip="Это не ваш объект, редактировать невозможно"
+              icon="pi pi-pencil"
+              outlined
+              severity="secondary"
+            />
+          } @else {
+            <p-button
+              (click)="showEditForm()"
+              [disabled]="!selectedPerson || !canUpdate()"
+              icon="pi pi-pencil"
+              outlined
+              severity="secondary"
+            />
+          }
+
         </p-inputgroup-addon>
       } @else {
         <p-inputgroup-addon>
@@ -67,13 +79,6 @@
       }
     }
   </p-inputgroup>
-
-  <!-- Warning Message -->
-  @if (!canUpdate()) {
-    <p class="not-selected-own-warn">
-      Это не ваш объект, редактировать невозможно
-    </p>
-  }
 </div>
 
 <!-- Модальное окно для формы -->

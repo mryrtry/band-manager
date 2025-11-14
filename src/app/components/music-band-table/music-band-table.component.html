@@ -2,7 +2,7 @@
 
 <app-music-band-filter #mf (filterChange)="onFilter($event)"></app-music-band-filter>
 
-<div class="flex mt-3 gap-2 align-items-center">
+<div class="flex mt-3 gap-2 align-items-center flex-wrap">
   <p-button
     (onClick)="loadMusicBands()"
     [disabled]="loading"
@@ -19,7 +19,7 @@
     (click)="openCreateDialog()"
   />
 
-  <music-band-import [disabled]="!bands.length || loading"></music-band-import>
+  <music-band-import [disabled]="loading"></music-band-import>
 
   <p-splitbutton
     [disabled]="!selectedBands.length || loading"

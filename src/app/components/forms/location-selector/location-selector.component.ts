@@ -14,12 +14,13 @@ import { DialogModule } from 'primeng/dialog';
 import {FormsModule} from '@angular/forms';
 import {InputGroup} from 'primeng/inputgroup';
 import {InputGroupAddon} from 'primeng/inputgroupaddon';
+import {Tooltip} from 'primeng/tooltip';
 
 @Component({
   selector: 'app-location-selector',
   templateUrl: './location-selector.component.html',
   styleUrls: ['../selector.component.scss'],
-  imports: [CommonModule, Select, Button, LocationFormComponent, DialogModule, FormsModule, InputGroup, InputGroupAddon],
+  imports: [CommonModule, Select, Button, LocationFormComponent, DialogModule, FormsModule, InputGroup, InputGroupAddon, Tooltip],
   standalone: true
 })
 export class LocationSelectorComponent implements OnInit {

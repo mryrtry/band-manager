@@ -21,10 +21,10 @@
     <p-fileupload
       #fu
       (onSelect)="select($event)"
+      [disabled]="loading"
       [multiple]="false"
       [styleClass]="hasFiles ? 'no-border' : 'with-border'"
       class="upload-card"
-      [disabled]="loading"
     >
       <ng-template #content
                    let-files
@@ -43,21 +43,21 @@
         @if (hasFiles) {
           <div class="flex gap-2">
             <p-button
-              class="flex-1"
-              label="Загрузить"
-              outlined
-              icon="pi pi-upload"
-              fluid
               (click)="upload()"
               [loading]="loading"
+              class="flex-1"
+              fluid
+              icon="pi pi-upload"
+              label="Загрузить"
+              outlined
             />
             <p-button
+              (click)="removeFileCallback()"
+              [disabled]="loading"
               icon="pi pi-file"
               label="Другой файл"
               outlined
               severity="secondary"
-              (click)="removeFileCallback()"
-              [disabled]="loading"
             />
           </div>
         }
@@ -70,18 +70,54 @@
             Нажмите для выбора или перетащите сюда файл
           </p>
         </div>
-        <p class="supported-formats">Поддерживаемые форматы: ({{supportedFormats}})</p>
+        <p class="supported-formats">Поддерживаемые форматы:
+          ({{ supportedFormats }})</p>
       </ng-template>
     </p-fileupload>
   } @else if (importOperation) {
-    <p>
-      {{importOperation.id}}
-    </p>
-    <p>
-      {{importOperation.filename}}
-    </p>
-    <p>
-      {{importOperation.status}}
-    </p>
+    <p-progress-bar [color]="progressBarColor" [value]="progressBarValue">
+      <ng-template #content>
+        {{ importOperation.status }}
+      </ng-template>
+    </p-progress-bar>
+    <p-panel class="mt-3" collapsed="true" toggleable="true">
+      <ng-template #header>
+        <p class="import-header">
+          {{ importOperation.filename }}
+          <span>/ {{ importOperation.id }}</span>
+        </p>
+      </ng-template>
+      <div class="import-details">
+        @if (importOperation.createdEntitiesCount) {
+          <p>Создано сущностей: {{ importOperation.createdEntitiesCount }}</p>
+        }
+        @if (importOperation.errorMessage) {
+          <p>Ошибка: {{ importOperation.errorMessage }}</p>
+        }
+        <p>Создано пользователем: {{ importOperation.createdBy }}</p>
+        <p>Начато
+          в: {{ importOperation.startedAt | date: 'dd/MM/yyyy h:mm:ss' }}</p>
+        <p>Завершено
+          в: {{ importOperation.completedAt | date: 'dd/MM/yyyy h:mm:ss' }}</p>
+      </div>
+    </p-panel>
+    <div class="flex mt-3 gap-2">
+      <p-button
+        (click)="toImport()"
+        icon="pi pi-file"
+        class="flex-1"
+        fluid
+        label="Выбор файла"
+        outlined
+        severity="secondary"
+      />
+      <p-button
+        icon="pi pi-times"
+        label="Закрыть"
+        outlined
+        severity="secondary"
+        (click)="hideDialog()"
+      />
+    </div>
   }
 </p-dialog>

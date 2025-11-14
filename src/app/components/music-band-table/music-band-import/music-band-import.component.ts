@@ -11,14 +11,18 @@ import {ButtonModule} from 'primeng/button';
 import {BadgeModule} from 'primeng/badge';
 import {ImportService} from '../../../services/import.service';
 import {MessageService} from 'primeng/api';
-import {ImportOperation} from '../../../model/import/import.model';
+import {
+  ImportOperation,
+  ImportStatus
+} from '../../../model/import/import.model';
+import {Panel} from 'primeng/panel';
 
 @Component({
   selector: 'music-band-import',
   templateUrl: './music-band-import.component.html',
   styleUrls: ['./music-band-import.component.scss'],
   standalone: true,
-  imports: [CommonModule, DialogModule, FileUploadModule, ProgressBarModule, ButtonModule, BadgeModule]
+  imports: [CommonModule, DialogModule, FileUploadModule, ProgressBarModule, ButtonModule, BadgeModule, Panel]
 })
 export class MusicBandImportComponent implements OnInit {
   @Input() disabled?: boolean;
@@ -38,6 +42,60 @@ export class MusicBandImportComponent implements OnInit {
 
   get hasFiles(): boolean {
     return this.files.length > 0;
+  }
+
+  get statusDescription(): string {
+    if (this.importOperation) {
+      switch (this.importOperation.status) {
+        case ImportStatus.PENDING:
+          return 'Операция ожидает своей очереди'
+        case ImportStatus.PROCESSING:
+          return 'Операция выполняется'
+        case ImportStatus.COMPLETED:
+          return 'Операция выполнена успешно'
+        case ImportStatus.FAILED:
+          return 'Неверный формат файла / неверная структура данных'
+        case ImportStatus.VALIDATION_FAILED:
+          return this.importOperation.errorMessage ? this.importOperation.errorMessage : 'Валидация сущностей провалена';
+      }
+    }
+    return ''
+  }
+
+  get progressBarColor(): string {
+    if (this.importOperation) {
+      switch (this.importOperation.status) {
+        case ImportStatus.PENDING:
+          return 'var(--p-yellow-400)'
+        case ImportStatus.PROCESSING:
+          return 'var(--p-text-color)'
+        case ImportStatus.COMPLETED:
+          return 'var(--p-primary-color)'
+        case ImportStatus.FAILED:
+          return 'var(--p-red-400)'
+        case ImportStatus.VALIDATION_FAILED:
+          return 'var(--p-red-400)'
+      }
+    }
+    return 'red';
+  }
+
+  get progressBarValue(): number {
+    if (this.importOperation) {
+      switch (this.importOperation.status) {
+        case ImportStatus.PENDING:
+          return 25;
+        case ImportStatus.PROCESSING:
+          return 50;
+        case ImportStatus.COMPLETED:
+          return 100;
+        case ImportStatus.FAILED:
+          return 100;
+        case ImportStatus.VALIDATION_FAILED:
+          return 100;
+      }
+    }
+    return 0;
   }
 
   ngOnInit(): void {
@@ -109,6 +167,12 @@ export class MusicBandImportComponent implements OnInit {
     this.files = $event.currentFiles;
   }
 
+  toImport(): void {
+    this.importOperation = undefined;
+    this.files = [];
+    this.formType = 'import';
+  }
+
   validateFile(file: File): boolean {
     if (!this.supportedFormats.some(mime => file.type === mime)) {
       this.messageService.add({
@@ -129,6 +193,15 @@ export class MusicBandImportComponent implements OnInit {
     return true;
   }
 
+  poll(): void {
+    if (this.importOperation) {
+      this.pollImportOperation(this.importOperation.id);
+      if ([ImportStatus.FAILED, ImportStatus.COMPLETED, ImportStatus.VALIDATION_FAILED].indexOf(this.importOperation.status) > -1) {
+        this.stopPolling();
+      }
+    }
+  }
+
   formatFileSize(bytes: number): string {
     if (bytes === 0) return '0 Б';
     const k = 1024;
@@ -138,7 +211,7 @@ export class MusicBandImportComponent implements OnInit {
   }
 
   startPolling(): void {
-    setInterval(this.pollImportOperation.bind(this), 1000)
+    setInterval(this.poll.bind(this), 1000)
   }
 
   stopPolling(): void {
@@ -147,4 +220,5 @@ export class MusicBandImportComponent implements OnInit {
     }
   }
 
+  protected readonly ImportStatus = ImportStatus;
 }

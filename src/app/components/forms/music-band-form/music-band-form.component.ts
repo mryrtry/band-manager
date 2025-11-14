@@ -44,12 +44,13 @@ import {
 import {MusicGenre} from '../../../model/core/music-genre.enum';
 import {HttpErrorResponse} from '@angular/common/http';
 import {MusicBandService} from '../../../services/core/music-band.service';
+import {Tooltip} from 'primeng/tooltip';
 
 @Component({
   selector: 'app-music-band-form',
   templateUrl: './music-band-form.component.html',
   styleUrls: ['../form.component.scss', '../selector.component.scss'],
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, InputText, InputNumber, Select, Message, Button, Textarea, DatePicker, CoordinatesSelectorComponent, AlbumSelectorComponent, PersonSelectorComponent],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, InputText, InputNumber, Select, Message, Button, Textarea, DatePicker, CoordinatesSelectorComponent, AlbumSelectorComponent, PersonSelectorComponent, Tooltip],
   standalone: true
 })
 export class MusicBandFormComponent implements OnInit, OnChanges {
@@ -317,19 +318,19 @@ export class MusicBandFormComponent implements OnInit, OnChanges {
   }
 
   private handleMusicBandCreationSuccess(createdMusicBand: MusicBand): void {
+    this.musicBand = createdMusicBand;
     this.isLoading = false;
     this.changesOccurred.emit(true); // Emit that changes occurred
     this.showSuccessMessage('Музыкальная группа создана', createdMusicBand);
-    this.enterCreateMode(); // Switch back to create mode
-    this.cancel.emit(); // Close the dialog
+    this.enterViewMode();
   }
 
   private handleMusicBandUpdateSuccess(updatedMusicBand: MusicBand): void {
+    this.musicBand = updatedMusicBand;
     this.isLoading = false;
     this.changesOccurred.emit(true); // Emit that changes occurred
     this.exitEditMode(); // Switch back to view mode
     this.showSuccessMessage('Музыкальная группа обновлена', updatedMusicBand);
-    this.cancel.emit(); // Close the dialog
   }
 
   private showSuccessMessage(summary: string, musicBand: MusicBand): void {
