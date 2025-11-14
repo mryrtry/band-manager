@@ -1,5 +1,7 @@
 package org.is.bandmanager.service.imports.processor;
 
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.Validator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.is.bandmanager.dto.importRequest.AlbumImportRequest;
@@ -17,12 +19,16 @@ import org.is.bandmanager.repository.CoordinatesRepository;
 import org.is.bandmanager.repository.LocationRepository;
 import org.is.bandmanager.repository.MusicBandRepository;
 import org.is.bandmanager.repository.PersonRepository;
+import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.BeanPropertyBindingResult;
 import org.springframework.validation.SmartValidator;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Slf4j
 @Service
@@ -41,35 +47,86 @@ public class MusicBandImportProcessor {
 
     private final SmartValidator validator;
 
+    private final Validator jakartaValidator;
+
     public List<Long> processImport(List<MusicBandImportRequest> importRequests) {
         List<Long> createdBandIds = new ArrayList<>();
         for (int i = 0; i < importRequests.size(); i++) {
             MusicBandImportRequest request = importRequests.get(i);
             try {
-                validateImportRequest(request, i);
+                String errorMessage = validateImportRequest(request);
+                if (!errorMessage.isBlank()) {
+                    log.warn("Validation error at record {}: {}", i + 1, errorMessage);
+                    throw new IllegalArgumentException(errorMessage);
+                }
                 MusicBand musicBand = createMusicBandFromImport(request);
                 MusicBand savedBand = musicBandRepository.save(musicBand);
                 createdBandIds.add(savedBand.getId());
                 log.debug("Successfully created MusicBand from import request at index {}", i);
             } catch (Exception e) {
-                log.error("Failed to process import request at index {}: {}", i, e.getMessage());
-                throw new RuntimeException("Import failed at record " + (i + 1) + ": " + e.getMessage(), e);
+                log.error("Failed to process import request at index {} because of {}", i, e.getMessage());
+                String finalMessage = extractValidationMessage(e.getMessage());
+                throw new RuntimeException("Import failed at record " + (i + 1) + ". Error: " + finalMessage);
             }
         }
         return createdBandIds;
     }
 
+    private String extractValidationMessage(String fullMessage) {
+        if (fullMessage == null) {
+            return "Unknown error";
+        }
+        Pattern pattern = Pattern.compile("interpolatedMessage='([^']+)'");
+        Matcher matcher = pattern.matcher(fullMessage);
+        if (matcher.find()) {
+            return matcher.group(1);
+        }
+        return fullMessage;
+    }
 
-    private void validateImportRequest(MusicBandImportRequest request, int index) {
+    private String validateImportRequest(MusicBandImportRequest request) {
         BeanPropertyBindingResult errors = new BeanPropertyBindingResult(request, "importRequest");
         validator.validate(request, errors);
         if (errors.hasErrors()) {
-            String errorMessage = errors.getFieldErrors().stream()
-                    .map(error -> error.getField() + ": " + error.getDefaultMessage())
-                    .reduce((a, b) -> a + "; " + b)
+            return errors.getFieldErrors().stream()
+                    .findFirst()
+                    .map(DefaultMessageSourceResolvable::getDefaultMessage)
                     .orElse("Validation failed");
-            throw new IllegalArgumentException("Record " + (index + 1) + " - " + errorMessage);
         }
+        String nestedValidationMessage = validateNestedEntities(request);
+        if (!nestedValidationMessage.isEmpty()) {
+            return nestedValidationMessage;
+        }
+
+        return "";
+    }
+
+    private String validateNestedEntities(MusicBandImportRequest request) {
+        if (request.getCoordinates() != null) {
+            Set<ConstraintViolation<CoordinatesImportRequest>> coordinateViolations = jakartaValidator.validate(request.getCoordinates());
+            if (!coordinateViolations.isEmpty()) {
+                return coordinateViolations.iterator().next().getMessage();
+            }
+        }
+        if (request.getFrontMan() != null) {
+            Set<ConstraintViolation<PersonImportRequest>> personViolations = jakartaValidator.validate(request.getFrontMan());
+            if (!personViolations.isEmpty()) {
+                return personViolations.iterator().next().getMessage();
+            }
+            if (request.getFrontMan().getLocation() != null) {
+                Set<ConstraintViolation<LocationImportRequest>> locationViolations = jakartaValidator.validate(request.getFrontMan().getLocation());
+                if (!locationViolations.isEmpty()) {
+                    return locationViolations.iterator().next().getMessage();
+                }
+            }
+        }
+        if (request.getBestAlbum() != null) {
+            Set<ConstraintViolation<AlbumImportRequest>> albumViolations = jakartaValidator.validate(request.getBestAlbum());
+            if (!albumViolations.isEmpty()) {
+                return albumViolations.iterator().next().getMessage();
+            }
+        }
+        return "";
     }
 
     private MusicBand createMusicBandFromImport(MusicBandImportRequest request) {

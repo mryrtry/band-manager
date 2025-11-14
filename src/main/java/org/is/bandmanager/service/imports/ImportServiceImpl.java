@@ -1,6 +1,5 @@
 package org.is.bandmanager.service.imports;
 
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.is.auth.model.User;
@@ -11,6 +10,7 @@ import org.is.bandmanager.service.imports.model.ImportStatus;
 import org.is.bandmanager.service.imports.parser.FileParserFacade;
 import org.is.bandmanager.service.imports.processor.MusicBandImportProcessor;
 import org.is.bandmanager.service.imports.repository.ImportOperationRepository;
+import org.is.bandmanager.service.imports.repository.specification.ImportOperationFilter;
 import org.is.util.pageable.PageableFactory;
 import org.is.util.pageable.PageableRequest;
 import org.springframework.data.domain.Page;
@@ -40,7 +40,6 @@ public class ImportServiceImpl implements ImportService {
     private final PageableFactory pageableFactory;
 
     @Override
-    @Transactional
     public ImportOperation startImport(MultipartFile file) {
         User user = userService.getEntity(userService.getAuthenticatedUser().getId());
 
@@ -77,7 +76,7 @@ public class ImportServiceImpl implements ImportService {
             log.info("Import operation {} completed successfully. Created {} MusicBand entities",
                     operation.getId(), createdBandIds.size());
         } catch (Exception e) {
-            log.error("Import operation {} failed: {}", operation.getId(), e.getMessage(), e);
+            log.error("Import operation {} failed: {}", operation.getId(), e.getMessage());
             operation.setStatus(ImportStatus.FAILED);
             operation.setErrorMessage(getErrorMessage(e));
             operation.setCompletedAt(LocalDateTime.now());
@@ -86,16 +85,16 @@ public class ImportServiceImpl implements ImportService {
     }
 
     @Override
-    public Page<ImportOperation> getUserImportHistory(PageableRequest config) {
+    public Page<ImportOperation> getUserImportHistory(ImportOperationFilter filter, PageableRequest config) {
         String username = userService.getAuthenticatedUser().getUsername();
         Pageable pageable = pageableFactory.create(config, ImportOperation.class);
-        return repository.findByUserUsername(username, pageable);
+        return repository.findByUserUsername(filter, username, pageable);
     }
 
     @Override
-    public Page<ImportOperation> getAllImportHistory(PageableRequest config) {
+    public Page<ImportOperation> getAllImportHistory(ImportOperationFilter filter, PageableRequest config) {
         Pageable pageable = pageableFactory.create(config, ImportOperation.class);
-        return repository.find(pageable);
+        return repository.find(filter, pageable);
     }
 
     @Override
