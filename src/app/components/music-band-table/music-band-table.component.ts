@@ -112,7 +112,7 @@ export class MusicBandTableComponent implements OnInit, OnDestroy {
   // --- Pagination ---
   onPageChange(event: any): void {
     this.pageableRequest.page = event.page ?? 0;
-    this.pageableRequest.size = event.rows ?? 5;
+    this.pageableRequest.size = event.size ?? 5;
     this.loadMusicBands();
   }
 

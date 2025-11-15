@@ -1,6 +1,7 @@
 <p-contextMenu #cm [model]="contextMenuItems"></p-contextMenu>
 
-<app-music-band-filter #mf (filterChange)="onFilter($event)"></app-music-band-filter>
+<app-music-band-filter #mf
+                       (filterChange)="onFilter($event)"></app-music-band-filter>
 
 <div class="flex mt-3 gap-2 align-items-center flex-wrap">
   <p-button
@@ -11,12 +12,12 @@
   />
 
   <p-button
+    (click)="openCreateDialog()"
     [disabled]="loading"
     [outlined]="true"
     icon="pi pi-plus"
-    severity="secondary"
     label="Создать группу"
-    (click)="openCreateDialog()"
+    severity="secondary"
   />
 
   <music-band-import [disabled]="loading"></music-band-import>
@@ -25,103 +26,116 @@
     [disabled]="!selectedBands.length || loading"
     [model]="selectItemsAction"
     [outlined]="true"
+    [severity]="(!selectedBands.length || loading) ? 'secondary' : 'info'"
     icon="pi pi-cog"
     label="Действия ({{ selectedBands.length }})"
-    [severity]="(!selectedBands.length || loading) ? 'secondary' : 'info'"
   />
 
   <p-button
+    (click)="onFilterClear()"
     [disabled]="isFilterEmpty"
     [outlined]="true"
-    icon="pi pi-filter-slash"
-    severity="secondary"
-    label="Очистить фильтры"
-    (click)="onFilterClear()"
     [severity]="isFilterEmpty ? 'secondary' : 'info'"
+    icon="pi pi-filter-slash"
+    label="Очистить фильтры"
+    severity="secondary"
   />
 </div>
 
-<p-panel showHeader="false" class="mt-3">
+<p-panel class="mt-3" showHeader="false">
   <p-table
     #dt
-    [(selection)]="selectedBands"
     (onSort)="customSort($event)"
+    (selectionChange)="onSelectionChange()"
+    [(selection)]="selectedBands"
     [breakpoint]="'768px'"
+    [customSort]="true"
     [lazy]="true"
     [loading]="loading"
+    [rowTrackBy]="trackByFn"
     [value]="bands"
-    (selectionChange)="onSelectionChange()"
-    [customSort]="true"
     class="mt-2 table"
     dataKey="id"
-    [rowTrackBy]="trackByFn"
   >
     <ng-template #header>
       <tr>
         <th style="width: 3rem">
-          <p-tableHeaderCheckbox [disabled]="loading || !bands.length"></p-tableHeaderCheckbox>
+          <p-tableHeaderCheckbox
+            [disabled]="loading || !bands.length"></p-tableHeaderCheckbox>
         </th>
-        <th [pSortableColumnDisabled]="loading || !bands.length" pSortableColumn="id"
+        <th [pSortableColumnDisabled]="loading || !bands.length"
+            pSortableColumn="id"
             style="width: 3rem; border-top-left-radius: 5px">
-          <div class="flex items-center gap-2">
+          <div class="flex items-center gap-1">
             ID
             <p-sortIcon field="id"/>
           </div>
         </th>
-        <th [pSortableColumnDisabled]="loading || !bands.length" pSortableColumn="name"
-            style="width: 10rem">
-          <div class="flex items-center gap-2">
+        <th [pSortableColumnDisabled]="loading || !bands.length"
+            pSortableColumn="name"
+            style="width: 8.5rem">
+          <div class="flex items-center gap-1">
             Название
             <p-sortIcon field="name"/>
           </div>
         </th>
-        <th [pSortableColumnDisabled]="loading || !bands.length" pSortableColumn="genre"
-            style="width: 13rem">
-          <div class="flex items-center gap-2">
+        <th [pSortableColumnDisabled]="loading || !bands.length"
+            pSortableColumn="genre"
+            style="width: 12.8rem">
+          <div class="flex items-center gap-1">
             Жанр
             <p-sortIcon field="genre"/>
           </div>
         </th>
         <th [pSortableColumnDisabled]="loading || !bands.length"
-            pSortableColumn="numberOfParticipants" style="width: 5rem">
-          <div class="flex items-center gap-2">
+            pSortableColumn="numberOfParticipants" style="width: 4.5rem">
+          <div class="flex items-center gap-1">
             Участники
             <p-sortIcon field="numberOfParticipants"/>
           </div>
         </th>
-        <th [pSortableColumnDisabled]="loading || !bands.length" pSortableColumn="singlesCount"
+        <th [pSortableColumnDisabled]="loading || !bands.length"
+            pSortableColumn="singlesCount"
             style="width: 5rem">
-          <div class="flex items-center gap-2">
+          <div class="flex items-center gap-1">
             Синглы
             <p-sortIcon field="singlesCount"/>
           </div>
         </th>
-        <th [pSortableColumnDisabled]="loading || !bands.length" pSortableColumn="albumsCount"
+        <th [pSortableColumnDisabled]="loading || !bands.length"
+            pSortableColumn="albumsCount"
             style="width: 5rem">
-          <div class="flex items-center gap-2">
+          <div class="flex items-center gap-1">
             Альбомы
             <p-sortIcon field="albumsCount"/>
           </div>
         </th>
         <th [pSortableColumnDisabled]="loading || !bands.length"
-            pSortableColumn="establishmentDate" style="width: 8rem">
-          <div class="flex items-center gap-2">
+            pSortableColumn="establishmentDate" style="width: 7rem">
+          <div class="flex items-center gap-1">
             Основана
             <p-sortIcon field="establishmentDate"/>
           </div>
         </th>
-        <th [pSortableColumnDisabled]="loading || !bands.length" pSortableColumn="frontMan.name"
-            style="width: 10rem">
-          <div class="flex items-center gap-2">
+        <th [pSortableColumnDisabled]="loading || !bands.length"
+            pSortableColumn="frontMan.name"
+            style="width: 8rem">
+          <div class="flex items-center gap-1">
             Лидер
             <p-sortIcon field="frontMan.name"/>
           </div>
         </th>
-        <th [pSortableColumnDisabled]="loading || !bands.length" pSortableColumn="bestAlbum.name"
-            style="width: 12rem">
-          <div class="flex items-center gap-2">
+        <th [pSortableColumnDisabled]="loading || !bands.length"
+            pSortableColumn="bestAlbum.name"
+            style="width: 11rem">
+          <div class="flex items-center gap-1">
             Лучший альбом
             <p-sortIcon field="bestAlbum.name"/>
+          </div>
+        </th>
+        <th style="width: 3rem">
+          <div class="flex items-center gap-1">
+            Действия
           </div>
         </th>
       </tr>
@@ -129,7 +143,9 @@
 
     <ng-template #body let-band>
       <tr (contextmenu)="onRowRightClick(band, $event)">
-        <td><p-tableCheckbox [value]="band"></p-tableCheckbox></td>
+        <td>
+          <p-tableCheckbox [value]="band"></p-tableCheckbox>
+        </td>
         <td>{{ band.id }}</td>
         <td>{{ band.name }}</td>
         <td>{{ band.genre }}</td>
@@ -139,6 +155,39 @@
         <td>{{ band.establishmentDate | date: 'MM/dd/yyyy' }}</td>
         <td>{{ band.frontMan?.name }}</td>
         <td>{{ band.bestAlbum?.name }}</td>
+        <td>
+          <div
+          class="flex gap-1">
+            <p-button
+              (onClick)="openViewDialog(band)"
+              icon="pi pi-eye"
+              outlined
+              severity="secondary"
+              size="small"
+              [disabled]="loading"
+            />
+            @if (!canUpdate(band)) {
+              <p-button
+                (onClick)="openEditDialog(band)"
+                [disabled]="true"
+                icon="pi pi-pencil"
+                outlined
+                severity="secondary"
+                size="small"
+                pTooltip="Это не ваш объект, редактировать невозможно"
+              />
+            } @else {
+              <p-button
+                (onClick)="openEditDialog(band)"
+                icon="pi pi-pencil"
+                [disabled]="loading"
+                outlined
+                severity="secondary"
+                size="small"
+              />
+            }
+          </div>
+        </td>
       </tr>
     </ng-template>
 
@@ -153,33 +202,33 @@
 </p-panel>
 
 <app-paginator
+  (pageChange)="onPageChange($event)"
   [page]="pageableRequest.page"
   [size]="pageableRequest.size"
   [totalRecords]="totalRecords"
-  (pageChange)="onPageChange($event)"
 ></app-paginator>
 
 <p-dialog
+  (onHide)="onDialogHide()"
+  [(visible)]="showDialog"
+  [breakpoints]="{ '640px': '95vw' }"
+  [draggable]="false"
+  [focusOnShow]="false"
+  [modal]="true"
+  [style]="{ width: '600px' }"
   header="{{ dialogType === 'edit' ? 'РЕДАКТИРОВАТЬ МУЗЫКАЛЬНУЮ ГРУППУ' :
              dialogType === 'create' ? 'СОЗДАТЬ МУЗЫКАЛЬНУЮ ГРУППУ' :
              'ПРОСМОТР МУЗЫКАЛЬНОЙ ГРУППЫ' }}"
-  [(visible)]="showDialog"
-  [modal]="true"
-  (onHide)="onDialogHide()"
-  [focusOnShow]="false"
-  [draggable]="false"
-  [breakpoints]="{ '640px': '95vw' }"
-  [style]="{ width: '600px' }"
 >
   @if (showDialog) {
     <app-music-band-form
-      [currentUser]="currentUser"
-      [musicBand]="dialogMusicBand"
-      [isEditMode]="dialogType === 'edit'"
       (cancel)="closeMusicBandDialog()"
-      (musicBandSubmit)="handleMusicBandSubmit()"
-      (modeChange)="handleModeChange($event)"
       (changesOccurred)="handleChangesOccurred($event)"
+      (modeChange)="handleModeChange($event)"
+      (musicBandSubmit)="handleMusicBandSubmit()"
+      [currentUser]="currentUser"
+      [isEditMode]="dialogType === 'edit'"
+      [musicBand]="dialogMusicBand"
     ></app-music-band-form>
   }
 </p-dialog>
