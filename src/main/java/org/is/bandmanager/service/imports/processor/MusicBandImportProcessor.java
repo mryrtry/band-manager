@@ -1,6 +1,7 @@
 package org.is.bandmanager.service.imports.processor;
 
 import jakarta.validation.ConstraintViolation;
+import jakarta.validation.ValidationException;
 import jakarta.validation.Validator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -57,12 +58,15 @@ public class MusicBandImportProcessor {
                 String errorMessage = validateImportRequest(request);
                 if (!errorMessage.isBlank()) {
                     log.warn("Validation error at record {}: {}", i + 1, errorMessage);
-                    throw new IllegalArgumentException(errorMessage);
+                    throw new ValidationException(errorMessage);
                 }
                 MusicBand musicBand = createMusicBandFromImport(request);
                 MusicBand savedBand = musicBandRepository.save(musicBand);
                 createdBandIds.add(savedBand.getId());
                 log.debug("Successfully created MusicBand from import request at index {}", i);
+            } catch (ValidationException e) {
+                log.error("Validation error at record {}: {}", i + 1, e.getMessage());
+                throw new ValidationException(e.getMessage());
             } catch (Exception e) {
                 log.error("Failed to process import request at index {} because of {}", i, e.getMessage());
                 String finalMessage = extractValidationMessage(e.getMessage());

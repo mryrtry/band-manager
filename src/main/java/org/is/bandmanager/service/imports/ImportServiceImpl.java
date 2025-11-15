@@ -1,5 +1,6 @@
 package org.is.bandmanager.service.imports;
 
+import jakarta.validation.ValidationException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.is.auth.model.User;
@@ -22,6 +23,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.time.LocalDateTime;
 import java.util.List;
 
+// todo: mass refactor
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -75,10 +77,15 @@ public class ImportServiceImpl implements ImportService {
             operation.setCompletedAt(LocalDateTime.now());
             log.info("Import operation {} completed successfully. Created {} MusicBand entities",
                     operation.getId(), createdBandIds.size());
+        } catch (ValidationException e) {
+            log.error("Validation error at record {}: {}", operation.getId(), e.getMessage());
+            operation.setStatus(ImportStatus.VALIDATION_FAILED);
+            operation.setErrorMessage(getErrorMessage(e));
         } catch (Exception e) {
             log.error("Import operation {} failed: {}", operation.getId(), e.getMessage());
             operation.setStatus(ImportStatus.FAILED);
             operation.setErrorMessage(getErrorMessage(e));
+        } finally {
             operation.setCompletedAt(LocalDateTime.now());
             repository.save(operation);
         }

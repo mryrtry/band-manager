@@ -28,11 +28,10 @@ public class JsonFileParser implements FileParser {
             return objectMapper.readValue(inputStream,
                     objectMapper.getTypeFactory().constructCollectionType(List.class, MusicBandImportRequest.class));
         } catch (IOException e) {
-            String detailedMessage = e.getMessage() != null ? e.getMessage() : "Unknown parsing error";
             if (e instanceof JsonProcessingException) {
-                throw new RuntimeException("JSON parsing failed: " + detailedMessage, e);
+                throw new RuntimeException("JSON parsing failed");
             } else {
-                throw new RuntimeException("Failed to read or parse JSON file: " + detailedMessage, e);
+                throw new RuntimeException("Failed to read or parse JSON file");
             }
         }
     }
