@@ -89,6 +89,9 @@ public class MusicBandImportProcessor {
     }
 
     private String validateImportRequest(MusicBandImportRequest request) {
+		if (musicBandRepository.existsByName(request.getName())) {
+			return "Ресурс 'MusicBand.name' должен быть уникальным";
+		}
         BeanPropertyBindingResult errors = new BeanPropertyBindingResult(request, "importRequest");
         validator.validate(request, errors);
         if (errors.hasErrors()) {
