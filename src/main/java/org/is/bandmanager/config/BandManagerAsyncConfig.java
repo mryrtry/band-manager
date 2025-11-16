@@ -7,6 +7,8 @@ import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
+import java.util.concurrent.ThreadPoolExecutor;
+
 
 @Configuration
 @EnableAsync
@@ -26,6 +28,7 @@ public class BandManagerAsyncConfig {
         executor.setMaxPoolSize(MAX_POOL_SIZE);
         executor.setQueueCapacity(QUEUE_CAPACITY);
         executor.setThreadNamePrefix("cleanup-");
+	    executor.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());
         executor.initialize();
         return executor;
     }
@@ -37,6 +40,8 @@ public class BandManagerAsyncConfig {
         executor.setMaxPoolSize(MAX_POOL_SIZE);
         executor.setQueueCapacity(QUEUE_CAPACITY);
         executor.setThreadNamePrefix("subscription-");
+	    executor.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());
+	    executor.initialize();
         return executor;
     }
 
@@ -47,6 +52,8 @@ public class BandManagerAsyncConfig {
         executor.setMaxPoolSize(MAX_POOL_SIZE);
         executor.setQueueCapacity(QUEUE_CAPACITY);
         executor.setThreadNamePrefix("import-");
+	    executor.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());
+	    executor.initialize();
         return executor;
     }
 

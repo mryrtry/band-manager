@@ -11,8 +11,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import org.is.bandmanager.dto.importRequest.MusicBandImportRequest;
 import org.springframework.stereotype.Component;
-import org.springframework.web.multipart.MultipartFile;
 
+import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.List;
 
@@ -22,13 +22,12 @@ import java.util.List;
 public class XmlFileParser implements FileParser {
 
 	@Override
-	public boolean supports(MultipartFile file) {
-		String contentType = file.getContentType();
-		return "application/xml".equals(contentType) || "text/xml".equals(contentType);
+	public boolean supports(String mimeType) {
+		return "application/xml".equals(mimeType) || "text/xml".equals(mimeType);
 	}
 
 	@Override
-	public List<MusicBandImportRequest> parse(MultipartFile file) {
+	public List<MusicBandImportRequest> parse(byte[] fileContent, String originalFilename) {
 		XStream xstream = new XStream();
 		xstream.addPermission(com.thoughtworks.xstream.security.AnyTypePermission.ANY);
 		xstream.alias("musicBand", MusicBandImportRequest.class);
@@ -40,7 +39,7 @@ public class XmlFileParser implements FileParser {
 		xstream.addImplicitCollection(XStreamWrapper.class, "musicBandsList", "musicBand", MusicBandImportRequest.class);
 		xstream.registerConverter(new NullableIntegerConverter());
 		xstream.registerConverter(new NullableFloatConverter());
-		try (InputStream inputStream = file.getInputStream()) {
+		try (InputStream inputStream = new ByteArrayInputStream(fileContent)) {
 			XStreamWrapper wrapper = (XStreamWrapper) xstream.fromXML(inputStream);
 			return wrapper.getMusicBandsList();
 		} catch (Exception e) {

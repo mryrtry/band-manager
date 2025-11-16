@@ -7,9 +7,9 @@ import java.util.List;
 
 public interface FileParser {
 
-    boolean supports(MultipartFile file);
+    boolean supports(String mimeType);
 
-    List<MusicBandImportRequest> parse(MultipartFile file);
+    List<MusicBandImportRequest> parse(byte[] fileContent, String originalFilename);
 
     List<String> getSupportedContentTypes();
 

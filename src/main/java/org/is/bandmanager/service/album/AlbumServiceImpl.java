@@ -1,6 +1,5 @@
 package org.is.bandmanager.service.album;
 
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.is.bandmanager.dto.AlbumDto;
 import org.is.bandmanager.dto.AlbumMapper;
@@ -13,6 +12,7 @@ import org.is.bandmanager.repository.MusicBandRepository;
 import org.is.bandmanager.service.cleanup.CleanupStrategy;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 
 import java.util.List;
@@ -82,7 +82,6 @@ public class AlbumServiceImpl implements AlbumService, CleanupStrategy<Album, Al
     }
 
     @Override
-    @Transactional
     public AlbumDto update(Long id, AlbumRequest request) {
         Album updatingAlbum = findById(id);
         mapper.updateEntityFromRequest(request, updatingAlbum);

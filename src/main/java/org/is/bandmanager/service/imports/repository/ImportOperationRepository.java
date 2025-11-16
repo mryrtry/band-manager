@@ -10,7 +10,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
 
-@Repository
+@Repository("ImportOperationRepository")
 public interface ImportOperationRepository extends JpaRepository<ImportOperation, Long>, JpaSpecificationExecutor<ImportOperation> {
 
     default Page<ImportOperation> findByUserUsername(ImportOperationFilter filter, String username, Pageable pageable) {

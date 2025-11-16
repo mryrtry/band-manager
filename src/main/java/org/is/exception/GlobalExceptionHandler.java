@@ -3,10 +3,12 @@ package org.is.exception;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
+import lombok.extern.slf4j.Slf4j;
 import org.is.util.fieldOrder.ClassFieldOrderUtil;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
@@ -20,7 +22,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
-
+@Slf4j
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
@@ -84,17 +86,13 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleHttpMessageNotReadable(HttpMessageNotReadableException ex) {
         String message = "Некорректный формат JSON";
         String details = "Отсутствует или неверный формат тела запроса";
-
         Throwable cause = ex.getCause();
-
         if (cause instanceof JsonParseException) {
             message = "Синтаксическая ошибка в JSON";
             details = "Неверный формат JSON";
-
         } else if (cause instanceof InvalidFormatException invalidFormat) {
             message = "Неверный формат данных";
             details = String.format("Поле '%s': неверный формат. Ожидается: %s", invalidFormat.getPath().get(0).getFieldName(), invalidFormat.getTargetType().getSimpleName());
-
         } else if (cause instanceof JsonMappingException) {
             message = "Ошибка маппинга JSON";
             details = "Не удалось преобразовать JSON в объект";
@@ -110,6 +108,25 @@ public class GlobalExceptionHandler {
 
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
+
+	@ExceptionHandler(ObjectOptimisticLockingFailureException.class)
+	public ResponseEntity<ErrorResponse> handleStaleObjectStateException(ObjectOptimisticLockingFailureException ignored) {
+		List<ErrorResponse.ErrorDetail> errorDetails = Collections.singletonList(
+				ErrorResponse.ErrorDetail.builder()
+						.field("concurrency")
+						.message("Этот ресурс был обновлен, обновите ресурс и повторите попытку")
+						.rejectedValue(null)
+						.errorType("STALE_OBJECT_ERROR")
+						.build()
+		);
+		ErrorResponse errorResponse = ErrorResponse.builder()
+				.status(HttpStatus.CONFLICT.value())
+				.message("Conflict")
+				.details(errorDetails)
+				.timestamp(LocalDateTime.now())
+				.build();
+		return new ResponseEntity<>(errorResponse, HttpStatus.CONFLICT);
+	}
 
     // Base exception handler
     @ExceptionHandler(Exception.class)

@@ -1,5 +1,7 @@
 package org.is.bandmanager.dto.importRequest;
 
+import com.fasterxml.jackson.annotation.JsonSetter;
+import com.fasterxml.jackson.annotation.Nulls;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -26,6 +28,7 @@ public class MusicBandImportRequest {
     private CoordinatesImportRequest coordinates;
 
     @NotNull(message = "MusicBand.MusicGenre не может быть пустым")
+    @JsonSetter(nulls = Nulls.SKIP)
     private MusicGenre genre;
 
     @NotNull(message = "MusicBand.NumberOfParticipants не может быть пустым")
