@@ -37,3 +37,19 @@
   background-color: #F8D7DA;
   color: #721C24;
 }
+
+.success-row {
+  background-color: rgba(165, 255, 186, 0.05);
+}
+
+.process-row {
+  background-color: rgba(176, 247, 255, 0.05);
+}
+
+.pending-row {
+  background-color: rgba(255, 227, 147, 0.05);
+}
+
+.failed-row {
+  background-color: rgba(255, 131, 131, 0.05);
+}

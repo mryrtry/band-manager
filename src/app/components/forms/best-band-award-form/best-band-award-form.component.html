@@ -1,0 +1,107 @@
+<!-- best-band-award-form.component.html -->
+<form (ngSubmit)="onSubmit()" [formGroup]="awardForm" class="award-form">
+  <!-- Music Band ID Field -->
+  <div class="form-field flex flex-column gap-1 mt-2">
+    <label for="musicBandId">ID Музыкальной Группы *</label>
+    <p-inputNumber
+      [disabled]="isViewMode"
+      [invalid]="isInvalid('musicBandId')"
+      [maxFractionDigits]="0"
+      [min]="1"
+      class="w-full"
+      fluid
+      formControlName="musicBandId"
+      id="musicBandId"
+      mode="decimal"
+      placeholder="Введите ID музыкальной группы"
+    />
+    @if (isInvalid('musicBandId')) {
+      <p-message severity="error" size="small" variant="simple">
+        @if (awardForm.get('musicBandId')?.errors?.['required']) {
+          Это поле обязательно
+        }
+        @if (awardForm.get('musicBandId')?.errors?.['min']) {
+          ID музыкальной группы должен быть >= 1
+        }
+        @if (awardForm.get('musicBandId')?.errors?.['serverError']) {
+          {{ awardForm.get('musicBandId')?.errors?.['serverError'] }}
+        }
+      </p-message>
+    }
+  </div>
+
+  <!-- Genre Field -->
+  <div class="form-field flex flex-column gap-1 mt-2">
+    <label for="genre">Жанр *</label>
+    <p-select
+      [disabled]="isViewMode"
+      [invalid]="isInvalid('genre')"
+      [options]="genres"
+      fluid
+      formControlName="genre"
+      id="genre"
+      placeholder="Выберите музыкальный жанр"
+      appendTo="body"
+    ></p-select>
+    @if (isInvalid('genre')) {
+      <p-message severity="error" size="small" variant="simple">
+        {{ getFieldError('genre') }}
+      </p-message>
+    }
+  </div>
+
+  <div class="flex mt-5 gap-2">
+    @if (isViewMode) {
+      @if (!canUpdate()) {
+        <p-button
+          class="flex-1"
+          icon="pi pi-pencil"
+          label="Редактировать"
+          outlined
+          fluid
+          (click)="enterEditMode()"
+          [disabled]="true"
+          pTooltip="Это не ваш объект, редактировать невозможно"
+        />
+      } @else {
+        <p-button
+          class="flex-1"
+          icon="pi pi-pencil"
+          label="Редактировать"
+          outlined
+          fluid
+          (click)="enterEditMode()"
+          [disabled]="true"
+          pTooltip="API не поддерживает обновление наград"
+        />
+      }
+    } @else {
+      <p-button
+        class="flex-1"
+        [icon]="submitButtonIcon"
+        [label]="submitButtonText"
+        outlined
+        fluid
+        type="submit"
+        [loading]="isLoading"
+        [disabled]="awardForm.invalid"
+      />
+      @if (!isCreateMode) {
+        <p-button
+          icon="pi pi-eye"
+          severity="secondary"
+          outlined
+          label="Просмотр"
+          (click)="enterViewMode()"
+        />
+      }
+    }
+    <p-button
+      icon="pi pi-times"
+      label="Отмена"
+      severity="secondary"
+      text
+      (click)="onCancel()"
+    />
+  </div>
+</form>

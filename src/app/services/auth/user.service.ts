@@ -124,7 +124,6 @@ export class UserService {
     return this.http.put<User>(`${this.apiUrl}/${id}/roles`, request).pipe(
       tap(updatedUser => {
         if (this.currentUserCache && this.currentUserCache.id === id) {
-          this.currentUserCache = updatedUser;
           this.currentUserSubject.next(updatedUser);
         }
       })

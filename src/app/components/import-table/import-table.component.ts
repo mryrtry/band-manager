@@ -216,6 +216,23 @@ export class ImportTableComponent implements OnInit, OnDestroy {
     }
   }
 
+  // -- RealTime class --
+  rowClass(operation: ImportOperation): string {
+    switch (operation.status) {
+      case ImportStatus.PENDING:
+        return 'pending-row';
+      case ImportStatus.PROCESSING:
+        return 'process-row';
+      case ImportStatus.COMPLETED:
+        return 'success-row';
+      case ImportStatus.FAILED:
+      case ImportStatus.VALIDATION_FAILED:
+        return 'failed-row';
+      default:
+        return '';
+    }
+  }
+
   // -- User --
   get isCurrentUserAdmin(): boolean {
     return this.userService.isAdminSync();

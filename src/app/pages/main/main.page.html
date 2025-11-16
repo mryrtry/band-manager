@@ -6,29 +6,41 @@
       Музыкальные группы
     </p-tab>
     <p-tab value="1" class="flex align-items-center">
+      <span class="pi pi-trophy"></span>
+      Награды
+    </p-tab>
+    <p-tab value="2" class="flex align-items-center">
       <span class="pi pi-star"></span>
       Специальные операции
     </p-tab>
-    <p-tab value="2" class="flex align-items-center">
+    <p-tab value="3" class="flex align-items-center">
       <span class="pi pi-upload"></span>
       Импорты
     </p-tab>
-    <p-tab value="3" class="flex align-items-center" [disabled]="!isAdmin">
-      <span class="pi pi-user"></span>
-      Пользователи
-    </p-tab>
+    @if (isAdmin) {
+      <p-tab value="4" class="flex align-items-center">
+        <span class="pi pi-user"></span>
+        Пользователи
+      </p-tab>
+    }
   </p-tablist>
   <p-tabpanels class="p-0">
     <p-tabpanel value="0">
       <app-music-band-table></app-music-band-table>
     </p-tabpanel>
     <p-tabpanel value="1">
-      <app-music-band-special></app-music-band-special>
+      <app-best-band-award-table></app-best-band-award-table>
     </p-tabpanel>
     <p-tabpanel value="2">
-      <app-import-table></app-import-table>
+      <app-music-band-special></app-music-band-special>
     </p-tabpanel>
     <p-tabpanel value="3">
+      <app-import-table></app-import-table>
     </p-tabpanel>
+    @if (isAdmin) {
+      <p-tabpanel value="4">
+        <app-user-table></app-user-table>
+      </p-tabpanel>
+    }
   </p-tabpanels>
 </p-tabs>

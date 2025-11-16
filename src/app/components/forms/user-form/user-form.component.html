@@ -1,0 +1,96 @@
+<form (ngSubmit)="onSubmit()" [formGroup]="userForm" class="user-form" autocomplete="off">
+  <!-- Username Field -->
+  <div class="form-field flex flex-column gap-1 mt-2">
+    <label for="username">Имя пользователя *</label>
+    <input
+      [invalid]="isInvalid('username')"
+      fluid
+      formControlName="username"
+      id="username"
+      pInputText
+      placeholder="Введите имя пользователя"
+      type="text"
+    />
+    @if (isInvalid('username')) {
+      <p-message severity="error" size="small" variant="simple">
+        @if (userForm.get('username')?.errors?.['required']) {
+          Это поле обязательно
+        }
+        @if (userForm.get('username')?.errors?.['minlength']) {
+          Минимум 3 символа
+        }
+        @if (userForm.get('username')?.errors?.['maxlength']) {
+          Максимум 50 символов
+        }
+        @if (userForm.get('username')?.errors?.['serverError']) {
+          {{ userForm.get('username')?.errors?.['serverError'] }}
+        }
+      </p-message>
+    }
+  </div>
+
+  <!-- Password Field -->
+  <div class="form-field flex flex-column gap-1 mt-2">
+    <label for="password">Пароль</label>
+    <p-password
+      autocomplete="new-password"
+      [inputId]="'password'"
+      [invalid]="isInvalid('password')"
+      [toggleMask]="true"
+      [feedback]="false"
+      formControlName="password"
+      placeholder="Введите новый пароль"
+      fluid
+    />
+    @if (isInvalid('password')) {
+      <p-message severity="error" size="small" variant="simple">
+        @if (userForm.get('password')?.errors?.['minlength']) {
+          Минимум 6 символов
+        }
+        @if (userForm.get('password')?.errors?.['serverError']) {
+          {{ userForm.get('password')?.errors?.['serverError'] }}
+        }
+      </p-message>
+    }
+  </div>
+
+  <!-- Roles Field -->
+  <div class="form-field flex flex-column gap-1 mt-2">
+    <label>Роли</label>
+    <p-multiSelect
+      [disabled]="!currentUser?.roles?.includes(Role.ROLE_ADMIN)"
+      [invalid]="isInvalid('roles')"
+      [options]="allRoles"
+      [showClear]="true"
+      appendTo="body"
+      formControlName="roles"
+      optionLabel="label"
+      optionValue="value"
+    ></p-multiSelect>
+    @if (isInvalid('roles')) {
+      <p-message severity="error" size="small" variant="simple">
+        {{ getFieldError('roles') }}
+      </p-message>
+    }
+  </div>
+
+  <div class="flex mt-5 gap-2">
+    <p-button
+      class="flex-1"
+      [icon]="submitButtonIcon"
+      [label]="submitButtonText"
+      outlined
+      fluid
+      type="submit"
+      [loading]="isLoading"
+      [disabled]="userForm.invalid"
+    />
+    <p-button
+      icon="pi pi-times"
+      label="Отмена"
+      severity="secondary"
+      text
+      (click)="onCancel()"
+    />
+  </div>
+</form>

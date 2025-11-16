@@ -1,0 +1,38 @@
+<p-panel
+  class="mt-3"
+  collapsed="true"
+  toggleable="true"
+>
+  <ng-template #header>
+    <p style="font-weight: bold">
+      ФИЛЬТРЫ
+      @if (!emptyFilter()) {
+        <span style="opacity: 0.5; font-weight: normal">({{ filterFieldsCount }})</span>
+      }
+    </p>
+  </ng-template>
+  <div class="grid p-fluid">
+    <!-- Username -->
+    <div class="field col-12 md:col-6 lg:col-4">
+      <label for="username">Имя пользователя</label>
+      <input
+        (keydown.enter)="applyFilters()"
+        [(ngModel)]="filter.username"
+        [disabled]="disabled"
+        fluid
+        id="username"
+        pInputText
+        placeholder="Введите имя пользователя"
+        type="text"
+      />
+    </div>
+  </div>
+  <p-button
+    class="block pt-2"
+    icon="pi pi-filter"
+    label="Применить фильтр"
+    outlined
+    (click)="applyFilters()"
+    [disabled]="emptyFilter()"
+  />
+</p-panel>

@@ -17,11 +17,17 @@ import {
 import {
   ImportTableComponent
 } from '../../components/import-table/import-table.component';
+import {
+  BestBandAwardTableComponent
+} from '../../components/best-band-award-table/best-band-award-table.component';
+import {
+  UserTableComponent
+} from '../../components/user-table/user-table.component';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, HeaderComponent, MusicBandTableComponent, Tabs, TabPanels, TabPanel, TabList, Tab, DialogModule, MusicBandSpecialComponent, ImportTableComponent
+  imports: [CommonModule, HeaderComponent, MusicBandTableComponent, Tabs, TabPanels, TabPanel, TabList, Tab, DialogModule, MusicBandSpecialComponent, ImportTableComponent, BestBandAwardTableComponent, UserTableComponent
   ],
   templateUrl: './main.page.html',
 })
@@ -30,7 +36,7 @@ export class MainPage {
   showDialog: boolean = false;
   dialogMusicBand: MusicBand | null = null;
   private userService = inject(UserService);
-  private musicBandService = inject(MusicBandService); // Inject MusicBandService
+  private musicBandService = inject(MusicBandService);
 
   get currentUser() {
     let user = this.userService.getCurrentUserSync();

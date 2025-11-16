@@ -45,6 +45,7 @@ import {MusicGenre} from '../../../model/core/music-genre.enum';
 import {HttpErrorResponse} from '@angular/common/http';
 import {MusicBandService} from '../../../services/core/music-band.service';
 import {Tooltip} from 'primeng/tooltip';
+import {ErrorDetail} from '../../../model/error-response.model';
 
 @Component({
   selector: 'app-music-band-form',
@@ -73,6 +74,9 @@ export class MusicBandFormComponent implements OnInit, OnChanges {
   // State
   isLoading = false;
   musicBandForm: FormGroup;
+
+  // Error
+  serverError?: string;
 
   // Services
   private messageService = inject(MessageService);
@@ -153,7 +157,6 @@ export class MusicBandFormComponent implements OnInit, OnChanges {
 
   getFieldError(fieldName: string): string {
     const field = this.musicBandForm.get(fieldName);
-
     if (!field || !field.errors) return '';
 
     if (field.errors['required']) return 'Это поле обязательно';
@@ -162,6 +165,7 @@ export class MusicBandFormComponent implements OnInit, OnChanges {
       if (fieldName === 'singlesCount' || fieldName === 'albumsCount') return 'Значение должно быть >= 0';
     }
     if (fieldName === 'description' && field.errors['minlength']) return 'Описание не может быть пустым';
+    if (fieldName === 'name') return 'Имя группы должно быть уникальным'
     return 'Недопустимое значение';
   }
 
@@ -343,6 +347,15 @@ export class MusicBandFormComponent implements OnInit, OnChanges {
 
   private handleError(summary: string, detail: string, error: HttpErrorResponse): void {
     this.isLoading = false;
+    if ((error.status === 400 || error.status === 409) && error.error && error.error.details) {
+      const details = error.error.details as ErrorDetail[];
+      details.forEach(detail => {
+        if (detail.field === 'service') {
+          this.musicBandForm.get('name')?.setErrors({ serverError: detail.message });
+        }
+      });
+      return;
+    }
     this.messageService.add({severity: 'error', summary, detail});
     console.error(`${summary}:`, error);
   }

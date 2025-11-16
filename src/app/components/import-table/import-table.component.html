@@ -85,7 +85,7 @@
     </ng-template>
 
     <ng-template #body let-imp>
-      <tr>
+      <tr [class]="rowClass(imp)">
         <td>{{ imp.id }}</td>
         <td class="truncate-cell" [pTooltip]="imp.filename">{{ imp.filename }}</td>
         <td>
@@ -94,7 +94,9 @@
           </span>
         </td>
         <td>{{ imp.createdEntitiesCount ?? '—' }}</td>
-        <td class="truncate-cell" [pTooltip]="imp.errorMessage || ''">{{ imp.errorMessage || '—' }}</td>
+        <td class="truncate-cell" [pTooltip]="imp.errorMessage || ''">
+          {{ (imp.errorMessage || '—') | slice:0:40 }}{{ imp.errorMessage && imp.errorMessage.length > 40 ? '...' : '' }}
+        </td>
         <td>{{ imp.startedAt ? formatDate(imp.startedAt) + ' ' + formatTime(imp.startedAt) : '—' }}</td>
         <td>{{ imp.completedAt ? formatDate(imp.completedAt) + ' ' + formatTime(imp.completedAt) : '—' }}</td>
         <td>{{ imp.createdBy }}</td>
