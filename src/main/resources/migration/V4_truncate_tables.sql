@@ -1,0 +1,19 @@
+-- 1. Очистка таблиц
+TRUNCATE TABLE import_operations CASCADE;
+TRUNCATE TABLE users CASCADE;
+TRUNCATE TABLE music_band CASCADE;
+TRUNCATE TABLE person CASCADE;
+TRUNCATE TABLE album CASCADE;
+TRUNCATE TABLE coordinates CASCADE;
+TRUNCATE TABLE location CASCADE;
+TRUNCATE TABLE best_band_award CASCADE;
+
+-- 2. Сброс счётчиков ID
+ALTER SEQUENCE import_operations_id_seq RESTART WITH 1;
+ALTER SEQUENCE users_id_seq RESTART WITH 1;
+ALTER SEQUENCE location_id_seq RESTART WITH 1;
+ALTER SEQUENCE coordinates_id_seq RESTART WITH 1;
+ALTER SEQUENCE album_id_seq RESTART WITH 1;
+ALTER SEQUENCE person_id_seq RESTART WITH 1;
+ALTER SEQUENCE music_band_id_seq RESTART WITH 1;
+ALTER SEQUENCE best_band_award_id_seq RESTART WITH 1;

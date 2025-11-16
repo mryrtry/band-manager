@@ -1,4 +1,5 @@
 -- 1. Очистка таблиц
+TRUNCATE TABLE import_operations CASCADE;
 TRUNCATE TABLE users CASCADE;
 TRUNCATE TABLE music_band CASCADE;
 TRUNCATE TABLE person CASCADE;
@@ -8,6 +9,7 @@ TRUNCATE TABLE location CASCADE;
 TRUNCATE TABLE best_band_award CASCADE;
 
 -- 2. Сброс счётчиков ID
+ALTER SEQUENCE import_operations_id_seq RESTART WITH 1;
 ALTER SEQUENCE users_id_seq RESTART WITH 1;
 ALTER SEQUENCE location_id_seq RESTART WITH 1;
 ALTER SEQUENCE coordinates_id_seq RESTART WITH 1;
@@ -108,14 +110,15 @@ INSERT INTO music_band (
     created_by, created_date, last_modified_by, last_modified_date
 )
 SELECT
+    -- Генерация уникальных имен групп
     CASE (random() * 7)::int
-        WHEN 0 THEN 'The ' || ('{Echoes,Voices,Shadows,Lights,Currents,Waves,Elements,Forces}'::text[])[(random() * 7)::int + 1]
-        WHEN 1 THEN ('{Crimson,Azure,Emerald,Golden,Silver,Obsidian}'::text[])[(random() * 5)::int + 1] || ' ' || ('{Sky,Sea,Forest,Mountain,Desert,River}'::text[])[(random() * 5)::int + 1]
-        WHEN 2 THEN ('{Midnight,Twilight,Dawn,Sunset,Noon}'::text[])[(random() * 4)::int + 1] || ' ' || ('{Project,Collective,Assembly,Union}'::text[])[(random() * 3)::int + 1]
-        WHEN 3 THEN ('{Electric,Digital,Analog,Neon,Urban}'::text[])[(random() * 4)::int + 1] || ' ' || ('{Dream,Reality,Fantasy,Nightmare}'::text[])[(random() * 3)::int + 1]
-        WHEN 4 THEN ('{Northern,Southern,Eastern,Western}'::text[])[(random() * 3)::int + 1] || ' ' || ('{Lights,Winds,Stars,Oceans}'::text[])[(random() * 3)::int + 1]
-        WHEN 5 THEN ('{Silent,Loud,Quiet,Noisy}'::text[])[(random() * 3)::int + 1] || ' ' || ('{Revolution,Evolution,Solution,Resolution}'::text[])[(random() * 3)::int + 1]
-        ELSE ('{Atomic,Quantum,Neural,Cyber,Proto}'::text[])[(random() * 4)::int + 1] || ' ' || ('{Wave,Pulse,Signal,Field,Matrix}'::text[])[(random() * 4)::int + 1]
+        WHEN 0 THEN 'The ' || ('{Echoes,Voices,Shadows,Lights,Currents,Waves,Elements,Forces}'::text[])[(random() * 7)::int + 1] || ' ' || (row_number() over ())::text
+        WHEN 1 THEN ('{Crimson,Azure,Emerald,Golden,Silver,Obsidian}'::text[])[(random() * 5)::int + 1] || ' ' || ('{Sky,Sea,Forest,Mountain,Desert,River}'::text[])[(random() * 5)::int + 1] || ' ' || (row_number() over ())::text
+        WHEN 2 THEN ('{Midnight,Twilight,Dawn,Sunset,Noon}'::text[])[(random() * 4)::int + 1] || ' ' || ('{Project,Collective,Assembly,Union}'::text[])[(random() * 3)::int + 1] || ' ' || (row_number() over ())::text
+        WHEN 3 THEN ('{Electric,Digital,Analog,Neon,Urban}'::text[])[(random() * 4)::int + 1] || ' ' || ('{Dream,Reality,Fantasy,Nightmare}'::text[])[(random() * 3)::int + 1] || ' ' || (row_number() over ())::text
+        WHEN 4 THEN ('{Northern,Southern,Eastern,Western}'::text[])[(random() * 3)::int + 1] || ' ' || ('{Lights,Winds,Stars,Oceans}'::text[])[(random() * 3)::int + 1] || ' ' || (row_number() over ())::text
+        WHEN 5 THEN ('{Silent,Loud,Quiet,Noisy}'::text[])[(random() * 3)::int + 1] || ' ' || ('{Revolution,Evolution,Solution,Resolution}'::text[])[(random() * 3)::int + 1] || ' ' || (row_number() over ())::text
+        ELSE ('{Atomic,Quantum,Neural,Cyber,Proto}'::text[])[(random() * 4)::int + 1] || ' ' || ('{Wave,Pulse,Signal,Field,Matrix}'::text[])[(random() * 4)::int + 1] || ' ' || (row_number() over ())::text
         END,
     (random() * 199 + 1)::int, -- coordinates_id
     ('{PROGRESSIVE_ROCK,SOUL,ROCK,POST_ROCK,PUNK_ROCK,POST_PUNK}'::text[])[(random() * 5)::int + 1],
