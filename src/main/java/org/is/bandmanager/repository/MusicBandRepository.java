@@ -40,4 +40,6 @@ public interface MusicBandRepository extends JpaRepository<MusicBand, Long>, Jpa
 
     boolean existsByBestAlbumId(Long bestAlbumId);
 
+	boolean existsByName(String name);
+
 }

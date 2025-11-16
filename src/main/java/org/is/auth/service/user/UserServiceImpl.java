@@ -6,6 +6,7 @@ import org.is.auth.dto.UserMapper;
 import org.is.auth.dto.request.LoginRequest;
 import org.is.auth.dto.request.RoleRequest;
 import org.is.auth.dto.request.UserRequest;
+import org.is.auth.dto.request.UserUpdateRequest;
 import org.is.auth.exception.AuthCredNotValidException;
 import org.is.auth.model.Permission;
 import org.is.auth.model.Role;
@@ -138,10 +139,12 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public UserDto update(Long id, UserRequest request) {
+    public UserDto update(Long id, UserUpdateRequest request) {
         User updatingUser = findUser(id);
         updatingUser.setUsername(request.getUsername());
-        updatingUser.setPassword(passwordEncoder.encode(request.getPassword()));
+		if (request.getPassword() != null) {
+			updatingUser.setPassword(passwordEncoder.encode(request.getPassword()));
+		}
         UserDto updatedUser = mapper.toDto(userRepository.save(updatingUser));
         eventPublisher.publishEvent(new EntityEvent<>(UPDATED, updatedUser));
         return updatedUser;

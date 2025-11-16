@@ -28,6 +28,7 @@
         <maven-checkstyle-plugin.version>3.3.0</maven-checkstyle-plugin.version>
         <antlr4.version>4.13.0</antlr4.version>
         <jjwt.version>0.11.5</jjwt.version>
+        <jackson.version>2.15.2</jackson.version>
     </properties>
 
     <profiles>
@@ -91,6 +92,12 @@
             <groupId>jakarta.validation</groupId>
             <artifactId>jakarta.validation-api</artifactId>
             <version>${jakarta.validation.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.thoughtworks.xstream</groupId>
+            <artifactId>xstream</artifactId>
+            <version>1.4.20</version>
         </dependency>
 
         <dependency>
