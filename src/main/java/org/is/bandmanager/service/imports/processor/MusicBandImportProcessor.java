@@ -5,7 +5,6 @@ import jakarta.validation.ValidationException;
 import jakarta.validation.Validator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.is.auth.service.user.UserService;
 import org.is.bandmanager.dto.importRequest.AlbumImportRequest;
 import org.is.bandmanager.dto.importRequest.CoordinatesImportRequest;
 import org.is.bandmanager.dto.importRequest.LocationImportRequest;
@@ -41,11 +40,10 @@ public class MusicBandImportProcessor {
 	private final AlbumRepository albumRepository;
 	private final PersonRepository personRepository;
 	private final LocationRepository locationRepository;
-	private final UserService userService;
 	private final SmartValidator validator;
 	private final Validator jakartaValidator;
 
-	public List<Long> processImport(List<MusicBandImportRequest> importRequests) {
+	public List<Long> processImport(List<MusicBandImportRequest> importRequests, String username) {
 		List<Long> createdBandIds = new ArrayList<>();
 		Set<String> allNamesInRequest = new HashSet<>();
 		for (int i = 0; i < importRequests.size(); i++) {
@@ -66,8 +64,6 @@ public class MusicBandImportProcessor {
 
 			allNamesInRequest.add(name);
 		}
-
-		String username = userService.getAuthenticatedUser().getUsername();
 
 		for (int i = 0; i < importRequests.size(); i++) {
 			MusicBandImportRequest request = importRequests.get(i);

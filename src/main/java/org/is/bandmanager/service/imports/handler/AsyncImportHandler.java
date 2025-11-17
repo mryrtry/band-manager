@@ -33,7 +33,7 @@ public class AsyncImportHandler implements ImportHandler {
 
 	@Override
 	@Async("importTaskExecutor")
-	public void processImport(Long operationId, byte[] fileContent, String originalFilename, String mimeType) {
+	public void processImport(Long operationId, byte[] fileContent, String originalFilename, String mimeType, String username) {
 		ImportOperation operation = repository.findById(operationId)
 				.orElseThrow(() -> new ServiceException(BandManagerErrorMessage.SOURCE_WITH_ID_NOT_FOUND, "ImportOperation", operationId));
 		try {
@@ -45,7 +45,7 @@ public class AsyncImportHandler implements ImportHandler {
 			if (importRequests.isEmpty()) {
 				throw new IllegalArgumentException("Import file is empty");
 			}
-			List<Long> createdBandIds = processor.processImport(importRequests);
+			List<Long> createdBandIds = processor.processImport(importRequests, username);
 			operation.setStatus(ImportStatus.COMPLETED);
 			operation.setCreatedEntitiesCount(createdBandIds.size());
 			operation.setCompletedAt(LocalDateTime.now());
