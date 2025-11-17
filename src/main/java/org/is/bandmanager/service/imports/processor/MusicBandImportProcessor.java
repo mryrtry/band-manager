@@ -51,17 +51,20 @@ public class MusicBandImportProcessor {
 
 	public List<Long> processImport(List<MusicBandImportRequest> importRequests) {
 		List<Long> createdBandIds = new ArrayList<>();
+		List<String> createdNames = new ArrayList<>();
+		List<MusicBand> createdBands = new ArrayList<>();
 		for (int i = 0; i < importRequests.size(); i++) {
 			MusicBandImportRequest request = importRequests.get(i);
 			try {
-				String errorMessage = validateImportRequest(request);
+				String errorMessage = validateImportRequest(request, createdNames);
 				if (!errorMessage.isBlank()) {
 					log.warn("Validation error at record {}: {}", i + 1, errorMessage);
 					throw new ValidationException("Record " + (i + 1) + ": " + errorMessage);
 				}
 				MusicBand musicBand = createMusicBandFromImport(request);
-				MusicBand savedBand = musicBandRepository.save(musicBand);
-				createdBandIds.add(savedBand.getId());
+				createdBandIds.add(musicBand.getId());
+				createdBands.add(musicBand);
+				createdNames.add(musicBand.getName());
 				log.debug("Successfully created MusicBand from import request at index {}", i);
 			} catch (ValidationException e) {
 				log.error("Validation error at record {}: {}", i + 1, e.getMessage());
@@ -69,13 +72,18 @@ public class MusicBandImportProcessor {
 			} catch (Exception e) {
 				log.error("Failed to process import request at index {}: {}", i + 1, e.getMessage());
 				throw new RuntimeException("Import failed at record " + (i + 1) + ": " + e.getMessage());
+			} finally {
+				musicBandRepository.saveAll(createdBands);
 			}
 		}
 		return createdBandIds;
 	}
 
-	private String validateImportRequest(MusicBandImportRequest request) {
+	private String validateImportRequest(MusicBandImportRequest request, List<String> createdNames) {
 		if (musicBandRepository.existsByName(request.getName())) {
+			return "Ресурс 'MusicBand.name' должен быть уникальным";
+		}
+		if (createdNames.contains(request.getName())) {
 			return "Ресурс 'MusicBand.name' должен быть уникальным";
 		}
 		BeanPropertyBindingResult errors = new BeanPropertyBindingResult(request, "importRequest");
