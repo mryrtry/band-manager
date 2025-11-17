@@ -40,6 +40,7 @@ public class ImportServiceImpl implements ImportService {
 	@Override
 	public ImportOperation startImport(MultipartFile file) {
 		User user = userService.getEntity(userService.getAuthenticatedUser().getId());
+		String username =  user.getUsername();
 		ImportOperation operation = ImportOperation.builder()
 				.user(user)
 				.filename(file.getOriginalFilename())
@@ -57,7 +58,7 @@ public class ImportServiceImpl implements ImportService {
 			repository.save(operation);
 			throw new RuntimeException("Failed to read file content: " + file.getOriginalFilename());
 		}
-		handler.processImport(savedOperation.getId(), fileContent, file.getOriginalFilename(), file.getContentType());
+		handler.processImport(savedOperation.getId(), fileContent, file.getOriginalFilename(), file.getContentType(), username);
 		return savedOperation;
 	}
 
