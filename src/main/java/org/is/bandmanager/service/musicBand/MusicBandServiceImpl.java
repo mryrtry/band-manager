@@ -1,6 +1,5 @@
 package org.is.bandmanager.service.musicBand;
 
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.is.bandmanager.dto.MusicBandDto;
 import org.is.bandmanager.dto.MusicBandMapper;
@@ -20,11 +19,14 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static org.is.bandmanager.exception.message.BandManagerErrorMessage.CANNOT_REMOVE_LAST_PARTICIPANT;
 import static org.is.bandmanager.exception.message.BandManagerErrorMessage.ID_MUST_BE_POSITIVE;
@@ -59,6 +61,8 @@ public class MusicBandServiceImpl implements MusicBandService {
 
 	private final PageableFactory pageableFactory;
 
+	private final Map<String, Object> nameLocks = new ConcurrentHashMap<>();
+
 	private MusicBand findById(Long id) {
 		if (id == null) {
 			throw new ServiceException(MUST_BE_NOT_NULL, "MusicBand.id");
@@ -69,7 +73,6 @@ public class MusicBandServiceImpl implements MusicBandService {
 		return musicBandRepository.findById(id).orElseThrow(() -> new ServiceException(SOURCE_WITH_ID_NOT_FOUND, "MusicBand", id));
 	}
 
-	@Transactional
 	protected void handleDependencies(MusicBandRequest request, MusicBand entity) {
 		entity.setFrontMan(personService.getEntity(request.getFrontManId()));
 		entity.setBestAlbum(albumService.getEntity(request.getBestAlbumId()));
@@ -83,16 +86,19 @@ public class MusicBandServiceImpl implements MusicBandService {
 	}
 
 	@Override
-	@Transactional
 	public MusicBandDto create(MusicBandRequest request) {
-		if (musicBandRepository.existsByName(request.getName())) {
-			throw new ServiceException(MUST_BE_UNIQUE, "MusicBand.name");
+		String name = request.getName();
+		Object lock = nameLocks.computeIfAbsent(name, k -> new Object());
+		synchronized (lock) {
+			if (musicBandRepository.existsByName(name)) {
+				throw new ServiceException(MUST_BE_UNIQUE, "MusicBand.name");
+			}
+			MusicBand musicBand = mapper.toEntity(request);
+			handleDependencies(request, musicBand);
+			MusicBandDto createdMusicBand = mapper.toDto(musicBandRepository.save(musicBand));
+			eventPublisher.publishEvent(new EntityEvent<>(CREATED, createdMusicBand));
+			return createdMusicBand;
 		}
-		MusicBand musicBand = mapper.toEntity(request);
-		handleDependencies(request, musicBand);
-		MusicBandDto createdMusicBand = mapper.toDto(musicBandRepository.save(musicBand));
-		eventPublisher.publishEvent(new EntityEvent<>(CREATED, createdMusicBand));
-		return createdMusicBand;
 	}
 
 	@Override
