@@ -1,7 +1,6 @@
 package org.is.bandmanager.service.imports.parser;
 
 import org.is.bandmanager.dto.importRequest.MusicBandImportRequest;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
