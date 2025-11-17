@@ -22,7 +22,6 @@ import org.is.bandmanager.repository.MusicBandRepository;
 import org.is.bandmanager.repository.PersonRepository;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.SmartValidator;
 
 import java.util.ArrayList;
@@ -44,7 +43,6 @@ public class MusicBandImportProcessor {
 	private final SmartValidator validator;
 	private final Validator jakartaValidator;
 
-	@Transactional(rollbackFor = Exception.class)
 	public List<Long> processImport(List<MusicBandImportRequest> importRequests) {
 		List<Long> createdBandIds = new ArrayList<>();
 		Set<String> allNamesInRequest = new HashSet<>();
@@ -59,7 +57,6 @@ public class MusicBandImportProcessor {
 				throw new ValidationException("Record " + (i + 1) + ": Ресурс 'MusicBand.name' должен быть уникальным. Имя '" + name + "' уже существует в базе данных");
 			}
 
-			// Валидация структуры запроса
 			String validationError = validateImportRequestStructure(request);
 			if (!validationError.isEmpty()) {
 				throw new ValidationException("Record " + (i + 1) + ": " + validationError);
