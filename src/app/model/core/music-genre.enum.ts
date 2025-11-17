@@ -1,0 +1,8 @@
+export enum MusicGenre {
+  PROGRESSIVE_ROCK = 'PROGRESSIVE_ROCK',
+  SOUL = 'SOUL',
+  ROCK = 'ROCK',
+  POST_ROCK = 'POST_ROCK',
+  PUNK_ROCK = 'PUNK_ROCK',
+  POST_PUNK = 'POST_PUNK'
+}

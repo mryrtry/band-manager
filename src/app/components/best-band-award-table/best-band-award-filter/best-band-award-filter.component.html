@@ -1,0 +1,77 @@
+<!-- best-band-award-filter.component.html -->
+<p-panel
+  class="mt-3"
+  collapsed="true"
+  toggleable="true"
+>
+  <ng-template #header>
+    <p style="font-weight: bold">
+      ФИЛЬТРЫ
+      @if (!emptyFilter()) {
+        <span style="opacity: 0.5; font-weight: normal">({{ filterFieldsCount }})</span>
+      }
+    </p>
+  </ng-template>
+  <div class="grid p-fluid">
+    <!-- Band ID -->
+    <div class="field col-12 md:col-6 lg:col-4 pb-0">
+      <label for="bandId">ID Группы</label>
+      <p-inputNumber
+        (keydown.enter)="applyFilters()"
+        [(ngModel)]="filter.bandId"
+        [disabled]="disabled"
+        [invalid]="!!getError('bandId')"
+        [showClear]="true"
+        fluid
+        id="bandId"
+        inputId="bandId"
+        placeholder="Введите ID группы"
+        [useGrouping]="false"
+      ></p-inputNumber>
+      @if (getError('bandId')) {
+        <p-message severity="error" variant="simple">{{ getError('bandId') }}</p-message>
+      }
+    </div>
+
+    <!-- Band Name -->
+    <div class="field col-12 md:col-6 lg:col-4">
+      <label for="bandName">Название группы</label>
+      <input
+        (keydown.enter)="applyFilters()"
+        [(ngModel)]="filter.bandName"
+        [disabled]="disabled"
+        [invalid]="!!getError('bandName')"
+        fluid
+        id="bandName"
+        pInputText
+        placeholder="Введите название"
+        type="text"
+      />
+    </div>
+
+    <!-- Genre -->
+    <div class="field col-12 md:col-6 lg:col-4">
+      <label for="genre">Жанр</label>
+      <p-select
+        (onChange)="applyFilters()"
+        [(ngModel)]="filter.genre"
+        [disabled]="disabled"
+        [options]="genres"
+        [showClear]="true"
+        fluid
+        id="genre"
+        optionLabel="label"
+        optionValue="value"
+        placeholder="Выберите жанр"
+      ></p-select>
+    </div>
+  </div>
+  <p-button
+    class="block pt-2"
+    icon="pi pi-filter"
+    label="Применить фильтр"
+    outlined
+    (click)="applyFilters()"
+    [disabled]="emptyFilter() || hasErrors()"
+  />
+</p-panel>

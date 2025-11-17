@@ -1,27 +1,15 @@
-import {inject, Injectable} from '@angular/core';
-import {CanActivate, Router} from '@angular/router';
-import {AuthService} from '../services/auth.service';
-import {map, take} from 'rxjs/operators';
-import {Observable} from 'rxjs';
+import {CanActivateFn, Router} from '@angular/router';
+import {inject} from '@angular/core';
+import {AuthService} from '../services/auth/auth.service';
 
-@Injectable({
-  providedIn: 'root'
-})
-export class GuestGuard implements CanActivate {
-  private authService = inject(AuthService);
-  private router = inject(Router);
+export const guestGuard: CanActivateFn = (_ignored, _ignored1) => {
+  const authService = inject(AuthService);
+  const router = inject(Router);
 
-  canActivate(): Observable<boolean> {
-    return this.authService.isAuthenticated$.pipe(
-      take(1),
-      map(isAuthenticated => {
-        if (!isAuthenticated) {
-          return true;
-        } else {
-          this.router.navigate(['/']).then();
-          return false;
-        }
-      })
-    );
+  if (!authService.isAuthenticated()) {
+    return true;
+  } else {
+    router.navigate(['/']).then();
+    return false;
   }
-}
+};

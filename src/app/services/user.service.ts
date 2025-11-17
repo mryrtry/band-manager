@@ -1,33 +1,22 @@
 import {inject, Injectable} from '@angular/core';
 import {HttpClient, HttpParams} from '@angular/common/http';
-import {Observable} from 'rxjs';
+import {
+  BehaviorSubject,
+  catchError,
+  filter, map,
+  Observable,
+  of,
+  switchMap,
+  tap,
+  throwError
+} from 'rxjs';
 import {environment} from '../../environments/environment';
-import {User} from '../models/user.model';
-import {PaginatedResponse} from '../models/paginated-response.model';
-import {RegisterRequest} from '../models/requests/register-request.model';
-
-export interface UserGetConfig {
-  filter: UserFilter;
-  pagination: UserPagination;
-  sorting?: UserSorting;
-}
-
-export interface UserFilter {
-  id?: number | null;
-  username?: string | null;
-  createdAt?: Date | null;
-  updatedAt?: Date | null;
-}
-
-export interface UserPagination {
-  page: number;
-  size?: number;
-}
-
-export interface UserSorting {
-  sort: string[];
-  direction?: 'asc' | 'desc';
-}
+import {Role, User} from '../model/auth/user.model';
+import {PageableRequest} from '../model/pageable-request.model';
+import {Page} from '../model/page.model';
+import {UserFilter} from '../model/auth/user-filter.model';
+import {RoleRequest} from '../model/auth/request/role.request';
+import {UserRequest} from '../model/auth/request/user.request';
 
 @Injectable({
   providedIn: 'root'
@@ -36,38 +25,76 @@ export class UserService {
   private http = inject(HttpClient);
   private apiUrl = `${environment.apiUrl}/users`;
 
-  getUsers(config: UserGetConfig): Observable<PaginatedResponse<User>> {
+  private currentUserCache: User | null = null;
+  private currentUserSubject = new BehaviorSubject<User | null>(null);
+  public currentUser$ = this.currentUserSubject.asObservable();
+  private currentUserLoadingSubject = new BehaviorSubject<boolean>(false);
+  public currentUserLoading$ = this.currentUserLoadingSubject.asObservable();
+
+  getAllUsers(filter: UserFilter = {}, config: PageableRequest): Observable<Page<User>> {
     let params = new HttpParams();
-
-    const {filter} = config;
-    Object.keys(filter).forEach(key => {
-      const value = filter[key as keyof UserFilter];
-      if (value !== undefined && value !== null && value !== '') {
-        params = params.set(key, value.toString());
-      }
-    });
-
-    const {pagination} = config;
-    params = params.set('page', pagination.page.toString());
-    if (pagination.size !== undefined && pagination.size !== null) {
-      params = params.set('size', pagination.size.toString());
-    }
-
-    const {sorting} = config;
-    if (sorting && sorting.sort && sorting.sort.length > 0) {
-      sorting.sort.forEach(sortField => {
+    if (filter.username) params = params.set('username', filter.username);
+    if (filter.createdAtAfter) params = params.set('createdAtAfter', filter.createdAtAfter);
+    if (filter.createdAtBefore) params = params.set('createdAtBefore', filter.createdAtBefore);
+    if (filter.updatedAtAfter) params = params.set('updatedAtAfter', filter.updatedAtAfter);
+    if (filter.updatedAtBefore) params = params.set('updatedAtBefore', filter.updatedAtBefore);
+    if (config.page) params = params.set('page', config.page.toString());
+    if (config.size) params = params.set('size', config.size.toString());
+    if (config.sort) {
+      config.sort.forEach(sortField => {
         params = params.append('sort', sortField);
       });
     }
-    if (sorting && sorting.direction !== undefined && sorting.direction !== null) {
-      params = params.append('direction', sorting.direction.toString());
-    }
-
-    return this.http.get<PaginatedResponse<User>>(this.apiUrl, {params});
+    if (config.direction) params = params.set('direction', config.direction);
+    return this.http.get<Page<User>>(this.apiUrl, {params});
   }
 
-  getCurrentUser(): Observable<User> {
-    return this.http.get<User>(`${this.apiUrl}/me`);
+  getCurrentUser(forceRefresh: boolean = false): Observable<User> {
+    if (this.currentUserCache && !forceRefresh) {
+      return of(this.currentUserCache);
+    }
+    if (this.currentUserLoadingSubject.value && !forceRefresh) {
+      return this.currentUser$.pipe(
+        filter(user => user !== null),
+        switchMap(user => user ? of(user) : this.fetchCurrentUser())
+      );
+    }
+
+    return this.fetchCurrentUser();
+  }
+
+  private fetchCurrentUser(): Observable<User> {
+    this.currentUserLoadingSubject.next(true);
+
+    return this.http.get<User>(`${this.apiUrl}/me`).pipe(
+      tap(user => {
+        this.currentUserCache = user;
+        this.currentUserSubject.next(user);
+        this.currentUserLoadingSubject.next(false);
+      }),
+      catchError(error => {
+        this.currentUserLoadingSubject.next(false);
+        this.currentUserCache = null;
+        this.currentUserSubject.next(null);
+        console.error('Failed to fetch current user:', error);
+        return throwError(() => error);
+      })
+    );
+  }
+
+  getCurrentUserSync(): User | null {
+    return this.currentUserCache;
+  }
+
+  refreshCurrentUser(): Observable<User> {
+    this.currentUserCache = null;
+    return this.getCurrentUser(true);
+  }
+
+  clearCurrentUserCache(): void {
+    this.currentUserCache = null;
+    this.currentUserSubject.next(null);
+    this.currentUserLoadingSubject.next(false);
   }
 
   getPermissions(): Observable<string[]> {
@@ -82,12 +109,56 @@ export class UserService {
     return this.http.get<User>(`${this.apiUrl}/username/${username}`);
   }
 
-  updateUser(id: number, userRequest: RegisterRequest): Observable<User> {
-    return this.http.put<User>(`${this.apiUrl}/${id}`, userRequest);
+  updateUser(id: number, request: UserRequest): Observable<User> {
+    return this.http.put<User>(`${this.apiUrl}/${id}`, request).pipe(
+      tap(updatedUser => {
+        if (this.currentUserCache && this.currentUserCache.id === id) {
+          this.currentUserCache = updatedUser;
+          this.currentUserSubject.next(updatedUser);
+        }
+      })
+    );
+  }
+
+  updateUserRoles(id: number, request: RoleRequest): Observable<User> {
+    return this.http.put<User>(`${this.apiUrl}/${id}/roles`, request).pipe(
+      tap(updatedUser => {
+        if (this.currentUserCache && this.currentUserCache.id === id) {
+          this.currentUserCache = updatedUser;
+          this.currentUserSubject.next(updatedUser);
+        }
+      })
+    );
   }
 
   deleteUser(id: number): Observable<User> {
-    return this.http.delete<User>(`${this.apiUrl}/${id}`);
+    return this.http.delete<User>(`${this.apiUrl}/${id}`).pipe(
+      tap(() => {
+        if (this.currentUserCache && this.currentUserCache.id === id) {
+          this.clearCurrentUserCache();
+        }
+      })
+    );
+  }
+
+  getUserRoles(userId: number): Observable<string[]> {
+    return this.http.get<string[]>(`${this.apiUrl}/${userId}/roles`);
+  }
+
+  hasRole(user: User, role: Role): boolean {
+    return user.roles.includes(role);
+  }
+
+  isAdmin(): Observable<boolean> {
+    return this.getCurrentUser().pipe(
+      map(user => user.roles.includes(Role.ROLE_ADMIN)),
+      catchError(() => of(false))
+    );
+  }
+
+  isAdminSync(): boolean {
+    const currentUser = this.getCurrentUserSync();
+    return currentUser ? currentUser.roles.includes(Role.ROLE_ADMIN) : false;
   }
 
 }

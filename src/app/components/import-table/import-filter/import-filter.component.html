@@ -1,0 +1,199 @@
+<p-panel class="mt-3" collapsed="true" toggleable="true">
+  <ng-template #header>
+    <p style="font-weight: bold">
+      ФИЛЬТРЫ
+      @if (!emptyFilter()) {
+        <span style="opacity: 0.5; font-weight: normal">({{ filterFieldsCount }}
+          )</span>
+      }
+    </p>
+  </ng-template>
+  <div class="grid p-fluid">
+    <!-- Имя файла -->
+    <div class="field col-12 md:col-6 lg:col-3">
+      <label for="filename">Имя файла</label>
+      <input
+        (keydown.enter)="applyFilters()"
+        [(ngModel)]="filter.filename"
+        [disabled]="disabled"
+        [invalid]="getError('filename')"
+        fluid
+        id="filename"
+        pInputText
+        placeholder="Введите имя файла"
+        type="text"
+      />
+    </div>
+
+    <!-- Статус импорта -->
+    <div class="field col-12 md:col-6 lg:col-3">
+      <label for="importStatus">Статус</label>
+      <p-select
+        (onChange)="applyFilters()"
+        [(ngModel)]="filter.importStatus"
+        [disabled]="disabled"
+        [options]="statuses"
+        [showClear]="true"
+        fluid
+        id="importStatus"
+        optionLabel="label"
+        optionValue="value"
+        placeholder="Выберите статус"
+      ></p-select>
+    </div>
+
+    <!-- Мин/Макс созданных сущностей -->
+    <div class="field col-12 md:col-6 lg:col-3">
+      <label for="createdEntitiesFrom">Мин. создано сущностей</label>
+      <p-inputNumber
+        (keydown.enter)="applyFilters()"
+        [(ngModel)]="filter.createdEntitiesFrom"
+        [disabled]="disabled"
+        [invalid]="getError('createdEntitiesFrom')"
+        [min]="0"
+        [showClear]="true"
+        [useGrouping]="false"
+        fluid
+        id="createdEntitiesFrom"
+        inputId="createdEntitiesFrom"
+        placeholder="Минимум"
+      ></p-inputNumber>
+      @if (getError('createdEntitiesFrom')) {
+        <p-message severity="error"
+                   variant="simple">{{ getError('createdEntitiesFrom') }}
+        </p-message>
+      }
+    </div>
+    <div class="field col-12 md:col-6 lg:col-3">
+      <label for="createdEntitiesTo">Макс. создано сущностей</label>
+      <p-inputNumber
+        (keydown.enter)="applyFilters()"
+        [(ngModel)]="filter.createdEntitiesTo"
+        [disabled]="disabled"
+        [invalid]="getError('createdEntitiesTo')"
+        [min]="0"
+        [showClear]="true"
+        [useGrouping]="false"
+        fluid
+        id="createdEntitiesTo"
+        inputId="createdEntitiesTo"
+        placeholder="Максимум"
+      ></p-inputNumber>
+      @if (getError('createdEntitiesTo')) {
+        <p-message severity="error"
+                   variant="simple">{{ getError('createdEntitiesTo') }}
+        </p-message>
+      }
+    </div>
+
+    <!-- Начато после -->
+    <div class="field col-12 md:col-6 lg:col-3">
+      <label for="startedAfter">Начато после</label>
+      <p-datePicker
+        (onSelect)="applyFilters()"
+        [(ngModel)]="filter.startedAfter"
+        [disabled]="disabled"
+        [invalid]="getError('startedAfter')"
+        [showClear]="true"
+        dateFormat="mm/dd/yy"
+        fluid
+        id="startedAfter"
+        placeholder="Выберите дату"
+      ></p-datePicker>
+      @if (getError('startedAfter')) {
+        <p-message severity="error"
+                   variant="simple">{{ getError('startedAfter') }}
+        </p-message>
+      }
+    </div>
+
+    <!-- Начато до -->
+    <div class="field col-12 md:col-6 lg:col-3">
+      <label for="startedBefore">Начато до</label>
+      <p-datePicker
+        (onSelect)="applyFilters()"
+        [(ngModel)]="filter.startedBefore"
+        [disabled]="disabled"
+        [invalid]="getError('startedBefore')"
+        [showClear]="true"
+        dateFormat="mm/dd/yy"
+        fluid
+        id="startedBefore"
+        placeholder="Выберите дату"
+      ></p-datePicker>
+      @if (getError('startedBefore')) {
+        <p-message severity="error"
+                   variant="simple">{{ getError('startedBefore') }}
+        </p-message>
+      }
+    </div>
+
+    <!-- Завершено после -->
+    <div class="field col-12 md:col-6 lg:col-3">
+      <label for="completedAfter">Завершено после</label>
+      <p-datePicker
+        (onSelect)="applyFilters()"
+        [(ngModel)]="filter.completedAfter"
+        [disabled]="disabled"
+        [invalid]="getError('completedAfter')"
+        [showClear]="true"
+        dateFormat="mm/dd/yy"
+        fluid
+        id="completedAfter"
+        placeholder="Выберите дату"
+      ></p-datePicker>
+      @if (getError('completedAfter')) {
+        <p-message severity="error"
+                   variant="simple">{{ getError('completedAfter') }}
+        </p-message>
+      }
+    </div>
+
+    <!-- Завершено до -->
+    <div class="field col-12 md:col-6 lg:col-3">
+      <label for="completedBefore">Завершено до</label>
+      <p-datePicker
+        (onSelect)="applyFilters()"
+        [(ngModel)]="filter.completedBefore"
+        [disabled]="disabled"
+        [invalid]="getError('completedBefore')"
+        [showClear]="true"
+        dateFormat="mm/dd/yy"
+        fluid
+        id="completedBefore"
+        placeholder="Выберите дату"
+      ></p-datePicker>
+      @if (getError('completedBefore')) {
+        <p-message severity="error"
+                   variant="simple">{{ getError('completedBefore') }}
+        </p-message>
+      }
+    </div>
+
+    <!-- Имя пользователя -->
+    @if (isAdmin) {
+      <div class="field col-12 md:col-6 lg:col-3 pb-0">
+        <label for="username">Пользователь</label>
+        <input
+          (keydown.enter)="applyFilters()"
+          [(ngModel)]="filter.username"
+          [disabled]="disabled"
+          [invalid]="getError('username')"
+          fluid
+          id="username"
+          pInputText
+          placeholder="Введите имя пользователя"
+          type="text"
+        />
+      </div>
+    }
+  </div>
+  <p-button
+    (click)="applyFilters()"
+    [disabled]="emptyFilter() || this.getValidationErrors().length > 0"
+    class="block pt-3"
+    icon="pi pi-filter"
+    label="Применить фильтр"
+    outlined
+  />
+</p-panel>

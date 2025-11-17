@@ -1,0 +1,103 @@
+<div class="person-selector">
+  <!-- Person Select Dropdown with Addons -->
+  <p-inputgroup class="min-w-full">
+    <p-select
+      [(ngModel)]="selectedPerson"
+      [disabled]="disabled"
+      [filterFields]="['id', 'name']"
+      [filter]="true"
+      [invalid]="!selectedPerson"
+      [options]="persons"
+      [showClear]="true"
+      fluid
+      (onChange)="onSelectionChange($event.value)"
+      (onClear)="onClearSelection()"
+      optionLabel="name"
+      placeholder="Выберите персону"
+      appendTo="body"
+    >
+      <!-- Selected Item Template -->
+      <ng-template #selectedItem let-selectedPerson>
+        @if (selectedPerson) {
+          <div class="selected-person">
+            {{ selectedPerson.name }}
+            <span class="id">ID: {{ selectedPerson.id }}</span>
+          </div>
+        }
+      </ng-template>
+
+      <!-- Dropdown Icon Template -->
+      <ng-template #dropdownicon>
+        @if (disabled) {
+          <i class="pi pi-user"></i>
+        } @else {
+          <i class="pi pi-chevron-down"></i>
+        }
+      </ng-template>
+
+      <!-- Item Template -->
+      <ng-template #item let-person>
+        <div class="person-item">
+          {{ person.name }}
+          <span class="id">ID: {{ person.id }}</span>
+        </div>
+      </ng-template>
+    </p-select>
+
+    @if (!disabled) {
+      @if (selectedPerson) {
+        <p-inputgroup-addon>
+          @if(!selectedPerson || !canUpdate()) {
+            <p-button
+              (click)="showEditForm()"
+              [disabled]="true"
+              pTooltip="Это не ваш объект, редактировать невозможно"
+              icon="pi pi-pencil"
+              outlined
+              severity="secondary"
+            />
+          } @else {
+            <p-button
+              (click)="showEditForm()"
+              [disabled]="!selectedPerson || !canUpdate()"
+              icon="pi pi-pencil"
+              outlined
+              severity="secondary"
+            />
+          }
+
+        </p-inputgroup-addon>
+      } @else {
+        <p-inputgroup-addon>
+          <p-button
+            (click)="showCreateForm()"
+            icon="pi pi-plus"
+            severity="secondary"
+            outlined
+          />
+        </p-inputgroup-addon>
+      }
+    }
+  </p-inputgroup>
+</div>
+
+<!-- Модальное окно для формы -->
+<p-dialog
+  header="{{ formPerson ? 'РЕДАКТИРОВАТЬ ПЕРСОНУ' : 'СОЗДАТЬ ПЕРСОНУ' }}"
+  [(visible)]="showForm"
+  [modal]="true"
+  (onHide)="hideForm()"
+  [focusOnShow]="false"
+  [draggable]="false"
+  [breakpoints]="{ '640px': '95vw' }"
+  [style]="{ width: '450px' }"
+>
+  @if (showForm) {
+    <app-person-form
+      (cancel)="hideForm()"
+      (personSubmit)="handlePersonSubmit($event)"
+      [currentUser]="currentUser"
+      [person]="formPerson"
+    ></app-person-form>
+  }
+</p-dialog>

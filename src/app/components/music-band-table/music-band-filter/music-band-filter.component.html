@@ -1,0 +1,344 @@
+<p-panel
+  class="mt-3" collapsed="true" toggleable="true">
+  <ng-template #header>
+    <p style="font-weight: bold">
+      ФИЛЬТРЫ
+      @if (!emptyFilter()) {
+        <span style="opacity: 0.5; font-weight: normal">({{ filterFieldsCount }})</span>
+      }
+    </p>
+  </ng-template>
+  <div class="grid p-fluid">
+    <!-- Название -->
+    <div class="field col-12 md:col-6 lg:col-3 pb-0">
+      <label for="name">Название</label>
+      <input
+        (keydown.enter)="applyFilters()"
+        [(ngModel)]="filter.name"
+        [disabled]="disabled"
+        [invalid]="getError('name')"
+        fluid
+        id="name"
+        pInputText
+        placeholder="Введите название"
+        type="text"
+      />
+    </div>
+
+    <!-- Жанр -->
+    <div class="field col-12 md:col-6 lg:col-3">
+      <label for="genre">Жанр</label>
+      <p-select
+        (onChange)="applyFilters()"
+        [(ngModel)]="filter.genre"
+        [disabled]="disabled"
+        [options]="genres"
+        [showClear]="true"
+        fluid
+        id="genre"
+        optionLabel="label"
+        optionValue="value"
+        placeholder="Выберите жанр"
+      ></p-select>
+    </div>
+
+    <!-- Имя лидера -->
+    <div class="field col-12 md:col-6 lg:col-3">
+      <label for="frontManName">Имя лидера</label>
+      <input
+        (keydown.enter)="applyFilters()"
+        [(ngModel)]="filter.frontManName"
+        [disabled]="disabled"
+        [invalid]="getError('frontManName')"
+        fluid
+        id="frontManName"
+        pInputText
+        placeholder="Введите имя лидера"
+        type="text"
+      />
+    </div>
+
+    <!-- Лучший альбом -->
+    <div class="field col-12 md:col-6 lg:col-3">
+      <label for="bestAlbumName">Название лучшего альбома</label>
+      <input
+        (keydown.enter)="applyFilters()"
+        [(ngModel)]="filter.bestAlbumName"
+        [disabled]="disabled"
+        [invalid]="getError('bestAlbumName')"
+        fluid
+        id="bestAlbumName"
+        pInputText
+        placeholder="Введите название альбома"
+        type="text"
+      />
+    </div>
+
+    <!-- Мин/Макс Участники -->
+    <div class="field col-12 md:col-6 lg:col-3">
+      <label for="minParticipants">Мин. участников</label>
+      <p-inputNumber
+        (keydown.enter)="applyFilters()"
+        [(ngModel)]="filter.minParticipants"
+        [disabled]="disabled"
+        [invalid]="getError('minParticipants')"
+        [min]="0"
+        [useGrouping]="false"
+        fluid
+        id="minParticipants"
+        inputId="minParticipants"
+        placeholder="Минимум"
+        [showClear]="true"
+      ></p-inputNumber>
+      @if (getError('minParticipants')) {
+        <p-message severity="error" variant="simple">{{ getError('minParticipants') }}</p-message>
+      }
+    </div>
+    <div class="field col-12 md:col-6 lg:col-3">
+      <label for="maxParticipants">Макс. участников</label>
+      <p-inputNumber
+        (keydown.enter)="applyFilters()"
+        [(ngModel)]="filter.maxParticipants"
+        [disabled]="disabled"
+        [invalid]="getError('maxParticipants')"
+        [min]="0"
+        [useGrouping]="false"
+        fluid
+        id="maxParticipants"
+        inputId="maxParticipants"
+        placeholder="Максимум"
+        [showClear]="true"
+      ></p-inputNumber>
+      @if (getError('maxParticipants')) {
+        <p-message severity="error" variant="simple">{{ getError('maxParticipants') }}</p-message>
+      }
+    </div>
+
+    <!-- Мин/Макс Синглы -->
+    <div class="field col-12 md:col-6 lg:col-3">
+      <label for="minSingles">Мин. синглов</label>
+      <p-inputNumber
+        (keydown.enter)="applyFilters()"
+        [(ngModel)]="filter.minSingles"
+        [disabled]="disabled"
+        [invalid]="getError('minSingles')"
+        [min]="0"
+        [useGrouping]="false"
+        fluid
+        id="minSingles"
+        inputId="minSingles"
+        placeholder="Минимум"
+        [showClear]="true"
+      ></p-inputNumber>
+      @if (getError('minSingles')) {
+        <p-message severity="error" variant="simple">{{ getError('minSingles') }}</p-message>
+      }
+    </div>
+    <div class="field col-12 md:col-6 lg:col-3">
+      <label for="maxSingles">Макс. синглов</label>
+      <p-inputNumber
+        (keydown.enter)="applyFilters()"
+        [(ngModel)]="filter.maxSingles"
+        [disabled]="disabled"
+        [invalid]="getError('maxSingles')"
+        [min]="0"
+        [useGrouping]="false"
+        fluid
+        id="maxSingles"
+        inputId="maxSingles"
+        placeholder="Максимум"
+        [showClear]="true"
+      ></p-inputNumber>
+      @if (getError('maxSingles')) {
+        <p-message severity="error" variant="simple">{{ getError('maxSingles') }}</p-message>
+      }
+    </div>
+
+    <!-- Мин/Макс Альбомы -->
+    <div class="field col-12 md:col-6 lg:col-3">
+      <label for="minAlbumsCount">Мин. альбомов</label>
+      <p-inputNumber
+        (keydown.enter)="applyFilters()"
+        [(ngModel)]="filter.minAlbumsCount"
+        [disabled]="disabled"
+        [invalid]="getError('minAlbumsCount')"
+        [min]="0"
+        [useGrouping]="false"
+        fluid
+        id="minAlbumsCount"
+        inputId="minAlbumsCount"
+        placeholder="Минимум"
+        [showClear]="true"
+      ></p-inputNumber>
+      @if (getError('minAlbumsCount')) {
+        <p-message severity="error" variant="simple">{{ getError('minAlbumsCount') }}</p-message>
+      }
+    </div>
+    <div class="field col-12 md:col-6 lg:col-3">
+      <label for="maxAlbumsCount">Макс. альбомов</label>
+      <p-inputNumber
+        (keydown.enter)="applyFilters()"
+        [(ngModel)]="filter.maxAlbumsCount"
+        [disabled]="disabled"
+        [invalid]="getError('maxAlbumsCount')"
+        [min]="0"
+        [useGrouping]="false"
+        fluid
+        id="maxAlbumsCount"
+        inputId="maxAlbumsCount"
+        placeholder="Максимум"
+        [showClear]="true"
+      ></p-inputNumber>
+      @if (getError('maxAlbumsCount')) {
+        <p-message severity="error" variant="simple">{{ getError('maxAlbumsCount') }}</p-message>
+      }
+    </div>
+
+    <!-- Мин/Макс Координата X -->
+    <div class="field col-12 md:col-6 lg:col-3">
+      <label for="minCoordinateX">Мин. координата X</label>
+      <p-inputNumber
+        (keydown.enter)="applyFilters()"
+        [(ngModel)]="filter.minCoordinateX"
+        [disabled]="disabled"
+        [invalid]="getError('minCoordinateX')"
+        [min]="-148"
+        [useGrouping]="false"
+        fluid
+        id="minCoordinateX"
+        inputId="minCoordinateX"
+        placeholder="Минимум"
+        [showClear]="true"
+      ></p-inputNumber>
+      @if (getError('minCoordinateX')) {
+        <p-message severity="error" variant="simple">{{ getError('minCoordinateX') }}</p-message>
+      }
+    </div>
+    <div class="field col-12 md:col-6 lg:col-3">
+      <label for="maxCoordinateX">Макс. координата X</label>
+      <p-inputNumber
+        (keydown.enter)="applyFilters()"
+        [(ngModel)]="filter.maxCoordinateX"
+        [disabled]="disabled"
+        [invalid]="getError('maxCoordinateX')"
+        [min]="-148"
+        [useGrouping]="false"
+        fluid
+        id="maxCoordinateX"
+        inputId="maxCoordinateX"
+        placeholder="Максимум"
+        [showClear]="true"
+      ></p-inputNumber>
+      @if (getError('maxCoordinateX')) {
+        <p-message severity="error" variant="simple">{{ getError('maxCoordinateX') }}</p-message>
+      }
+    </div>
+
+    <!-- Мин/Макс Координата Y -->
+    <div class="field col-12 md:col-6 lg:col-3">
+      <label for="minCoordinateY">Мин. координата Y</label>
+      <p-inputNumber
+        (keydown.enter)="applyFilters()"
+        [(ngModel)]="filter.minCoordinateY"
+        [disabled]="disabled"
+        [invalid]="getError('minCoordinateY')"
+        [maxFractionDigits]="2"
+        [minFractionDigits]="1"
+        [mode]="'decimal'"
+        [useGrouping]="false"
+        fluid
+        id="minCoordinateY"
+        inputId="minCoordinateY"
+        placeholder="Минимум"
+        [showClear]="true"
+      ></p-inputNumber>
+      @if (getError('minCoordinateY')) {
+        <p-message severity="error" variant="simple">{{ getError('minCoordinateY') }}</p-message>
+      }
+    </div>
+    <div class="field col-12 md:col-6 lg:col-3">
+      <label for="maxCoordinateY">Макс. координата Y</label>
+      <p-inputNumber
+        (keydown.enter)="applyFilters()"
+        [(ngModel)]="filter.maxCoordinateY"
+        [disabled]="disabled"
+        [invalid]="getError('maxCoordinateY')"
+        [maxFractionDigits]="2"
+        [minFractionDigits]="1"
+        [mode]="'decimal'"
+        [useGrouping]="false"
+        fluid
+        id="maxCoordinateY"
+        inputId="maxCoordinateY"
+        placeholder="Максимум"
+        [showClear]="true"
+      ></p-inputNumber>
+      @if (getError('maxCoordinateY')) {
+        <p-message severity="error" variant="simple">{{ getError('maxCoordinateY') }}</p-message>
+      }
+    </div>
+
+    <!-- Дата основания после -->
+    <div class="field col-12 md:col-6 lg:col-3">
+      <label for="establishmentDateAfter">Основана после</label>
+      <p-datePicker
+        (change)="applyFilters()"
+        [(ngModel)]="filter.establishmentDateAfter"
+        [disabled]="disabled"
+        [invalid]="getError('establishmentDateAfter')"
+        dateFormat="mm/dd/yy"
+        fluid
+        id="establishmentDateAfter"
+        placeholder="Выберите дату"
+        [showClear]="true"
+      ></p-datePicker>
+      @if (getError('establishmentDateAfter')) {
+        <p-message severity="error" variant="simple">{{ getError('establishmentDateAfter') }}</p-message>
+      }
+    </div>
+
+    <!-- Дата основания до -->
+    <div class="field col-12 md:col-6 lg:col-3">
+      <label for="establishmentDateBefore">Основана до</label>
+      <p-datePicker
+        (change)="applyFilters()"
+        [(ngModel)]="filter.establishmentDateBefore"
+        [disabled]="disabled"
+        [invalid]="getError('establishmentDateBefore')"
+        dateFormat="mm/dd/yy"
+        fluid
+        id="establishmentDateBefore"
+        placeholder="Выберите дату"
+        [showClear]="true"
+      ></p-datePicker>
+      @if (getError('establishmentDateBefore')) {
+        <p-message severity="error" variant="simple">{{ getError('establishmentDateBefore') }}</p-message>
+      }
+    </div>
+
+    <!-- Создано пользователем -->
+    <div class="field col-12 md:col-6 lg:col-3">
+      <label for="createdBy">Создано пользователем</label>
+      <input
+        (keydown.enter)="applyFilters()"
+        [(ngModel)]="filter.createdBy"
+        [disabled]="disabled"
+        [invalid]="getError('createdBy')"
+        fluid
+        id="createdBy"
+        pInputText
+        placeholder="Введите имя пользователя"
+        type="text"
+      />
+    </div>
+  </div>
+
+  <p-button
+    class="block pt-2"
+    icon="pi pi-filter"
+    label="Применить фильтр"
+    outlined
+    (click)="applyFilters()"
+    [disabled]="emptyFilter() || this.getValidationErrors().length > 0"
+  />
+</p-panel>

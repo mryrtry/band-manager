@@ -1,0 +1,205 @@
+<p-contextMenu #cm [model]="contextMenuItems"></p-contextMenu>
+
+<app-best-band-award-filter #bf
+                            (filterChange)="onFilter($event)"></app-best-band-award-filter>
+
+<div class="flex mt-3 gap-2 align-items-center flex-wrap">
+  <p-button
+    (onClick)="loadAwards()"
+    [disabled]="loading"
+    [outlined]="true"
+    icon="pi pi-refresh"
+  />
+  <p-button
+    (click)="openCreateDialog()"
+    [disabled]="loading"
+    [outlined]="true"
+    icon="pi pi-plus"
+    label="Создать награду"
+    severity="secondary"
+  />
+  <p-button
+    (click)="onFilterClear()"
+    [disabled]="isFilterEmpty"
+    [outlined]="true"
+    [severity]="isFilterEmpty ? 'secondary' : 'info'"
+    icon="pi pi-filter-slash"
+    label="Очистить фильтры"
+    severity="secondary"
+  />
+</div>
+
+<p-panel class="mt-3" showHeader="false">
+  <p-table
+    #dt
+    (onSort)="customSort($event)"
+    (selectionChange)="onSelectionChange()"
+    [(selection)]="selectedAwards"
+    [breakpoint]="'768px'"
+    [customSort]="true"
+    [lazy]="true"
+    [loading]="loading"
+    [rowTrackBy]="trackByFn"
+    [value]="awards"
+    class="mt-2 table"
+    dataKey="id"
+  >
+    <ng-template #header>
+      <tr>
+        <th [pSortableColumnDisabled]="loading || !awards.length"
+            pSortableColumn="id"
+            style="width: 3rem; border-top-left-radius: 5px">
+          <div class="flex items-center gap-1">
+            ID
+            <p-sortIcon field="id"/>
+          </div>
+        </th>
+        <th [pSortableColumnDisabled]="loading || !awards.length"
+            pSortableColumn="bandId"
+            style="width: 6rem">
+          <div class="flex items-center gap-1">
+            ID Группы
+            <p-sortIcon field="bandId"/>
+          </div>
+        </th>
+        <th [pSortableColumnDisabled]="loading || !awards.length"
+            pSortableColumn="bandName"
+            style="width: 10rem">
+          <div class="flex items-center gap-1">
+            Название группы
+            <p-sortIcon field="bandName"/>
+          </div>
+        </th>
+        <th [pSortableColumnDisabled]="loading || !awards.length"
+            pSortableColumn="genre"
+            style="width: 10rem">
+          <div class="flex items-center gap-1">
+            Жанр
+            <p-sortIcon field="genre"/>
+          </div>
+        </th>
+        <th [pSortableColumnDisabled]="loading || !awards.length"
+            pSortableColumn="createdBy"
+            style="width: 8rem">
+          <div class="flex items-center gap-1">
+            Создано
+            <p-sortIcon field="createdBy"/>
+          </div>
+        </th>
+        <th [pSortableColumnDisabled]="loading || !awards.length"
+            pSortableColumn="createdDate"
+            style="width: 7rem">
+          <div class="flex items-center gap-1">
+            Дата создания
+            <p-sortIcon field="createdDate"/>
+          </div>
+        </th>
+        <th [pSortableColumnDisabled]="loading || !awards.length"
+            pSortableColumn="lastModifiedBy"
+            style="width: 8rem">
+          <div class="flex items-center gap-1">
+            Изменено
+            <p-sortIcon field="lastModifiedBy"/>
+          </div>
+        </th>
+        <th [pSortableColumnDisabled]="loading || !awards.length"
+            pSortableColumn="lastModifiedDate"
+            style="width: 7rem">
+          <div class="flex items-center gap-1">
+            Дата изменения
+            <p-sortIcon field="lastModifiedDate"/>
+          </div>
+        </th>
+        <th style="width: 3rem">
+          <div class="flex items-center gap-1">
+            Действия
+          </div>
+        </th>
+      </tr>
+    </ng-template>
+    <ng-template #body let-award>
+      <tr (contextmenu)="onRowRightClick(award, $event)">
+        <td>{{ award.id }}</td>
+        <td>{{ award.bandId }}</td>
+        <td>{{ award.bandName }}</td>
+        <td>{{ award.genre }}</td>
+        <td>{{ award.createdBy }}</td>
+        <td>{{ award.createdDate | date: 'dd.MM.yyyy' }}</td>
+        <td>{{ award.lastModifiedBy }}</td>
+        <td>{{ award.lastModifiedDate | date: 'dd.MM.yyyy' }}</td>
+        <td>
+          <div class="flex gap-1">
+            <p-button
+              (onClick)="openViewDialog(award)"
+              icon="pi pi-eye"
+              outlined
+              severity="secondary"
+              size="small"
+              [disabled]="loading"
+            />
+            @if (!canUpdate(award)) {
+              <p-button
+                (onClick)="openEditDialog(award)"
+                [disabled]="true"
+                icon="pi pi-pencil"
+                outlined
+                severity="secondary"
+                size="small"
+                pTooltip="Это не ваш объект, редактировать невозможно"
+              />
+            } @else {
+              <p-button
+                (onClick)="openEditDialog(award)"
+                icon="pi pi-pencil"
+                [disabled]="true"
+                outlined
+                severity="secondary"
+                size="small"
+                pTooltip="API не поддерживает обновление наград"
+              />
+            }
+          </div>
+        </td>
+      </tr>
+    </ng-template>
+    <ng-template #emptymessage>
+      <tr>
+        <td colspan="10">
+          {{ generalError || 'Награды по условию не найдены' }}
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+</p-panel>
+
+<app-paginator
+  (pageChange)="onPageChange($event)"
+  [page]="pageableRequest.page"
+  [size]="pageableRequest.size"
+  [totalRecords]="totalRecords"
+></app-paginator>
+
+<p-dialog
+  (onHide)="onDialogHide()"
+  [(visible)]="showDialog"
+  [breakpoints]="{ '640px': '95vw' }"
+  [draggable]="false"
+  [focusOnShow]="false"
+  [modal]="true"
+  [style]="{ width: '600px' }"
+  header="{{ dialogType === 'edit' ? 'РЕДАКТИРОВАТЬ НАГРАДУ' :
+             dialogType === 'create' ? 'СОЗДАТЬ НАГРАДУ' :
+             'ПРОСМОТР НАГРАДЫ' }}"
+>
+  @if (showDialog) {
+    <app-best-band-award-form
+      (cancel)="closeAwardDialog()"
+      (changesOccurred)="handleChangesOccurred($event)"
+      (modeChange)="handleModeChange($event)"
+      (bestBandAwardSubmit)="handleAwardSubmit()"
+      [currentUser]="currentUser"
+      [isEditMode]="dialogType === 'edit'"
+      [award]="dialogAward"
+    ></app-best-band-award-form>
+  }
+</p-dialog>

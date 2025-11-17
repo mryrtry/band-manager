@@ -1,0 +1,102 @@
+<div class="album-selector">
+  <!-- Album Select Dropdown with Addons -->
+  <p-inputgroup class="min-w-full">
+    <p-select
+      (ngModelChange)="emitAlbumChange($event)"
+      [(ngModel)]="selectedAlbum"
+      [disabled]="disabled"
+      [filterFields]="['id', 'name', 'tracks', 'sales']"
+      [filter]="true"
+      [invalid]="!isLoading && !selectedAlbum"
+      [options]="albums"
+      [showClear]="true"
+      (onClear)="emitAlbumChange({})"
+      [loading]="isLoading"
+      appendTo="body"
+      optionLabel="name"
+      placeholder="Выберите альбом"
+      fluid
+    >
+      <!-- Selected Item Template -->
+      <ng-template #selectedItem let-selectedAlbum>
+        @if (selectedAlbum) {
+          <div class="selected-album">
+            {{ selectedAlbum.name }}
+            <span class="id">ID: {{ selectedAlbum.id }}</span>
+          </div>
+        }
+      </ng-template>
+
+      <!-- Dropdown Icon Template -->
+      <ng-template #dropdownicon>
+        @if (disabled) {
+          <i class="pi pi-headphones"></i>
+        } @else {
+          <i class="pi pi-chevron-down"></i>
+        }
+      </ng-template>
+
+      <!-- Item Template -->
+      <ng-template #item let-album>
+        <div class="album-item">
+          {{ album.name }}
+          <span class="id">ID: {{ album.id }}</span>
+        </div>
+      </ng-template>
+    </p-select>
+
+    @if (!disabled) {
+      @if (selectedAlbum) {
+        <p-inputgroup-addon>
+          @if(!selectedAlbum || !canUpdate()) {
+            <p-button
+              (click)="showEditForm()"
+              [disabled]="true"
+              pTooltip="Это не ваш объект, редактировать невозможно"
+              icon="pi pi-pencil"
+              outlined
+              severity="secondary"
+            />
+          } @else {
+            <p-button
+              (click)="showEditForm()"
+              [disabled]="!selectedAlbum || !canUpdate()"
+              icon="pi pi-pencil"
+              outlined
+              severity="secondary"
+            />
+          }
+        </p-inputgroup-addon>
+      } @else {
+        <p-inputgroup-addon>
+          <p-button
+            (click)="showCreateForm()"
+            icon="pi pi-plus"
+            severity="secondary"
+            outlined
+          />
+        </p-inputgroup-addon>
+      }
+    }
+  </p-inputgroup>
+</div>
+
+<!-- Модальное окно для формы -->
+<p-dialog
+  header="{{ formAlbum ? 'РЕДАКТИРОВАТЬ АЛЬБОМ' : 'СОЗДАТЬ АЛЬБОМ' }}"
+  [(visible)]="showForm"
+  [modal]="true"
+  (onHide)="hideForm()"
+  [focusOnShow]="false"
+  [draggable]="false"
+  [breakpoints]="{ '640px': '95vw' }"
+  [style]="{ width: '300px' }"
+>
+  @if (showForm) {
+    <app-album-form
+      (cancel)="hideForm()"
+      (albumSubmit)="handleAlbumSubmit($event)"
+      [album]="formAlbum"
+    ></app-album-form>
+  }
+</p-dialog>

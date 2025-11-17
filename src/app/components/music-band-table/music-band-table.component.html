@@ -1,348 +1,234 @@
-<div [style.display]="filtersOpen ? 'grid' : 'none'" class="filters_container">
-  <app-input
-    label="Название"
-    placeholder="Название группы"
-    [(value)]="filterOptions.name"
-    (onChange)="applyFilters()">
-  </app-input>
+<p-contextMenu #cm [model]="contextMenuItems"></p-contextMenu>
 
-  <app-input
-    label="Лидер"
-    placeholder="Лидер группы"
-    [(value)]="filterOptions.frontManName"
-    (onChange)="applyFilters()">
-  </app-input>
+<app-music-band-filter #mf
+                       (filterChange)="onFilter($event)"></app-music-band-filter>
 
-  <app-input
-    label="Жанр"
-    placeholder="Жанр"
-    [(value)]="filterOptions.genre"
-    (onChange)="applyFilters()"
-    [validator]="genreValid()"
-  >
-  </app-input>
-
-  <app-input
-    label="Лучший альбом"
-    placeholder="Лучший альбом"
-    [(value)]="filterOptions.bestAlbumName"
-    (onChange)="applyFilters()"
-  >
-  </app-input>
-
-  <app-input
-    label="Кол-во альбомов от"
-    placeholder="0"
-    type="number"
-    [(value)]="filterOptions.minAlbumsCount"
-    (onChange)="applyFilters()"
-    [validator]="numberValid(0, 'Кол-во альбомов', true)"
-  >
-  </app-input>
-
-  <app-input
-    label="Кол-во альбомов до"
-    placeholder="0"
-    type="number"
-    [(value)]="filterOptions.maxAlbumsCount"
-    (onChange)="applyFilters()"
-    [validator]="numberValid(0, 'Кол-во альбомов', true)"
-  >
-  </app-input>
-
-  <app-input
-    label="Кол-во cинглов от"
-    placeholder="0"
-    type="number"
-    [(value)]="filterOptions.minSingles"
-    (onChange)="applyFilters()"
-    [validator]="numberValid(0, 'Кол-во cинглов', true)"
-  >
-  </app-input>
-
-  <app-input
-    label="Кол-во синглов до"
-    placeholder="0"
-    type="number"
-    [(value)]="filterOptions.maxSingles"
-    (onChange)="applyFilters()"
-    [validator]="numberValid(0, 'Кол-во cинглов', true)"
-  >
-  </app-input>
-
-  <app-input
-    label="Кол-во участников от"
-    placeholder="0"
-    type="number"
-    [(value)]="filterOptions.minParticipants"
-    (onChange)="applyFilters()"
-    [validator]="numberValid(0, 'Кол-во участников', true)"
-  >
-  </app-input>
-
-  <app-input
-    label="Кол-во участников до"
-    placeholder="0"
-    type="number"
-    [(value)]="filterOptions.maxParticipants"
-    (onChange)="applyFilters()"
-    [validator]="numberValid(0, 'Кол-во участников', true)"
-  >
-  </app-input>
-
-  <app-input
-    label="Координата X от"
-    placeholder="0"
-    type="number"
-    [(value)]="filterOptions.minCoordinateX"
-    (onChange)="applyFilters()"
-    [validator]="numberValid(-147, 'Координата X', true)"
-  >
-  </app-input>
-
-  <app-input
-    label="Координата X до"
-    placeholder="0"
-    type="number"
-    [(value)]="filterOptions.maxCoordinateX"
-    (onChange)="applyFilters()"
-    [validator]="numberValid(-147, 'Координата X', true)"
-  >
-  </app-input>
-
-  <app-input
-    label="Координата Y от"
-    placeholder="0"
-    type="number"
-    [(value)]="filterOptions.minCoordinateY"
-    (onChange)="applyFilters()"
-  >
-  </app-input>
-
-  <app-input
-    label="Координата Y до"
-    placeholder="0"
-    type="number"
-    [(value)]="filterOptions.maxCoordinateY"
-    (onChange)="applyFilters()"
-  >
-  </app-input>
-</div>
-
-<div class="bulk-btn-container">
-  <app-custom-button
-    (clicked)="getMusicBands()"
+<div class="flex mt-3 gap-2 align-items-center flex-wrap">
+  <p-button
+    (onClick)="loadMusicBands()"
     [disabled]="loading"
-    title="Обновить данные"
-    class="refresh-button"
-  >
-    <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
-      <path
-        d="M483.08-200q-117.25 0-198.63-81.34-81.37-81.34-81.37-198.54 0-117.2 81.37-198.66Q365.83-760 483.08-760q71.3 0 133.54 33.88 62.23 33.89 100.3 94.58V-760h40v209.23H547.69v-40h148q-31.23-59.85-87.88-94.54Q551.15-720 483.08-720q-100 0-170 70t-70 170q0 100 70 170t170 70q77 0 139-44t87-116h42.46Q725.08-310.15 651-255.08 576.92-200 483.08-200Z"/>
-    </svg>
-  </app-custom-button>
+    [outlined]="true"
+    icon="pi pi-refresh"
+  />
 
-  <app-custom-select
-    [options]="pageSizeSelectOptions"
-    [(ngModel)]="paginationOption.size"
-    (ngModelChange)="onPageSizeChange()"
-    placeholder="Размер страницы"
-    class="page-size-select"
-  ></app-custom-select>
+  <p-button
+    (click)="openCreateDialog()"
+    [disabled]="loading"
+    [outlined]="true"
+    icon="pi pi-plus"
+    label="Создать группу"
+    severity="secondary"
+  />
 
-  <app-custom-button
-    (clicked)="openCreateModal()"
-    [disabled]="false">
-    Создать группу
-  </app-custom-button>
+  <music-band-import [disabled]="loading"></music-band-import>
 
-  <!-- Кнопка импорта -->
-  <div class="import-container">
-    <input
-      type="file"
-      id="importFile"
-      (change)="importFile($event)"
-      [accept]="supportedFormats.join(',')"
-      style="display: none"
-    >
-    <app-custom-button
-      (clicked)="document.getElementById('importFile')?.click()"
-      [disabled]="importLoading"
-      title="Импортировать из файла"
-      class="import-button"
-    >
-      @if (importLoading) {
-        <svg class="icon loading" xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
-          <path d="M480-80q-82 0-155-31.5t-127.5-86Q143-252 111.5-325T80-480q0-83 31.5-155.5t86-127Q252-817 325-848.5T480-880q17 0 28.5 11.5T520-840q0 17-11.5 28.5T480-800q-133 0-226.5 93.5T160-480q0 133 93.5 226.5T480-160q133 0 226.5-93.5T800-480q0-17 11.5-28.5T840-520q17 0 28.5 11.5T880-480q0 82-31.5 155t-86 127.5q-54.5 54.5-127 86T480-80Z"/>
-        </svg>
-      } @else {
-      }
-      {{ importLoading ? 'Импорт...' : 'Импорт' }}
-    </app-custom-button>
+  <p-splitbutton
+    [disabled]="!selectedBands.length || loading"
+    [model]="selectItemsAction"
+    [outlined]="true"
+    [severity]="(!selectedBands.length || loading) ? 'secondary' : 'info'"
+    icon="pi pi-cog"
+    label="Действия ({{ selectedBands.length }})"
+  />
 
-    @if (importError) {
-      <div class="import-error">
-        {{ importError }}
-      </div>
-    }
-  </div>
-
-  @if (filtersToggle) {
-    <app-custom-button
-      (clicked)="toggleFiltersOpen()"
-      [disabled]="!filtersToggle">
-      {{ filtersOpen ? 'Скрыть фильтры' : 'Показать фильтры' }}
-    </app-custom-button>
-  }
-
-  <app-custom-button
-    (clicked)="resetFilters()"
-    [disabled]="isFiltersClear()">
-    Сбросить фильтры
-  </app-custom-button>
-
-  <app-custom-button
-    variant="danger"
-    (clicked)="deleteSelectedBands()"
-    [disabled]="getSelectedCount() === 0"
-    [title]="getSelectedCount() === 0 ? 'Нет выбранных групп для удаления' : 'Удалить выбранные группы'"
-  >
-    Удалить выбранные ({{ getSelectedCount() }})
-  </app-custom-button>
+  <p-button
+    (click)="onFilterClear()"
+    [disabled]="isFilterEmpty"
+    [outlined]="true"
+    [severity]="isFilterEmpty ? 'secondary' : 'info'"
+    icon="pi pi-filter-slash"
+    label="Очистить фильтры"
+    severity="secondary"
+  />
 </div>
 
-@if (error) {
-  <div class="error">{{ error }}</div>
-} @else {
-  <div class="table_container" [class.loading]="loading">
-    <table class="table">
-      <colgroup>
-        <col style="width: 40px">
-        <col style="width: 50px">
-        <col style="width: 140px">
-        <col style="width: 140px">
-        <col style="width: 80px">
-        <col style="width: 180px">
-        <col style="width: 110px">
-        <col style="width: 100px">
-        <col style="width: 120px">
-        <col style="width: 170px">
-        <col style="width: 140px">
-      </colgroup>
-      <thead>
+<p-panel class="mt-3" showHeader="false">
+  <p-table
+    #dt
+    (onSort)="customSort($event)"
+    (selectionChange)="onSelectionChange()"
+    [(selection)]="selectedBands"
+    [breakpoint]="'768px'"
+    [customSort]="true"
+    [lazy]="true"
+    [loading]="loading"
+    [rowTrackBy]="trackByFn"
+    [value]="bands"
+    class="mt-2 table"
+    dataKey="id"
+  >
+    <ng-template #header>
       <tr>
-        <td class="checkbox-column">
-          <label class="checkbox-label">
-            <input
-              type="checkbox"
-              [checked]="isAllSelected"
-              (change)="toggleSelectAll()">
-            <span class="checkmark"></span>
-          </label>
-        </td>
-        @for (header of sortableFields; track header.key) {
-          <td (click)="setSorting(header.key)" [id]="header.key" [style.--afterVal]="getSortAfter(header.key)" class="sort_header">{{ header.label }}</td>
-        }
-        <td>Действия</td>
+        <th style="width: 3rem">
+          <p-tableHeaderCheckbox
+            [disabled]="loading || !bands.length"></p-tableHeaderCheckbox>
+        </th>
+        <th [pSortableColumnDisabled]="loading || !bands.length"
+            pSortableColumn="id"
+            style="width: 3rem; border-top-left-radius: 5px">
+          <div class="flex items-center gap-1">
+            ID
+            <p-sortIcon field="id"/>
+          </div>
+        </th>
+        <th [pSortableColumnDisabled]="loading || !bands.length"
+            pSortableColumn="name"
+            style="width: 8.5rem">
+          <div class="flex items-center gap-1">
+            Название
+            <p-sortIcon field="name"/>
+          </div>
+        </th>
+        <th [pSortableColumnDisabled]="loading || !bands.length"
+            pSortableColumn="genre"
+            style="width: 12.8rem">
+          <div class="flex items-center gap-1">
+            Жанр
+            <p-sortIcon field="genre"/>
+          </div>
+        </th>
+        <th [pSortableColumnDisabled]="loading || !bands.length"
+            pSortableColumn="numberOfParticipants" style="width: 4.5rem">
+          <div class="flex items-center gap-1">
+            Участники
+            <p-sortIcon field="numberOfParticipants"/>
+          </div>
+        </th>
+        <th [pSortableColumnDisabled]="loading || !bands.length"
+            pSortableColumn="singlesCount"
+            style="width: 5rem">
+          <div class="flex items-center gap-1">
+            Синглы
+            <p-sortIcon field="singlesCount"/>
+          </div>
+        </th>
+        <th [pSortableColumnDisabled]="loading || !bands.length"
+            pSortableColumn="albumsCount"
+            style="width: 5rem">
+          <div class="flex items-center gap-1">
+            Альбомы
+            <p-sortIcon field="albumsCount"/>
+          </div>
+        </th>
+        <th [pSortableColumnDisabled]="loading || !bands.length"
+            pSortableColumn="establishmentDate" style="width: 7rem">
+          <div class="flex items-center gap-1">
+            Основана
+            <p-sortIcon field="establishmentDate"/>
+          </div>
+        </th>
+        <th [pSortableColumnDisabled]="loading || !bands.length"
+            pSortableColumn="frontMan.name"
+            style="width: 8rem">
+          <div class="flex items-center gap-1">
+            Лидер
+            <p-sortIcon field="frontMan.name"/>
+          </div>
+        </th>
+        <th [pSortableColumnDisabled]="loading || !bands.length"
+            pSortableColumn="bestAlbum.name"
+            style="width: 11rem">
+          <div class="flex items-center gap-1">
+            Лучший альбом
+            <p-sortIcon field="bestAlbum.name"/>
+          </div>
+        </th>
+        <th style="width: 3rem">
+          <div class="flex items-center gap-1">
+            Действия
+          </div>
+        </th>
       </tr>
-      </thead>
-      <tbody>
-        @if (loading) {
-          @for (_ignored of getSkeletonSizeArray(); track i; let i = $index) {
-            <tr class="skeleton-row" [style.--delay]="i">
-              @for (_ignored of [].constructor(13); track i; let i = $index) {
-                <td></td>
-              }
-            </tr>
-          }
-        } @else {
-          @for (band of bands; track band.id) {
-            <tr [class.selected]="isBandSelected(band.id)">
-              <td class="checkbox-column">
-                <label class="checkbox-label">
-                  <input
-                    type="checkbox"
-                    [checked]="isBandSelected(band.id)"
-                    (change)="toggleBandSelection(band.id)">
-                  <span class="checkmark"></span>
-                </label>
-              </td>
-              <td>{{ band.id }}</td>
-              <td>{{ band.name }}</td>
-              <td>{{ band.frontMan.name }}</td>
-              <td>{{ parseMusicGenre(band.genre) }}</td>
-              <td>{{ band.bestAlbum.name }}</td>
-              <td>{{ band.albumsCount }}</td>
-              <td>{{ band.singlesCount }}</td>
-              <td>{{ band.numberOfParticipants }}</td>
-              <td>{{ band.establishmentDate | date: 'dd.MM.yyyy' }}</td>
-              <td>{{ band.coordinates.x }} : {{ band.coordinates.y }}</td>
-              <td>
-                <div class="buttons_container">
-                  <button
-                    class="edit-btn"
-                    (click)="openEditModal(band.id)">
-                    <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px">
-                      <path
-                        d="M200-200h43.92l427.93-427.92-43.93-43.93L200-243.92V-200Zm-40 40v-100.77l527.23-527.77q6.15-5.48 13.57-8.47 7.43-2.99 15.49-2.99t15.62 2.54q7.55 2.54 13.94 9.15l42.69 42.93q6.61 6.38 9.04 14 2.42 7.63 2.42 15.25 0 8.13-2.74 15.56-2.74 7.42-8.72 13.57L260.77-160H160Zm600.77-556.31-44.46-44.46 44.46 44.46ZM649.5-649.5l-21.58-22.35 43.93 43.93-22.35-21.58Z"/>
-                    </svg>
-                  </button>
-                  <button
-                    class="delete-button"
-                    (click)="deleteBand(band.id, $event)">
-                    <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px">
-                      <path
-                        d="M304.62-160q-26.85 0-45.74-18.88Q240-197.77 240-224.62V-720h-40v-40h160v-30.77h240V-760h160v40h-40v495.38q0 27.62-18.5 46.12Q683-160 655.38-160H304.62ZM680-720H280v495.38q0 10.77 6.92 17.7 6.93 6.92 17.7 6.92h350.76q9.24 0 16.93-7.69 7.69-7.69 7.69-16.93V-720ZM392.31-280h40v-360h-40v360Zm135.38 0h40v-360h-40v360ZM280-720v520-520Z"/>
-                    </svg>
-                  </button>
-                </div>
-              </td>
-            </tr>
-          }
-        }
-      </tbody>
-    </table>
-  </div>
+    </ng-template>
 
-  <div class="pagination-controls">
-    <button
-      class="pagination-btn"
-      (click)="goToPage(0)"
-      [disabled]="paginationOption.page === 0">
-      <<
-    </button>
+    <ng-template #body let-band>
+      <tr (contextmenu)="onRowRightClick(band, $event)">
+        <td>
+          <p-tableCheckbox [value]="band"></p-tableCheckbox>
+        </td>
+        <td>{{ band.id }}</td>
+        <td>{{ band.name }}</td>
+        <td>{{ band.genre }}</td>
+        <td>{{ band.numberOfParticipants }}</td>
+        <td>{{ band.singlesCount }}</td>
+        <td>{{ band.albumsCount }}</td>
+        <td>{{ band.establishmentDate | date: 'MM/dd/yyyy' }}</td>
+        <td>{{ band.frontMan?.name }}</td>
+        <td>{{ band.bestAlbum?.name }}</td>
+        <td>
+          <div
+          class="flex gap-1">
+            <p-button
+              (onClick)="openViewDialog(band)"
+              icon="pi pi-eye"
+              outlined
+              severity="secondary"
+              size="small"
+              [disabled]="loading"
+            />
+            @if (!canUpdate(band)) {
+              <p-button
+                (onClick)="openEditDialog(band)"
+                [disabled]="true"
+                icon="pi pi-pencil"
+                outlined
+                severity="secondary"
+                size="small"
+                pTooltip="Это не ваш объект, редактировать невозможно"
+              />
+            } @else {
+              <p-button
+                (onClick)="openEditDialog(band)"
+                icon="pi pi-pencil"
+                [disabled]="loading"
+                outlined
+                severity="secondary"
+                size="small"
+              />
+            }
+          </div>
+        </td>
+      </tr>
+    </ng-template>
 
-    <button
-      class="pagination-btn"
-      (click)="goToPage(paginationOption.page - 1)"
-      [disabled]="paginationOption.page === 0">
-      <
-    </button>
+    <ng-template #emptymessage>
+      <tr>
+        <td colspan="10">
+          {{ generalError || 'Группы по условию не найдены' }}
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+</p-panel>
 
-    @for (page of getPageNumbers(); track page) {
-      <button
-        class="pagination-btn {{ page === paginationOption.page ? 'active' : '' }}"
-        (click)="goToPage(page)">
-        {{ page + 1 }}
-      </button>
-    }
+<app-paginator
+  (pageChange)="onPageChange($event)"
+  [page]="pageableRequest.page"
+  [size]="pageableRequest.size"
+  [totalRecords]="totalRecords"
+></app-paginator>
 
-    <button
-      class="pagination-btn"
-      (click)="goToPage(paginationOption.page + 1)"
-      [disabled]="paginationOption.page >= totalPages - 1">
-      >
-    </button>
-
-    <button
-      class="pagination-btn"
-      (click)="goToPage(totalPages-1)"
-      [disabled]="paginationOption.page >= totalPages - 1">
-      >>
-    </button>
-  </div>
-  <div class="table_info_container">
-    <p>Найдено: {{ totalElements }}, страниц: {{ totalPages }}</p>
-    <p>Сортировка: {{ sortOptions.sort }} / {{ sortOptions.direction == 'asc' ? "Возрастание" : "Убывание" }}</p>
-  </div>
-}
+<p-dialog
+  (onHide)="onDialogHide()"
+  [(visible)]="showDialog"
+  [breakpoints]="{ '640px': '95vw' }"
+  [draggable]="false"
+  [focusOnShow]="false"
+  [modal]="true"
+  [style]="{ width: '600px' }"
+  header="{{ dialogType === 'edit' ? 'РЕДАКТИРОВАТЬ МУЗЫКАЛЬНУЮ ГРУППУ' :
+             dialogType === 'create' ? 'СОЗДАТЬ МУЗЫКАЛЬНУЮ ГРУППУ' :
+             'ПРОСМОТР МУЗЫКАЛЬНОЙ ГРУППЫ' }}"
+>
+  @if (showDialog) {
+    <app-music-band-form
+      (cancel)="closeMusicBandDialog()"
+      (changesOccurred)="handleChangesOccurred($event)"
+      (modeChange)="handleModeChange($event)"
+      (musicBandSubmit)="handleMusicBandSubmit()"
+      [currentUser]="currentUser"
+      [isEditMode]="dialogType === 'edit'"
+      [musicBand]="dialogMusicBand"
+    ></app-music-band-form>
+  }
+</p-dialog>

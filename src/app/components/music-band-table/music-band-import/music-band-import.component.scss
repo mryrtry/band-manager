@@ -1,0 +1,97 @@
+::ng-deep .p-fileupload {
+  border: none !important;
+}
+
+::ng-deep .p-fileupload-advanced {
+  padding: 0;
+  border: none !important;
+}
+
+::ng-deep .p-fileupload-header {
+  display: none !important;
+}
+
+::ng-deep .p-fileupload-content {
+  border-radius: 5px;
+  padding: 0 !important;
+  border: none !important;
+  transition: border-color var(--p-fileupload-transition-duration);
+
+  &:hover {
+    border-color: var(--p-primary-400) !important;
+  }
+}
+
+::ng-deep .with-border .p-fileupload-content {
+  border: 2px dashed var(--p-dialog-border-color) !important;
+
+  &:hover {
+    border-color: var(--p-primary-400) !important;
+  }
+}
+
+::ng-deep .with-border .p-fileupload-content.p-fileupload-highlight {
+  border: 2px dashed var(--p-primary-400) !important;
+  background-color: rgba(var(--p-primary-500), 0.03);
+}
+
+::ng-deep .p-fileupload-header {
+  display: none;
+}
+
+.empty-card {
+  min-height: 250px;
+  height: 100%;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  gap: 10px;
+  border-radius: 5px;
+}
+
+.file-wrapper {
+  display: flex;
+  background-color: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--p-dialog-border-color);
+  border-radius: 5px;
+  padding:  1rem;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.file-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  span {
+    opacity: 0.5;
+  }
+}
+
+.supported-formats {
+  text-align: center;
+  text-transform: uppercase;
+  font-size: 10px;
+  opacity: 0.2;
+  margin-bottom: 10px;
+}
+
+.import-header {
+  letter-spacing:  -0.05em;
+
+  span {
+    opacity: 0.3;
+  }
+}
+
+.import-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  letter-spacing: -0.05em;
+  text-transform: uppercase;
+  font-size: 12px;
+}

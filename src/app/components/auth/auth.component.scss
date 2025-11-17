@@ -1,0 +1,16 @@
+.wrapper {
+  display: flex;
+  height: calc(100vh - var(--body-padding) * 2);
+  justify-content: center;
+  align-items: center;
+}
+
+.auth-title {
+  font-weight: 700;
+  letter-spacing: -0.05em;
+  font-size: 17px;
+}
+
+.form {
+  width: 350px;
+}

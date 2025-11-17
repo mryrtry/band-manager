@@ -1,409 +1,358 @@
-import {Component, HostListener, inject, OnDestroy, OnInit} from '@angular/core';
-import {CommonModule, DatePipe} from '@angular/common';
-import {FormsModule} from '@angular/forms';
-import {Router} from '@angular/router';
-import {MusicBandFilter, MusicBandGetConfig, MusicBandPagination, MusicBandService, MusicBandSorting,} from '../../services/music-band.service';
-import {ImportService} from '../../services/import.service';
-import {MusicBand} from '../../models/music-band.model';
-import {parseMusicGenre} from '../../models/enums/music-genre.model';
-import {CustomSelectComponent} from '../select/select.component';
-import {CustomButtonComponent} from '../button/button.component';
-import {InputComponent, Validator} from '../input/input.component';
-import {PaginatedResponse} from '../../models/paginated-response.model';
-import {ModalService} from '../../services/modal.service';
+import {Component, inject, OnDestroy, OnInit, ViewChild} from '@angular/core';
+import {CommonModule} from '@angular/common';
+import {MusicBand} from '../../model/core/music-band/music-band.model';
+import {PageableRequest} from '../../model/pageable-request.model';
+import {TableModule} from 'primeng/table';
+import {PaginatorModule} from 'primeng/paginator';
+import {Panel} from 'primeng/panel';
+import {PaginatorComponent} from '../common/paginator/paginator.component';
+import {ConfirmationService, MenuItem, MessageService} from 'primeng/api';
+import {HttpErrorResponse} from '@angular/common/http';
+import {SplitButton} from 'primeng/splitbutton';
+import {Button} from 'primeng/button';
+import {ContextMenu} from 'primeng/contextmenu';
+import {MusicBandService} from '../../services/core/music-band.service';
+import {UserService} from '../../services/auth/user.service';
+import {Role, User} from '../../model/auth/user.model';
+import {Dialog} from 'primeng/dialog';
+import {
+  MusicBandFormComponent
+} from '../forms/music-band-form/music-band-form.component';
+import {TooltipModule} from 'primeng/tooltip';
+import {
+  MusicBandFilterComponent
+} from './music-band-filter/music-band-filter.component';
+import {
+  MusicBandFilter
+} from '../../model/core/music-band/music-band-filter.model';
+import {MusicBandImportComponent} from './music-band-import/music-band-import.component';
 
 @Component({
-  selector: 'app-music-table',
+  selector: 'app-music-band-table',
   standalone: true,
-  imports: [CommonModule, DatePipe, FormsModule, CustomSelectComponent, InputComponent, CustomButtonComponent],
+  imports: [CommonModule, TableModule, PaginatorModule, Panel, PaginatorComponent, SplitButton, Button, ContextMenu, Dialog, MusicBandFormComponent, TooltipModule, MusicBandFilterComponent, MusicBandImportComponent, MusicBandImportComponent,],
   templateUrl: './music-band-table.component.html',
   styleUrls: ['./music-band-table.component.scss']
 })
 export class MusicBandTableComponent implements OnInit, OnDestroy {
-  private modalService = inject(ModalService);
-  private musicBandService: MusicBandService = inject(MusicBandService);
-  private importService = inject(ImportService);
-  private router = inject(Router);
 
-  protected bands: MusicBand[] = [];
-  protected loading: boolean = false;
-  protected error: string | null = null;
-
-  protected totalElements: number = 0;
-  protected totalPages: number = 0;
-  protected pageSizeOptions: number[] = [5, 10, 20, 50, 100];
-
-  protected selectedBands = new Set<number>();
-  protected isAllSelected: boolean = false;
-
-  protected sortableFields = [
-    { key: 'id', label: 'ID' },
-    { key: 'name', label: 'Название' },
-    { key: 'frontMan.name', label: 'Лидер' },
-    { key: 'genre', label: 'Жанр' },
-    { key: 'bestAlbum.name', label: 'Лучший альбом' },
-    { key: 'albumsCount', label: 'Альбомы' },
-    { key: 'singlesCount', label: 'Синглы' },
-    { key: 'numberOfParticipants', label: 'Участники' },
-    { key: 'establishmentDate', label: 'Дата основания' },
-    { key: 'coordinates.x', label: 'Координаты' }
-  ];
-
-  protected clearFilterOptions: MusicBandFilter = {
-    name: null, description: null, genre: null,
-    frontManName: null, bestAlbumName: null,
-    minParticipants: null, maxParticipants: null,
-    minSingles: null, maxSingles: null,
-    minAlbumsCount: null, maxAlbumsCount: null,
-    minCoordinateX: null, maxCoordinateX: null,
-    minCoordinateY: null, maxCoordinateY: null
+  // --- Data ---
+  bands: MusicBand[] = [];
+  selectedBands: MusicBand[] = [];
+  totalRecords = 0;
+  currentUser: User | undefined;
+  // --- State ---
+  loading = true;
+  showDialog = false;
+  dialogType: 'show' | 'edit' | 'create' = 'create';
+  dialogMusicBand: MusicBand | null = null;
+  generalError?: string;
+  // --- Filter ---
+  filter: MusicBandFilter = {};
+  // --- Context Menu ---
+  contextMenuItems: MenuItem[] = [];
+  contextMenuBand: MusicBand | null = null;
+  // --- Actions ---
+  selectItemsAction: MenuItem[] = [];
+  canDeleteSelectedBands = true;
+  // --- Pageable Request ---
+  pageableRequest: PageableRequest = {
+    page: 0, size: 5
   };
+  // --- ViewChild ---
+  @ViewChild('cm') private contextMenu!: ContextMenu;
+  @ViewChild('mf') private filterComponent!: MusicBandFilterComponent;
+  // --- Services ---
+  private readonly musicBandService = inject(MusicBandService);
+  private readonly messageService = inject(MessageService);
+  private readonly confirmationService = inject(ConfirmationService);
+  private readonly userService = inject(UserService);
+  // -- Poll --
+  private pollId?: number;
 
-  protected paginationOption: MusicBandPagination = { page: 0, size: 5 };
-  protected filterOptions: MusicBandFilter = { ...this.clearFilterOptions };
-  protected sortOptions: MusicBandSorting = { sort: ['id'], direction: 'asc' };
+  get isFilterEmpty(): boolean {
+    if (!this.filterComponent) return true;
+    return this.filterComponent.emptyFilter();
+  }
 
-  protected pageSizeSelectOptions = this.pageSizeOptions.map(size => ({ label: `${size} / стр.`, value: size }));
-
-  protected filtersToggle: boolean = false;
-  protected filtersOpen: boolean = true;
-
-  // Импорт
-  protected importLoading: boolean = false;
-  protected importError: string | null = null;
-  protected supportedFormats: string[] = ['.json', 'application/json'];
-
-  private refreshIntervalId: any;
-
-  ngOnInit() {
-    this.checkScreenSize();
-    this.restoreStateFromLocalStorage();
-    this.getMusicBands();
-    this.loadSupportedFormats();
-
-    this.refreshIntervalId = setInterval(() => {
-      this.getMusicBands(true);
-    }, 2000);
+  // --- Lifecycle ---
+  ngOnInit(): void {
+    this.loadCurrentUser();
+    this.updateSelectItemsAction();
+    this.loadMusicBands();
+    this.startPolling();
   }
 
   ngOnDestroy() {
-    if (this.refreshIntervalId) {
-      clearInterval(this.refreshIntervalId);
-    }
+    this.stopPolling();
   }
 
-  private restoreStateFromLocalStorage(): void {
-    const pagination = localStorage.getItem('musicBandsPagination');
-    const sorting = localStorage.getItem('musicBandsSorting');
-    const filters = localStorage.getItem('musicBandsFilters');
+  loadMusicBands(quite: boolean = false): void {
+    this.generalError = undefined;
+    this.loading = !quite;
 
-    if (pagination) this.paginationOption = JSON.parse(pagination);
-    if (sorting) this.sortOptions = JSON.parse(sorting);
-    if (filters) this.filterOptions = JSON.parse(filters);
-  }
-
-  private saveStateToLocalStorage(): void {
-    localStorage.setItem('musicBandsPagination', JSON.stringify(this.paginationOption));
-    localStorage.setItem('musicBandsSorting', JSON.stringify(this.sortOptions));
-    localStorage.setItem('musicBandsFilters', JSON.stringify(this.filterOptions));
-  }
-
-  private loadSupportedFormats(): void {
-    this.importService.getSupportedFormats().subscribe({
-      next: (formats) => {
-        this.supportedFormats = formats;
-      },
-      error: (error) => {
-        console.error('Error loading supported formats:', error);
+    this.musicBandService.getAllMusicBands(this.filter, this.pageableRequest).subscribe({
+      next: (page) => {
+        this.bands = page.content;
+        this.totalRecords = page.page.totalElements;
+        this.loading = false;
+        this.updateCanDeleteSelectedBands();
+      }, error: (_: HttpErrorResponse) => {
+        this.generalError = 'Сервер недоступен, повторите попытку позже.';
+        this.loading = false;
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Группы не загрузились',
+          detail: this.generalError
+        });
       }
     });
   }
 
-  protected getConfig(): MusicBandGetConfig {
-    return {
-      filter: this.filterOptions,
-      sorting: this.sortOptions,
-      pagination: this.paginationOption
-    };
+  // --- Pagination ---
+  onPageChange(event: any): void {
+    this.pageableRequest.page = event.page ?? 0;
+    this.pageableRequest.size = event.size ?? 5;
+    this.loadMusicBands();
   }
 
-  protected getMusicBands(silent: boolean = false): void {
-    if (!silent) {
-      this.loading = true;
-      this.error = null;
-      this.saveStateToLocalStorage();
+  // --- Sorting ---
+  customSort(event: any): void {
+    const field = event.field;
+    if (this.pageableRequest.sort?.[0] === field) {
+      if (this.pageableRequest.direction === 'ASC') {
+        this.pageableRequest.direction = 'DESC';
+      } else {
+        this.pageableRequest.direction = 'ASC';
+      }
+    } else {
+      this.pageableRequest.sort = [field];
+      this.pageableRequest.direction = 'ASC';
     }
+    this.pageableRequest.page = 0;
+    this.loadMusicBands();
+  }
 
-    this.musicBandService.getMusicBands(this.getConfig()).subscribe({
-      next: (response: PaginatedResponse<MusicBand>) => {
-        this.bands = response.content;
-        this.totalElements = response.page.totalElements;
-        this.totalPages = response.page.totalPages;
+  // --- Selection ---
+  onSelectionChange(): void {
+    this.updateCanDeleteSelectedBands();
+    this.updateSelectItemsAction();
+  }
 
-        if (!silent) {
-          this.loading = false;
-          this.clearSelection();
-        }
-      },
-      error: (error) => {
-        if (!silent) {
-          this.error = 'Ошибка при загрузке данных';
-          this.loading = false;
-        }
-        console.error('Error loading music bands:', error);
+  // --- Actions: Delete ---
+  confirmDelete(bands: MusicBand[]): void {
+    this.confirmationService.confirm({
+      message: `Вы действительно хотите удалить объекты? (${bands.length})`,
+      header: 'Подтверждение удаления',
+      acceptLabel: 'Удалить',
+      rejectLabel: 'Нет',
+      acceptButtonProps: {severity: 'danger'},
+      rejectButtonProps: {severity: 'secondary', outlined: true},
+      accept: () => this.deleteBands(bands),
+      reject: () => {
       }
     });
   }
 
-  protected onPageSizeChange(): void {
-    this.paginationOption.page = 0;
-    this.getMusicBands();
-  }
-
-  protected applyFilters(): void {
-    this.paginationOption.page = 0;
-    this.getMusicBands();
-  }
-
-  protected resetFilters(): void {
-    this.filterOptions = { ...this.clearFilterOptions };
-    this.getMusicBands();
-  }
-
-  protected goToPage(page: number) {
-    this.paginationOption.page = page;
-    this.getMusicBands();
-  }
-
-  protected setSorting(field: string): void {
-    if (this.sortOptions.sort[0] === field) {
-      this.sortOptions.direction = this.sortOptions.direction === 'asc' ? 'desc' : 'asc';
-    } else {
-      this.sortOptions.direction = 'asc';
-    }
-    this.sortOptions.sort = [field];
-    this.paginationOption.page = 0;
-    if (!this.loading) {
-      this.getMusicBands();
-    }
-  }
-
-  protected toggleBandSelection(bandId: number): void {
-    if (this.selectedBands.has(bandId)) {
-      this.selectedBands.delete(bandId);
-    } else {
-      this.selectedBands.add(bandId);
-    }
-    this.updateSelectAllState();
-  }
-
-  protected toggleSelectAll(): void {
-    if (this.isAllSelected) {
-      this.selectedBands.clear();
-    } else {
-      this.bands.forEach(band => this.selectedBands.add(band.id));
-    }
-    this.isAllSelected = !this.isAllSelected;
-  }
-
-  protected isBandSelected(bandId: number): boolean {
-    return this.selectedBands.has(bandId);
-  }
-
-  protected updateSelectAllState(): void {
-    this.isAllSelected = this.bands.length > 0 && this.bands.every(band => this.selectedBands.has(band.id));
-  }
-
-  protected clearSelection(): void {
-    this.selectedBands.clear();
-    this.isAllSelected = false;
-  }
-
-  protected getSelectedCount(): number {
-    return this.selectedBands.size;
-  }
-
-  @HostListener('document:keydown', ['$event'])
-  handleKeyboardEvent(event: KeyboardEvent) {
-    if (event.key === 'Escape') {
-      this.clearSelection();
-    }
-  }
-
-  protected deleteSelectedBands(): void {
-    if (this.selectedBands.size === 0) return;
-
-    const selectedIds = Array.from(this.selectedBands);
-    if (confirm(`Вы уверены, что хотите удалить выбранные группы (${selectedIds.length})?`)) {
-      this.loading = true;
-      this.musicBandService.deleteMusicBands(selectedIds).subscribe({
-        next: () => {
-          this.loading = false;
-          this.clearSelection();
-          this.getMusicBands();
-        },
-        error: (error) => {
-          this.loading = false;
-          this.error = 'Ошибка при удалении групп';
-          console.error('Error deleting music bands:', error);
-        }
-      });
-    }
-  }
-
-  protected deleteBand(bandId: number, event: Event): void {
-    event.stopPropagation();
-    if (confirm('Вы уверены, что хотите удалить эту группу?')) {
-      this.musicBandService.deleteMusicBand(bandId).subscribe({
-        next: () => this.getMusicBands(),
-        error: (error) => {
-          this.error = 'Ошибка при удалении группы';
-          console.error('Error deleting music band:', error);
-        }
-      });
-    }
-  }
-
-  protected getPageNumbers(): number[] {
-    const pages: number[] = [];
-    const maxVisiblePages = 5;
-    if (this.totalPages <= 1) return [0];
-    let startPage = Math.max(0, this.paginationOption.page - Math.floor(maxVisiblePages / 2));
-    let endPage = Math.min(this.totalPages - 1, startPage + maxVisiblePages - 1);
-    if (endPage - startPage + 1 < maxVisiblePages) {
-      startPage = Math.max(0, endPage - maxVisiblePages + 1);
-    }
-    for (let i = startPage; i <= endPage; i++) {
-      pages.push(i);
-    }
-    return pages;
-  }
-
-  protected isFiltersClear(): boolean {
-    return JSON.stringify(this.clearFilterOptions) == JSON.stringify(this.filterOptions);
-  }
-
-  protected numberValid(min: number, field: string, integer?: boolean): Validator {
-    return {
-      validate: (value) => {
-        if (!value) return { isValid: true };
-        if (integer && !(/^-?\d+$/.test(value))) return { isValid: false, message: `${field} целое` };
-        if (Number(value) <= min) return { isValid: false, message: `${field} <= ${min}` };
-        return { isValid: true };
+  // --- Actions: Export ---
+  confirmExport(bands: MusicBand[]): void {
+    this.confirmationService.confirm({
+      message: `Вы действительно хотите экспортировать объекты? (${bands.length})`,
+      header: 'Подтверждение экспорта',
+      acceptLabel: 'Экспортировать',
+      rejectLabel: 'Нет',
+      acceptButtonProps: {severity: 'primary'},
+      rejectButtonProps: {severity: 'secondary', outlined: true},
+      accept: () => {
+        this.exportBandsCSV(bands);
+        this.selectedBands = [];
+      },
+      reject: () => {
       }
-    };
+    });
   }
 
-  protected genreValid(): Validator {
-    return {
-      validate: (value) => {
-        if (!value) return { isValid: true };
-        if (!parseMusicGenre(value)) return { isValid: false, message: "Жанр не существует" };
-        return { isValid: true };
-      }
-    };
+  // --- Actions: CRUD Dialog ---
+  openViewDialog(band: MusicBand): void {
+    this.dialogMusicBand = band;
+    this.dialogType = 'show';
+    this.showDialog = true;
   }
 
-  protected getSkeletonSizeArray(): number[] {
-    return Array(this.paginationOption.size).fill(0).map((_ignored, i) => i);
+  openEditDialog(band: MusicBand): void {
+    this.dialogMusicBand = band;
+    this.dialogType = 'edit';
+    this.showDialog = true;
   }
 
-  @HostListener('window:resize')
-  protected checkScreenSize(): void {
-    this.filtersToggle = window.innerWidth < 400;
-    this.filtersOpen = !this.filtersToggle;
+  openCreateDialog(): void {
+    this.dialogMusicBand = null;
+    this.dialogType = 'create';
+    this.showDialog = true;
   }
 
-  protected toggleFiltersOpen(): void {
-    if (this.filtersToggle) {
-      this.filtersOpen = !this.filtersOpen;
+  closeMusicBandDialog(): void {
+    this.showDialog = false;
+    this.dialogMusicBand = null;
+  }
+
+  onDialogHide(): void {
+    this.closeMusicBandDialog();
+  }
+
+  handleMusicBandSubmit(): void {
+    this.loadMusicBands();
+    this.closeMusicBandDialog();
+  }
+
+  handleModeChange(mode: 'show' | 'edit' | 'create'): void {
+    this.dialogType = mode;
+  }
+
+  handleChangesOccurred(changes: boolean): void {
+    if (changes) {
+      this.loadMusicBands();
     }
   }
 
-  protected getSortAfter(field: string): string {
-    if (this.sortOptions.sort[0] != field) return '';
-    else {
-      if (this.sortOptions.direction == 'desc') return '"↑"';
-      else return '"↓"';
-    }
+  // --- Context Menu ---
+  onRowRightClick(band: MusicBand, event: MouseEvent): void {
+    this.contextMenuBand = band;
+    this.contextMenuItems = [{
+      label: `
+          <div class="custom-profile-item">
+            <p>Created by: ${band.createdBy || '—'}</p>
+            <p>Created date: ${band.createdDate ? new Date(band.createdDate).toLocaleDateString('en-US') : '—'}</p>
+            <p>Last modified by: ${band.lastModifiedBy || '—'}</p>
+            <p>Last modified date: ${band.lastModifiedDate ? new Date(band.lastModifiedDate).toLocaleDateString('en-US') : '—'}</p>
+          </div>
+        `, escape: false, styleClass: 'non-clickable-container', disabled: true
+    }, {separator: true}, {
+      label: 'Просмотр',
+      icon: 'pi pi-eye',
+      command: () => this.openViewDialog(band)
+    }, {
+      label: 'Редактировать',
+      icon: 'pi pi-pencil',
+      command: () => this.openEditDialog(band),
+      disabled: !this.canUpdate(band)
+    }, {separator: true}, {
+      label: 'Экспорт в CSV',
+      icon: 'pi pi-file-export',
+      command: () => this.confirmExport([band])
+    }, {
+      label: 'Удалить',
+      icon: 'pi pi-trash',
+      command: () => this.confirmDelete([band]),
+      disabled: !this.canUpdate(band)
+    }];
+    this.contextMenu.show(event);
   }
 
-  async openCreateModal(): Promise<void> {
-    try {
-      const result = await this.modalService.openMusicBandModal({ mode: 'create' });
-      if (result) this.getMusicBands();
-    } catch (error) {
-      console.error('Ошибка при создании группы:', error);
-    }
+  // --- Permissions ---
+  canUpdate(band: MusicBand): boolean {
+    if (!this.currentUser || !band) return false;
+    const isOwner = band.createdBy === this.currentUser.username;
+    const isSystem = band.createdBy === 'system';
+    const isAdmin = this.currentUser.roles.includes(Role.ROLE_ADMIN);
+    return isOwner || isSystem || isAdmin;
   }
 
-  async openEditModal(bandId: number): Promise<void> {
-    try {
-      const result = await this.modalService.openMusicBandModal({ mode: 'edit', musicBandId: bandId });
-      if (result) this.getMusicBands();
-    } catch (error) {
-      console.error('Ошибка при редактировании группы:', error);
-    }
+  // --- Filter ---
+  onFilter(filter: MusicBandFilter): void {
+    this.filter = filter;
+    this.loadMusicBands();
   }
 
-  // Импорт методов
-  protected async importFile(event: any): Promise<void> {
-    const file = event.target.files[0];
-    if (!file) return;
+  onFilterClear(): void {
+    this.filterComponent.clearFilters();
+  }
 
-    const fileExtension = file.name.toLowerCase().split('.').pop();
-    const fileType = file.type;
+  // --- Utility ---
+  trackByFn(_: number, band: MusicBand): number {
+    return band.id;
+  }
 
-    if (!this.supportedFormats.includes(`.${fileExtension}`) &&
-      !this.supportedFormats.includes(fileType)) {
-      this.importError = `Неподдерживаемый формат файла. Поддерживаемые форматы: ${this.supportedFormats.join(', ')}`;
-      event.target.value = '';
+  // --- Data Loading ---
+  private loadCurrentUser(): void {
+    this.userService.getCurrentUser().subscribe({
+      next: (user) => this.currentUser = user,
+      error: () => console.error('Failed to load current user')
+    });
+  }
+
+  private updateCanDeleteSelectedBands(): void {
+    if (!this.selectedBands.length) {
+      this.canDeleteSelectedBands = true;
       return;
     }
-
-    this.importLoading = true;
-    this.importError = null;
-
-    try {
-      this.importService.importMusicBands(file).subscribe({
-        next: (operation) => {
-          this.importLoading = false;
-          console.log('Import started:', operation);
-          alert(`Импорт начат. Статус: ${this.getImportStatusText(operation.status)}`);
-          // Обновляем таблицу через некоторое время
-          setTimeout(() => this.getMusicBands(), 3000);
-        },
-        error: (error) => {
-          this.importLoading = false;
-          this.importError = error.error?.message || 'Ошибка при импорте файла';
-          console.error('Import error:', error);
-        }
-      });
-    } catch (error) {
-      this.importLoading = false;
-      this.importError = 'Ошибка при импорте файла';
-      console.error('Import error:', error);
-    }
-
-    event.target.value = '';
+    this.canDeleteSelectedBands = this.selectedBands.every(band => this.canUpdate(band));
   }
 
-  protected navigateToImportHistory(): void {
-    this.router.navigate(['/import-history']);
+  private deleteBands(bands: MusicBand[]): void {
+    this.loading = true;
+    const ids = bands.map(band => band.id);
+    this.musicBandService.deleteMusicBands(ids).subscribe({
+      next: () => {
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Успех',
+          detail: `Выбранные группы удалены (${ids.length})`
+        });
+        this.selectedBands = [];
+        this.loadMusicBands();
+      }, error: () => {
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Ошибка',
+          detail: 'Не удалось удалить группы'
+        });
+        this.loading = false;
+      }
+    });
   }
 
-  protected getImportStatusText(status: string): string {
-    const statusMap: { [key: string]: string } = {
-      'PENDING': 'В ожидании',
-      'PROCESSING': 'В обработке',
-      'COMPLETED': 'Завершено',
-      'FAILED': 'Ошибка',
-      'VALIDATION_FAILED': 'Ошибка валидации'
-    };
-    return statusMap[status] || status;
+  private exportBandsCSV(bands: MusicBand[]): void {
+    const csv = this.musicBandService.exportToCsv(bands);
+    const blob = new Blob(['\ufeff' + csv], {type: 'text/csv;charset=utf-8;'});
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `music-bands-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    window.URL.revokeObjectURL(url);
+    this.messageService.add({
+      severity: 'success',
+      summary: 'Успех',
+      detail: `Выбранные группы экспортированы (${bands.length})`
+    });
   }
 
-  protected readonly parseMusicGenre = parseMusicGenre;
+  // --- Actions: Selection Menu ---
+  private updateSelectItemsAction(): void {
+    this.selectItemsAction = [{
+      label: 'Удалить',
+      icon: 'pi pi-trash',
+      severity: 'danger',
+      command: () => this.confirmDelete(this.selectedBands),
+      disabled: !this.canDeleteSelectedBands,
+    }, {
+      label: 'Экспорт в CSV',
+      icon: 'pi pi-file-export',
+      command: () => this.confirmExport(this.selectedBands)
+    }];
+  }
 
-  protected readonly document = document;
+  // -- Polling --
+  startPolling(): void {
+    this.pollId = setInterval(() => {
+      this.loadMusicBands(true)
+    }, 5000)
+  }
+
+  stopPolling(): void {
+    clearInterval(this.pollId);
+    this.pollId = undefined;
+  }
+
 }

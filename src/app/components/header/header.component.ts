@@ -1,36 +1,18 @@
-import {Component, inject} from '@angular/core';
-import {CommonModule} from '@angular/common';
-import {Router, RouterModule} from '@angular/router';
-import {AuthService} from '../../services/auth.service';
-import {Role} from '../../models/user.model';
+import {Component} from '@angular/core';
+import {FormsModule} from '@angular/forms';
+import {Fieldset} from 'primeng/fieldset';
+import {SelectButtonModule} from 'primeng/selectbutton';
+import {AvatarModule} from 'primeng/avatar';
+import {
+  UserAvatarMenuComponent
+} from '../auth/user-avatar/user-avatar-menu.component';
 
 @Component({
-  selector: 'app-header', standalone: true, imports: [CommonModule, RouterModule],
+  selector: 'app-header',
   templateUrl: './header.component.html',
+  standalone: true,
+  imports: [FormsModule, Fieldset, SelectButtonModule, AvatarModule, UserAvatarMenuComponent],
   styleUrls: ['./header.component.scss']
 })
 export class HeaderComponent {
-
-  private authService = inject(AuthService);
-
-  private router = inject(Router);
-
-  currentUser$ = this.authService.currentUser$;
-
-  isAuthenticated$ = this.authService.isAuthenticated$;
-
-  getRoleDisplayName(role: Role): string {
-    if (this.authService.isAdmin()) {
-      return 'Администратор'
-    } return 'Пользователь'
-  }
-
-  logout(): void {
-    this.authService.logout().subscribe({
-      next: () => {
-        this.router.navigate(['/login']).then();
-      }
-    });
-  }
-
 }
