@@ -1,4 +1,4 @@
-package org.is.bandmanager.config;
+package org.is.config;
 
 import jakarta.annotation.Nonnull;
 import org.springframework.context.annotation.Configuration;

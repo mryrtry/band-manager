@@ -6,6 +6,8 @@ import org.is.auth.dto.UserMapper;
 import org.is.auth.dto.request.LoginRequest;
 import org.is.auth.dto.request.RoleRequest;
 import org.is.auth.dto.request.UserRequest;
+import org.is.auth.dto.request.UserUpdateRequest;
+import org.is.auth.exception.AuthCredNotValidException;
 import org.is.auth.model.Permission;
 import org.is.auth.model.Role;
 import org.is.auth.model.User;
@@ -14,9 +16,8 @@ import org.is.auth.repository.UserRepository;
 import org.is.auth.repository.filter.UserFilter;
 import org.is.event.EntityEvent;
 import org.is.exception.ServiceException;
-import org.is.util.pageable.PageableConfig;
-import org.is.util.pageable.PageableCreator;
-import org.is.util.pageable.PageableType;
+import org.is.util.pageable.PageableFactory;
+import org.is.util.pageable.PageableRequest;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -30,6 +31,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import static org.is.auth.exception.message.AuthErrorMessages.INCORRECT_PASSWORD;
@@ -52,6 +54,8 @@ public class UserServiceImpl implements UserService {
     private final UserMapper mapper;
 
     private final ApplicationEventPublisher eventPublisher;
+
+    private final PageableFactory pageableFactory;
 
     private User findUser(Long id) {
         if (id == null) {
@@ -92,8 +96,8 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Page<UserDto> getAll(UserFilter filter, PageableConfig config) {
-        Pageable pageable = PageableCreator.create(config, PageableType.USERS);
+    public Page<UserDto> getAll(UserFilter filter, PageableRequest config) {
+        Pageable pageable = pageableFactory.create(config, User.class);
         Page<User> users = userRepository.findWithFilter(filter, pageable);
         return users.map(mapper::toDto);
     }
@@ -135,10 +139,12 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public UserDto update(Long id, UserRequest request) {
+    public UserDto update(Long id, UserUpdateRequest request) {
         User updatingUser = findUser(id);
         updatingUser.setUsername(request.getUsername());
-        updatingUser.setPassword(passwordEncoder.encode(request.getPassword()));
+		if (request.getPassword() != null) {
+			updatingUser.setPassword(passwordEncoder.encode(request.getPassword()));
+		}
         UserDto updatedUser = mapper.toDto(userRepository.save(updatingUser));
         eventPublisher.publishEvent(new EntityEvent<>(UPDATED, updatedUser));
         return updatedUser;
@@ -165,10 +171,10 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public boolean validateLogin(LoginRequest loginRequest) {
+    public void validateLogin(LoginRequest loginRequest) {
         User user = findUser(loginRequest.getUsername());
-        if (passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) return true;
-        throw new ServiceException(INCORRECT_PASSWORD);
+        if (!passwordEncoder.matches(loginRequest.getPassword(), user.getPassword()))
+            throw new AuthCredNotValidException(Map.of("password", INCORRECT_PASSWORD.getFormattedMessage()));
     }
 
     @Override

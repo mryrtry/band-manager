@@ -7,6 +7,8 @@ import lombok.NoArgsConstructor;
 import org.is.bandmanager.model.Color;
 import org.is.bandmanager.model.Country;
 
+import java.time.LocalDateTime;
+
 @Data
 @Builder
 @NoArgsConstructor
@@ -20,5 +22,9 @@ public class PersonDto {
     private LocationDto location;
     private Float weight;
     private Country nationality;
+    private String createdBy;
+    private LocalDateTime createdDate;
+    private String lastModifiedBy;
+    private LocalDateTime lastModifiedDate;
 
 }

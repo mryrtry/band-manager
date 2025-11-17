@@ -14,7 +14,8 @@ public enum BandManagerErrorMessage implements ErrorMessage {
     SOURCE_NOT_FOUND(HttpStatus.NOT_FOUND, "Ресурс '%s' не был найден"),
     CANNOT_ACCESS_SOURCE(HttpStatus.UNAUTHORIZED, "Ресурс '%s' с ID: '%s' не может быть удалён или изменён вами"),
     CANNOT_REMOVE_LAST_PARTICIPANT(HttpStatus.BAD_REQUEST, "Невозможно удалить участника - в группе должен остаться хотя бы 1 участник"),
-    ENTITY_IN_USE(HttpStatus.BAD_REQUEST, "Невозможно удалить ресурс '%s' с ID: '%s', так как он связан с другим ресурсом '%s'");
+    ENTITY_IN_USE(HttpStatus.BAD_REQUEST, "Невозможно удалить ресурс '%s' с ID: '%s', так как он связан с другим ресурсом '%s'"),
+	MUST_BE_UNIQUE(HttpStatus.BAD_REQUEST, "Ресурс '%s' должен быть уникальным");
 
 
     private final HttpStatus httpStatus;

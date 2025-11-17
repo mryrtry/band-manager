@@ -5,8 +5,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.is.util.pageable.EntityFilter;
-import org.is.util.pageable.PageableConfig;
+import org.is.bandmanager.repository.filter.EntityFilter;
+import org.is.util.pageable.PageableRequest;
 
 import java.util.UUID;
 
@@ -21,6 +21,6 @@ public class SubscriptionRequest<T extends EntityFilter> {
 
     private T filter;
 
-    private PageableConfig pageableConfig;
+    private PageableRequest pageableRequest;
 
 }

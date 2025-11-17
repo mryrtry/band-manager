@@ -1,8 +1,9 @@
-package org.is.bandmanager.model;
+package org.is.model;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.EntityListeners;
 import jakarta.persistence.MappedSuperclass;
+import jakarta.persistence.Version;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.annotation.CreatedBy;
@@ -18,6 +19,9 @@ import java.time.LocalDateTime;
 @MappedSuperclass
 @EntityListeners(AuditingEntityListener.class)
 public abstract class AuditableEntity {
+
+	@Version
+	private Long version;
 
     @CreatedBy
     @Column(name = "created_by", updatable = false)

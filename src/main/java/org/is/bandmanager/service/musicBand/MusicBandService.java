@@ -5,7 +5,7 @@ import org.is.bandmanager.dto.MusicBandDto;
 import org.is.bandmanager.dto.request.MusicBandRequest;
 import org.is.bandmanager.model.MusicBand;
 import org.is.bandmanager.repository.filter.MusicBandFilter;
-import org.is.util.pageable.PageableConfig;
+import org.is.util.pageable.PageableRequest;
 import org.springframework.data.domain.Page;
 
 import java.util.Date;
@@ -16,7 +16,9 @@ public interface MusicBandService {
 
     MusicBandDto create(@Valid MusicBandRequest request);
 
-    Page<MusicBandDto> getAll(@Valid MusicBandFilter filter, PageableConfig config);
+    List<MusicBandDto> getAll();
+
+    Page<MusicBandDto> getAll(@Valid MusicBandFilter filter, PageableRequest config);
 
     MusicBandDto get(Long id);
 

@@ -5,6 +5,7 @@ import jakarta.validation.ConstraintValidatorContext;
 import org.is.auth.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 
+
 public class LoginValidator implements ConstraintValidator<Login, String> {
 
     @Autowired

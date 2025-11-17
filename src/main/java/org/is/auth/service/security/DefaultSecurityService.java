@@ -3,7 +3,7 @@ package org.is.auth.service.security;
 import lombok.RequiredArgsConstructor;
 import org.is.auth.model.Permission;
 import org.is.auth.service.user.UserService;
-import org.is.bandmanager.model.AuditableEntity;
+import org.is.model.AuditableEntity;
 import org.springframework.context.ApplicationContext;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.security.access.AccessDeniedException;
@@ -13,7 +13,7 @@ import java.util.Arrays;
 
 @Service("securityService")
 @RequiredArgsConstructor
-public class SecurityServiceImpl implements SecurityService {
+public class DefaultSecurityService implements SecurityService {
 
     private final UserService userService;
     private final ApplicationContext applicationContext;

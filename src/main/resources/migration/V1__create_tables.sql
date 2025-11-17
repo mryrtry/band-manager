@@ -143,6 +143,30 @@ CREATE TABLE import_operations
     last_modified_date     TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Добавляем version в album
+ALTER TABLE album ADD COLUMN version BIGINT DEFAULT 0;
+
+-- Добавляем version в person
+ALTER TABLE person ADD COLUMN version BIGINT DEFAULT 0;
+
+-- Добавляем version в coordinates
+ALTER TABLE coordinates ADD COLUMN version BIGINT DEFAULT 0;
+
+-- Добавляем version в location
+ALTER TABLE location ADD COLUMN version BIGINT DEFAULT 0;
+
+-- Добавляем version в music_band
+ALTER TABLE music_band ADD COLUMN version BIGINT DEFAULT 0;
+
+-- Добавляем version в best_band_award
+ALTER TABLE best_band_award ADD COLUMN version BIGINT DEFAULT 0;
+
+-- Добавляем version в users
+ALTER TABLE users ADD COLUMN version BIGINT DEFAULT 0;
+
+-- Добавляем version в import_operations
+ALTER TABLE import_operations ADD COLUMN version BIGINT DEFAULT 0;
+
 -- Индексы для улучшения производительности
 CREATE INDEX idx_users_username ON users (username);
 CREATE INDEX idx_user_roles_user ON user_roles (user_id);

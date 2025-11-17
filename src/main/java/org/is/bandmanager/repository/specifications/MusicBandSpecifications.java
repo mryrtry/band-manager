@@ -75,7 +75,8 @@ public final class MusicBandSpecifications {
                 .and((root, query, cb) ->
                         filter.getEstablishmentDateAfter() != null ? cb.greaterThan(root.get("establishmentDate"), filter.getEstablishmentDateAfter()) : null)
                 .and((root, query, cb) ->
-                        filter.getEstablishmentDateBefore() != null ? cb.lessThan(root.get("establishmentDate"), filter.getEstablishmentDateBefore()) : null);
+                        filter.getEstablishmentDateBefore() != null ? cb.lessThan(root.get("establishmentDate"), filter.getEstablishmentDateBefore()) : null)
+                .and((root, query, cb) -> filter.getCreatedBy() != null ? cb.equal(root.get("createdBy"), filter.getCreatedBy()) : null);
     }
 
 }

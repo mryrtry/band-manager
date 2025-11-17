@@ -6,10 +6,10 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.is.auth.dto.ErrorResponse;
-import org.is.auth.service.jwt.JwtService;
-import org.is.exception.ServiceException;
-import org.springframework.http.HttpStatus;
+import org.is.auth.exception.message.AuthErrorMessages;
+import org.is.auth.service.jwt.DefaultJwtService;
+import org.is.exception.ErrorResponse;
+import org.springframework.http.HttpMethod;
 import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -22,7 +22,13 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.List;
+
+import static org.is.auth.exception.message.AuthErrorMessages.DEAD_ACCOUNT;
+import static org.is.auth.exception.message.AuthErrorMessages.EXPIRED_CREDENTIALS;
+import static org.is.auth.exception.message.AuthErrorMessages.INVALID_CREDENTIALS;
+import static org.is.auth.exception.message.AuthErrorMessages.UNEXPECTED_AUTH_EXCEPTION;
 
 @Slf4j
 @Component
@@ -30,14 +36,18 @@ import java.util.List;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private static final List<String> PUBLIC_PATHS = List.of(
-            "/auth/**",
+            "/auth/login",
+            "/auth/register",
             "/health/**"
     );
 
-    private final JwtService jwtService;
+    private final DefaultJwtService jwtService;
+
     private final UserDetailsService userDetailsService;
-    private final ObjectMapper objectMapper;
+
     private final AntPathMatcher pathMatcher = new AntPathMatcher();
+
+    private final ObjectMapper objectMapper;
 
     @Override
     public void doFilterInternal(
@@ -55,7 +65,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             }
 
             if (!jwtService.validateToken(jwt)) {
-                handleAuthenticationError(response, "Невалидный или просроченный токен");
+                handleAuthenticationError(response, INVALID_CREDENTIALS);
                 return;
             }
 
@@ -67,12 +77,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 UserDetails userDetails = userDetailsService.loadUserByUsername(username);
 
                 if (!userDetails.isEnabled()) {
-                    handleAuthenticationError(response, "Аккаунт пользователя '%s' неактивен".formatted(username));
+                    handleAuthenticationError(response, DEAD_ACCOUNT);
                     return;
                 }
 
                 if (!userDetails.isCredentialsNonExpired()) {
-                    handleAuthenticationError(response, "Права пользователя '%s' истекли".formatted(username));
+                    handleAuthenticationError(response, EXPIRED_CREDENTIALS);
                     return;
                 }
 
@@ -91,11 +101,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
             filterChain.doFilter(request, response);
 
-        } catch (ServiceException e) {
-            handleAuthenticationError(response, e.getMessage());
         } catch (Exception e) {
             log.error("JWT authentication failed for request: {}", request.getRequestURI());
-            handleAuthenticationError(response, "Ошибка авторизации");
+            handleAuthenticationError(response, UNEXPECTED_AUTH_EXCEPTION);
         }
     }
 
@@ -109,33 +117,26 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         return null;
     }
 
-    private void handleAuthenticationError(HttpServletResponse response, String message) throws IOException {
+    private void handleAuthenticationError(HttpServletResponse response, AuthErrorMessages message, Object... args) throws IOException {
         SecurityContextHolder.clearContext();
 
-        response.setStatus(HttpStatus.UNAUTHORIZED.value());
+        response.setStatus(message.getHttpStatus().value());
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
 
-        ErrorResponse errorResponse = new ErrorResponse(
-                HttpStatus.UNAUTHORIZED.value(),
-                "AUTHENTICATION_FAILED",
-                message,
-                System.currentTimeMillis()
-        );
+        ErrorResponse errorResponse = ErrorResponse.builder()
+                .status(message.getHttpStatus().value())
+                .message(message.getFormattedMessage(args))
+                .timestamp(LocalDateTime.now())
+                .build();
 
         objectMapper.writeValue(response.getWriter(), errorResponse);
     }
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
-        String path = request.getServletPath();
-
-        if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
-            return true;
-        }
-
-        return PUBLIC_PATHS.stream()
-                .anyMatch(pattern -> pathMatcher.match(pattern, path));
+        return (HttpMethod.OPTIONS.matches(request.getMethod())
+                || PUBLIC_PATHS.stream().anyMatch(pattern -> pathMatcher.match(pattern, request.getServletPath())));
     }
 
 }

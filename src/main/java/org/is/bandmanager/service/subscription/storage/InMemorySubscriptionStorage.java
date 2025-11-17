@@ -3,11 +3,11 @@ package org.is.bandmanager.service.subscription.storage;
 import lombok.RequiredArgsConstructor;
 import org.is.bandmanager.constants.SubscriptionsConstants;
 import org.is.exception.ServiceException;
-import org.is.util.pageable.EntityFilter;
+import org.is.bandmanager.repository.filter.EntityFilter;
 import org.is.bandmanager.service.subscription.model.Subscription;
 import org.is.bandmanager.service.subscription.model.request.SubscriptionRequest;
 import org.springframework.stereotype.Service;
-import org.is.util.pageable.PageableConfig;
+import org.is.util.pageable.PageableRequest;
 
 import java.time.Instant;
 import java.util.ArrayList;
@@ -41,7 +41,7 @@ public class InMemorySubscriptionStorage implements SubscriptionStorage {
                 .subscriptionId(id)
                 .principalId(principalId)
                 .filter(request.getFilter())
-                .pageableConfig(Optional.ofNullable(request.getPageableConfig()).orElse(new PageableConfig()))
+                .pageableRequest(Optional.ofNullable(request.getPageableRequest()).orElse(new PageableRequest()))
                 .createdAt(Instant.now())
                 .touchedAt(Instant.now())
                 .build();
@@ -74,7 +74,7 @@ public class InMemorySubscriptionStorage implements SubscriptionStorage {
                 .subscriptionId(existing.getSubscriptionId())
                 .principalId(existing.getPrincipalId())
                 .filter(request.getFilter())
-                .pageableConfig(Optional.ofNullable(request.getPageableConfig()).orElse(new PageableConfig()))
+                .pageableRequest(Optional.ofNullable(request.getPageableRequest()).orElse(new PageableRequest()))
                 .createdAt(existing.getCreatedAt())
                 .touchedAt(Instant.now())
                 .build();

@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.is.bandmanager.repository.filter.BestBandAwardFilter;
 import org.is.event.EntityEvent;
 import org.is.exception.ServiceException;
-import org.is.util.pageable.EntityFilter;
+import org.is.bandmanager.repository.filter.EntityFilter;
 import org.is.bandmanager.repository.filter.MusicBandFilter;
 import org.is.bandmanager.service.bestBandAward.BestBandAwardService;
 import org.is.bandmanager.service.musicBand.MusicBandService;
@@ -101,9 +101,9 @@ public class SubscriptionServiceImpl implements SubscriptionService {
     private <T extends EntityFilter> Page<?> getSubscriptionData(Subscription<T> subscription) {
         return switch (subscription.getFilter().getClass().getSimpleName()) {
             case "MusicBandFilter" ->
-                    musicBandService.getAll((MusicBandFilter) subscription.getFilter(), subscription.getPageableConfig());
+                    musicBandService.getAll((MusicBandFilter) subscription.getFilter(), subscription.getPageableRequest());
             case "BestBandAwardFilter" ->
-                    bestBandAwardService.getAll((BestBandAwardFilter) subscription.getFilter(), subscription.getPageableConfig());
+                    bestBandAwardService.getAll((BestBandAwardFilter) subscription.getFilter(), subscription.getPageableRequest());
             default -> Page.empty();
         };
     }

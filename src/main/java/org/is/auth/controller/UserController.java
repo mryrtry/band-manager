@@ -5,10 +5,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.is.auth.dto.UserDto;
 import org.is.auth.dto.request.RoleRequest;
-import org.is.auth.dto.request.UserRequest;
+import org.is.auth.dto.request.UserUpdateRequest;
 import org.is.auth.repository.filter.UserFilter;
 import org.is.auth.service.user.UserService;
-import org.is.util.pageable.PageableConfig;
+import org.is.util.pageable.PageableRequest;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -35,7 +35,7 @@ public class UserController {
     @PreAuthorize("hasAuthority('ALL_USER_READ')")
     public ResponseEntity<Page<UserDto>> getAllUsers(
             @ModelAttribute @Valid UserFilter filter,
-            @ModelAttribute PageableConfig config) {
+            @ModelAttribute PageableRequest config) {
         Page<UserDto> users = userService.getAll(filter, config);
         return ResponseEntity.ok(users);
     }
@@ -72,7 +72,7 @@ public class UserController {
     @PreAuthorize("hasAuthority('ALL_USER_UPDATE')")
     public ResponseEntity<UserDto> updateUser(
             @PathVariable Long id,
-            @Valid @RequestBody UserRequest request) {
+            @Valid @RequestBody UserUpdateRequest request) {
         UserDto updatedUser = userService.update(id, request);
         return ResponseEntity.ok(updatedUser);
     }

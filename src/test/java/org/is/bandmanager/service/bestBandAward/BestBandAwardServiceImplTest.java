@@ -8,12 +8,10 @@ import org.is.bandmanager.model.BestBandAward;
 import org.is.bandmanager.model.MusicBand;
 import org.is.bandmanager.model.MusicGenre;
 import org.is.bandmanager.repository.BestBandAwardRepository;
-import org.is.bandmanager.repository.filter.BestBandAwardFilter;
 import org.is.bandmanager.service.musicBand.MusicBandService;
 import org.is.event.EntityEvent;
 import org.is.event.EventType;
 import org.is.exception.ServiceException;
-import org.is.util.pageable.PageableConfig;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -24,9 +22,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.Pageable;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -37,8 +32,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.is.bandmanager.exception.message.BandManagerErrorMessage.ID_MUST_BE_POSITIVE;
 import static org.is.bandmanager.exception.message.BandManagerErrorMessage.MUST_BE_NOT_NULL;
 import static org.is.bandmanager.exception.message.BandManagerErrorMessage.SOURCE_WITH_ID_NOT_FOUND;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -91,73 +84,6 @@ class BestBandAwardServiceImplTest {
         EntityEvent<BestBandAwardDto> capturedEvent = eventCaptor.getValue();
         assertThat(capturedEvent.getEventType()).isEqualTo(EventType.CREATED);
         assertThat(capturedEvent.getEntities()).containsExactly(awardDto);
-    }
-
-    @Test
-    void shouldGetAllBestBandAwardsWithFilterAndPagination() {
-        // Given
-        BestBandAwardFilter filter = BestBandAwardFilter.builder().build();
-        filter.setGenre(MusicGenre.ROCK);
-
-        PageableConfig config = new PageableConfig();
-        config.setPage(0);
-        config.setSize(10);
-        config.setSort(List.of("createdAt"));
-        config.setDirection("DESC");
-
-        BestBandAward award = createBestBandAward(1L, testBand, MusicGenre.ROCK, LocalDateTime.now());
-        BestBandAwardDto awardDto = createBestBandAwardDto(1L, MusicGenre.ROCK, LocalDateTime.now());
-        Page<BestBandAward> awardPage = new PageImpl<>(List.of(award));
-
-        when(bestBandAwardRepository.findWithFilter(any(BestBandAwardFilter.class), any(Pageable.class)))
-                .thenReturn(awardPage);
-        when(mapper.toDto(award)).thenReturn(awardDto);
-
-        // When
-        Page<BestBandAwardDto> result = bestBandAwardService.getAll(filter, config);
-
-        // Then
-        assertThat(result.getContent()).hasSize(1);
-        assertThat(result.getContent().get(0)).isEqualTo(awardDto);
-    }
-
-    @Test
-    void shouldGetAllBestBandAwardsWithNullFilter() {
-        // Given
-        PageableConfig config = new PageableConfig();
-
-        BestBandAward award = createBestBandAward(1L, testBand, MusicGenre.ROCK, LocalDateTime.now());
-        BestBandAwardDto awardDto = createBestBandAwardDto(1L, MusicGenre.ROCK, LocalDateTime.now());
-        Page<BestBandAward> awardPage = new PageImpl<>(List.of(award));
-
-        // ИСПРАВЛЕННАЯ СТРОКА - используем isNull() вместо any()
-        when(bestBandAwardRepository.findWithFilter(isNull(), any(Pageable.class)))
-                .thenReturn(awardPage);
-        when(mapper.toDto(award)).thenReturn(awardDto);
-
-        // When
-        Page<BestBandAwardDto> result = bestBandAwardService.getAll(null, config);
-
-        // Then
-        assertThat(result.getContent()).hasSize(1);
-        assertThat(result.getContent().get(0)).isEqualTo(awardDto);
-    }
-
-    @Test
-    void shouldReturnEmptyPageWhenNoBestBandAwards() {
-        // Given
-        BestBandAwardFilter filter = BestBandAwardFilter.builder().build();
-        PageableConfig config = new PageableConfig();
-        Page<BestBandAward> emptyPage = Page.empty();
-
-        when(bestBandAwardRepository.findWithFilter(any(BestBandAwardFilter.class), any(Pageable.class)))
-                .thenReturn(emptyPage);
-
-        // When
-        Page<BestBandAwardDto> result = bestBandAwardService.getAll(filter, config);
-
-        // Then
-        assertThat(result.getContent()).isEmpty();
     }
 
     @Test
