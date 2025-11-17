@@ -22,10 +22,11 @@ import org.is.bandmanager.repository.MusicBandRepository;
 import org.is.bandmanager.repository.PersonRepository;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.stereotype.Service;
-import org.springframework.validation.BeanPropertyBindingResult;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.SmartValidator;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -36,65 +37,71 @@ import java.util.Set;
 public class MusicBandImportProcessor {
 
 	private final MusicBandRepository musicBandRepository;
-
 	private final CoordinatesRepository coordinatesRepository;
-
 	private final AlbumRepository albumRepository;
-
 	private final PersonRepository personRepository;
-
 	private final LocationRepository locationRepository;
-
 	private final SmartValidator validator;
-
 	private final Validator jakartaValidator;
 
+	@Transactional(rollbackFor = Exception.class)
 	public List<Long> processImport(List<MusicBandImportRequest> importRequests) {
 		List<Long> createdBandIds = new ArrayList<>();
-		List<String> createdNames = new ArrayList<>();
-		List<MusicBand> createdBands = new ArrayList<>();
+		Set<String> allNamesInRequest = new HashSet<>();
 		for (int i = 0; i < importRequests.size(); i++) {
 			MusicBandImportRequest request = importRequests.get(i);
+			String name = request.getName();
+			if (allNamesInRequest.contains(name)) {
+				throw new ValidationException("Record " + (i + 1) + ": Ресурс 'MusicBand.name' должен быть уникальным. Имя '" + name + "' дублируется в импортируемых данных");
+			}
+
+			if (musicBandRepository.existsByName(name)) {
+				throw new ValidationException("Record " + (i + 1) + ": Ресурс 'MusicBand.name' должен быть уникальным. Имя '" + name + "' уже существует в базе данных");
+			}
+
+			// Валидация структуры запроса
+			String validationError = validateImportRequestStructure(request);
+			if (!validationError.isEmpty()) {
+				throw new ValidationException("Record " + (i + 1) + ": " + validationError);
+			}
+
+			allNamesInRequest.add(name);
+		}
+
+		for (int i = 0; i < importRequests.size(); i++) {
+			MusicBandImportRequest request = importRequests.get(i);
+
 			try {
-				String errorMessage = validateImportRequest(request, createdNames);
-				if (!errorMessage.isBlank()) {
-					log.warn("Validation error at record {}: {}", i + 1, errorMessage);
-					throw new ValidationException("Record " + (i + 1) + ": " + errorMessage);
-				}
 				MusicBand musicBand = createMusicBandFromImport(request);
-				createdBandIds.add(musicBand.getId());
-				createdBands.add(musicBand);
-				createdNames.add(musicBand.getName());
+				MusicBand savedBand = musicBandRepository.save(musicBand);
+				createdBandIds.add(savedBand.getId());
+
 				log.debug("Successfully created MusicBand from import request at index {}", i);
-			} catch (ValidationException e) {
-				log.error("Validation error at record {}: {}", i + 1, e.getMessage());
-				throw new ValidationException("Import failed at record " + (i + 1) + ": " + e.getMessage());
 			} catch (Exception e) {
 				log.error("Failed to process import request at index {}: {}", i + 1, e.getMessage());
-				throw new RuntimeException("Import failed at record " + (i + 1) + ": " + e.getMessage());
-			} finally {
-				musicBandRepository.saveAll(createdBands);
+				throw new RuntimeException("Import failed at record " + (i + 1) + ": " + e.getMessage(), e);
 			}
 		}
+
 		return createdBandIds;
 	}
 
-	private String validateImportRequest(MusicBandImportRequest request, List<String> createdNames) {
-		if (musicBandRepository.existsByName(request.getName())) {
-			return "Ресурс 'MusicBand.name' должен быть уникальным";
-		}
-		if (createdNames.contains(request.getName())) {
-			return "Ресурс 'MusicBand.name' должен быть уникальным";
-		}
-		BeanPropertyBindingResult errors = new BeanPropertyBindingResult(request, "importRequest");
+	private String validateImportRequestStructure(MusicBandImportRequest request) {
+		org.springframework.validation.BeanPropertyBindingResult errors =
+				new org.springframework.validation.BeanPropertyBindingResult(request, "importRequest");
 		validator.validate(request, errors);
 		if (errors.hasErrors()) {
-			return errors.getFieldErrors().stream().findFirst().map(DefaultMessageSourceResolvable::getDefaultMessage).orElse("Validation failed");
+			return errors.getFieldErrors().stream()
+					.findFirst()
+					.map(DefaultMessageSourceResolvable::getDefaultMessage)
+					.orElse("Validation failed");
 		}
+
 		String nestedValidationMessage = validateNestedEntities(request);
 		if (!nestedValidationMessage.isEmpty()) {
 			return nestedValidationMessage;
 		}
+
 		return "";
 	}
 
@@ -106,6 +113,7 @@ public class MusicBandImportProcessor {
 		if (!coordinateViolations.isEmpty()) {
 			return coordinateViolations.iterator().next().getMessage();
 		}
+
 		if (request.getFrontMan() == null) {
 			return "Front man is required";
 		}
@@ -113,6 +121,7 @@ public class MusicBandImportProcessor {
 		if (!personViolations.isEmpty()) {
 			return personViolations.iterator().next().getMessage();
 		}
+
 		if (request.getFrontMan().getLocation() == null) {
 			return "Front man location is required";
 		}
@@ -120,6 +129,7 @@ public class MusicBandImportProcessor {
 		if (!locationViolations.isEmpty()) {
 			return locationViolations.iterator().next().getMessage();
 		}
+
 		if (request.getBestAlbum() == null) {
 			return "Best album is required";
 		}
@@ -127,6 +137,7 @@ public class MusicBandImportProcessor {
 		if (!albumViolations.isEmpty()) {
 			return albumViolations.iterator().next().getMessage();
 		}
+
 		return "";
 	}
 
@@ -136,14 +147,29 @@ public class MusicBandImportProcessor {
 		Coordinates coordinates = createCoordinates(request.getCoordinates());
 		Album bestAlbum = createAlbum(request.getBestAlbum());
 
-		return MusicBand.builder().name(request.getName()).coordinates(coordinates).genre(request.getGenre()).numberOfParticipants(request.getNumberOfParticipants()).singlesCount(request.getSinglesCount()).description(request.getDescription()).bestAlbum(bestAlbum).albumsCount(request.getAlbumsCount()).establishmentDate(request.getEstablishmentDate()).frontMan(frontMan).build();
+		return MusicBand.builder()
+				.name(request.getName())
+				.coordinates(coordinates)
+				.genre(request.getGenre())
+				.numberOfParticipants(request.getNumberOfParticipants())
+				.singlesCount(request.getSinglesCount())
+				.description(request.getDescription())
+				.bestAlbum(bestAlbum)
+				.albumsCount(request.getAlbumsCount())
+				.establishmentDate(request.getEstablishmentDate())
+				.frontMan(frontMan)
+				.build();
 	}
 
 	private Location createLocation(LocationImportRequest locationRequest) {
 		if (locationRequest == null) {
 			throw new ValidationException("Location request cannot be null");
 		}
-		Location location = Location.builder().x(locationRequest.getX()).y(locationRequest.getY()).z(locationRequest.getZ()).build();
+		Location location = Location.builder()
+				.x(locationRequest.getX())
+				.y(locationRequest.getY())
+				.z(locationRequest.getZ())
+				.build();
 		return locationRepository.save(location);
 	}
 
@@ -154,18 +180,31 @@ public class MusicBandImportProcessor {
 		if (location == null) {
 			throw new ValidationException("Location cannot be null for person: " + personRequest.getName());
 		}
-		Person person = Person.builder().name(personRequest.getName()).eyeColor(personRequest.getEyeColor()).hairColor(personRequest.getHairColor()).location(location).weight(personRequest.getWeight()).nationality(personRequest.getNationality()).build();
+		Person person = Person.builder()
+				.name(personRequest.getName())
+				.eyeColor(personRequest.getEyeColor())
+				.hairColor(personRequest.getHairColor())
+				.location(location)
+				.weight(personRequest.getWeight())
+				.nationality(personRequest.getNationality())
+				.build();
 		return personRepository.save(person);
 	}
 
 	private Coordinates createCoordinates(CoordinatesImportRequest coordinatesRequest) {
-		Coordinates coordinates = Coordinates.builder().x(coordinatesRequest.getX()).y(coordinatesRequest.getY()).build();
+		Coordinates coordinates = Coordinates.builder()
+				.x(coordinatesRequest.getX())
+				.y(coordinatesRequest.getY())
+				.build();
 		return coordinatesRepository.save(coordinates);
 	}
 
 	private Album createAlbum(AlbumImportRequest albumRequest) {
-		Album album = Album.builder().name(albumRequest.getName()).tracks(albumRequest.getTracks()).sales(albumRequest.getSales()).build();
+		Album album = Album.builder()
+				.name(albumRequest.getName())
+				.tracks(albumRequest.getTracks())
+				.sales(albumRequest.getSales())
+				.build();
 		return albumRepository.save(album);
 	}
-
 }
