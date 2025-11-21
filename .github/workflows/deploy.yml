@@ -12,6 +12,7 @@ env:
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -23,15 +24,20 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
-      - name: Generate application-prod.properties from template
+      - name: Create application-prod.properties
         run: |
           mkdir -p src/main/resources
-          cp src/main/resources/application-prod.properties src/main/resources/application-prod.properties
-          sed -i "s|@SERVER_PORT@|${{ env.SERVER_PORT }}|g" src/main/resources/application-prod.properties
-          sed -i "s|@DB_URL@|${{ secrets.DB_URL }}|g" src/main/resources/application-prod.properties
-          sed -i "s|@DB_USERNAME@|${{ secrets.DB_USERNAME }}|g" src/main/resources/application-prod.properties
-          sed -i "s|@DB_PASSWORD@|${{ secrets.DB_PASSWORD }}|g" src/main/resources/application-prod.properties
-          sed -i "s|@JWT_SECRET@|${{ secrets.JWT_SECRET }}|g" src/main/resources/application-prod.properties
+          cat > src/main/resources/application-prod.properties << EOF
+          server.port=${{ env.SERVER_PORT }}
+          spring.datasource.url=${{ secrets.DB_URL }}
+          spring.datasource.username=${{ secrets.DB_USERNAME }}
+          spring.datasource.password=${{ secrets.DB_PASSWORD }}
+          spring.datasource.driver-class-name=org.postgresql.Driver
+          spring.jpa.hibernate.ddl-auto=validate
+          band-manager.jwt.secret=${{ secrets.JWT_SECRET }}
+          band-manager.jwt.access-token.expiration=1h
+          band-manager.jwt.refresh-token.expiration=7d
+          EOF
 
       - name: Build with Maven
         run: mvn -B clean package -P prod -DskipTests
@@ -47,6 +53,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: build
     if: github.ref == 'refs/heads/master'
+
     steps:
       - name: Download JAR artifact
         uses: actions/download-artifact@v4
@@ -58,50 +65,49 @@ jobs:
           mkdir -p ~/.ssh
           echo "${{ secrets.DEPLOY_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
-          ssh-keyscan 83.166.246.71 >> ~/.ssh/known_hosts
+          ssh-keyscan -p 2222 se.ifmo.ru >> ~/.ssh/known_hosts
 
       - name: Create directory structure on server
         run: |
-          ssh root@83.166.246.71 "mkdir -p ~/BandManager"
+          ssh -p 2222 s409483@se.ifmo.ru "mkdir -p ~/BandManager"
 
       - name: Stop existing application
         run: |
-          ssh root@83.166.246.71 "pkill -f 'BandManager.jar' || true"
+          ssh -p 2222 s409483@se.ifmo.ru "pkill -f 'BandManager.jar' || true"
           sleep 5
 
       - name: Upload JAR to server
         run: |
-          scp BandManager-0.1.jar root@83.166.246.71:~/BandManager/BandManager.jar
+          scp -P 2222 BandManager-0.1.jar s409483@se.ifmo.ru:~/BandManager/BandManager.jar
 
       - name: Start application
         run: |
-          ssh root@83.166.246.71 "cd ~/BandManager && pkill -f 'BandManager.jar' || true"
+          ssh -p 2222 s409483@se.ifmo.ru "cd ~/BandManager && pkill -f 'BandManager.jar' || true"
           sleep 5
-          ssh root@83.166.246.71 \
-            "cd ~/BandManager && _JAVA_OPTIONS='' bash -c 'java -Xmx512m -Xms256m -jar BandManager.jar --spring.profiles.active=prod > band-manager.log 2>&1 &'"
+          ssh -p 2222 s409483@se.ifmo.ru "cd ~/BandManager && _JAVA_OPTIONS='' bash -c 'java -Xmx512m -Xms256m -jar BandManager.jar --spring.profiles.active=prod > band-manager.log 2>&1 &'"
           sleep 25
 
   health-check:
     runs-on: ubuntu-latest
     needs: deploy
     if: github.ref == 'refs/heads/master'
+
     steps:
       - name: Setup SSH key
         run: |
           mkdir -p ~/.ssh
           echo "${{ secrets.DEPLOY_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
-          ssh-keyscan 83.166.246.71 >> ~/.ssh/known_hosts
+          ssh-keyscan -p 2222 se.ifmo.ru >> ~/.ssh/known_hosts
 
       - name: Check application process
         run: |
-          ssh root@83.166.246.71 "ps aux | grep BandManager.jar | grep -v grep"
+          ssh -p 2222 s409483@se.ifmo.ru "ps aux | grep BandManager.jar | grep -v grep"
 
       - name: Check application logs
         run: |
-          ssh root@83.166.246.71 "tail -20 ~/BandManager/band-manager.log"
+          ssh -p 2222 s409483@se.ifmo.ru "tail -20 ~/BandManager/band-manager.log"
 
       - name: Check health endpoint
         run: |
-          ssh root@83.166.246.71 \
-            "curl -s -o /dev/null -w 'Health Check: %{http_code}\n' localhost:${{ env.SERVER_PORT }}/health"
+          ssh -p 2222 s409483@se.ifmo.ru "curl -s -o /dev/null -w 'Health Check: %{http_code}\n' localhost:${{ env.SERVER_PORT }}/health"
