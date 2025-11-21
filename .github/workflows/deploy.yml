@@ -67,14 +67,13 @@ jobs:
         run: ssh root@83.166.246.71 "mkdir -p ~/BandManager"
 
       - name: Stop existing application
-        run: ssh root@83.166.246.71 "/usr/bin/pkill -f BandManager.jar || true"
+        run: ssh root@83.166.246.71 "pkill -f BandManager.jar || true"
 
       - name: Upload JAR to server
         run: scp ./artifact/BandManager-0.1.jar root@83.166.246.71:~/BandManager/BandManager.jar
 
       - name: Start application
         run: |
-          ssh root@83.166.246.71 "/usr/bin/pkill -f BandManager.jar || true"
           sleep 5
           ssh root@83.166.246.71 \
             "cd ~/BandManager && _JAVA_OPTIONS='' bash -c 'java -Xmx512m -Xms256m -jar BandManager.jar --spring.profiles.active=prod > band-manager.log 2>&1 &'"
