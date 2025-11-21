@@ -57,5 +57,5 @@ jobs:
 
       - name: Clean and deploy to /var/www/band-manager
         run: |
-          ssh -p 22 root@83.166.246.71 "rm -rf $DEPLOY_FOLDER/* && mkdir -p $DEPLOY_FOLDER"
-          scp -P 22 -r ./dist/BandManagerFrontend/* root@83.166.246.71:$DEPLOY_FOLDER/
+          ssh root@83.166.246.71 "rm -rf $DEPLOY_FOLDER/* && mkdir -p $DEPLOY_FOLDER"
+          scp -r ./dist/BandManagerFrontend/* root@83.166.246.71:$DEPLOY_FOLDER/
