@@ -6,7 +6,7 @@ on:
 
 env:
   NODE_VERSION: '20.x'
-  DEPLOY_FOLDER: '/var/www/band-manager'  # путь для nginx
+  DEPLOY_FOLDER: '/var/www/band-manager'
 
 jobs:
   build:
