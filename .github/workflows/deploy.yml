@@ -68,7 +68,7 @@ jobs:
 
       - name: Stop existing application
         run: |
-          ssh root@83.166.246.71 "pkill -f 'BandManager.jar' || true"
+          ssh root@83.166.246.71 "pkill -f BandManager.jar || true"
           sleep 5
 
       - name: Upload JAR to server
