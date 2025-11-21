@@ -16,4 +16,6 @@ public class BestBandAwardRequest {
     @NotNull(message = "BestBandAward.MusicGenre не может быть пустым")
     private MusicGenre genre;
 
+	private Long version;
+
 }

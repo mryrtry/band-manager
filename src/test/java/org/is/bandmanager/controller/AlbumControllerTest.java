@@ -48,6 +48,15 @@ class AlbumControllerTest extends AbstractIntegrationTest {
                 .build();
     }
 
+	private static AlbumRequest createAlbumRequest(String name, Long tracks, Integer sales, Long version) {
+		return AlbumRequest.builder()
+				.name(name)
+				.tracks(tracks)
+				.sales(sales)
+				.version(version)
+				.build();
+	}
+
     @BeforeEach
     @AfterEach
     void cleanDatabase() {
@@ -107,7 +116,7 @@ class AlbumControllerTest extends AbstractIntegrationTest {
     void shouldUpdateAlbumSuccessfully() {
         // Given
         Album album = albumRepository.save(createAlbum("Old Name", 3L, 10));
-        AlbumRequest updateRequest = createAlbumRequest("Updated Name", 9L, 99);
+        AlbumRequest updateRequest = createAlbumRequest("Updated Name", 9L, 99, album.getVersion());
 
         // When & Then
         getClient().putWithBody("/albums/{id}", updateRequest, album.getId())

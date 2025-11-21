@@ -17,4 +17,6 @@ public class LocationRequest {
     @NotNull(message = "Location.Z не может быть пустым")
     private Long z;
 
+	private Long version;
+
 }

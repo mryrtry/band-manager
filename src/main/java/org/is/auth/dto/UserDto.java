@@ -29,4 +29,6 @@ public class UserDto {
 
     private LocalDateTime updatedAt;
 
+	private Long version;
+
 }
