@@ -27,7 +27,7 @@ jobs:
       - name: Generate application-prod.properties from template
         run: |
           mkdir -p src/main/resources
-          cp src/main/resources/application-prod.properties src/main/resources/application-prod.properties
+          cp src/main/resources/application-prod-template.properties src/main/resources/application-prod.properties
           sed -i "s|@SERVER_PORT@|${{ env.SERVER_PORT }}|g" src/main/resources/application-prod.properties
           sed -i "s|@DB_URL@|${{ secrets.DB_URL }}|g" src/main/resources/application-prod.properties
           sed -i "s|@DB_USERNAME@|${{ secrets.DB_USERNAME }}|g" src/main/resources/application-prod.properties
