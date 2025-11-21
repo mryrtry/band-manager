@@ -7,7 +7,6 @@ on:
 env:
   NODE_VERSION: '20.x'
   DEPLOY_FOLDER: '/var/www/band-manager'
-  SERVER_IP: '83.166.246.71'  # IP твоего сервера
 
 jobs:
   build:
@@ -24,19 +23,16 @@ jobs:
           cache: 'npm'
 
       - name: Install dependencies
-        run: |
-          npm ci
-          npm install rimraf@^4.0.0 glob@^9.3.0 --save-dev
+        run: npm ci
 
-      - name: Build Angular application
-        run: |
-          npm run build -- --configuration=production --output-path=dist/browser --base-href="/"
+      - name: Build Angular (production)
+        run: npm run build -- --configuration=production --base-href="/"
 
-      - name: Upload dist folder
+      - name: Upload dist/BandManagerFrontend/browser
         uses: actions/upload-artifact@v4
         with:
-          name: angular-dist
-          path: dist/browser
+          name: angular-app
+          path: dist/BandManagerFrontend/browser/
           retention-days: 1
 
   deploy:
@@ -49,22 +45,16 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: angular-app
-          path: dist-artifact
+          path: artifact-browser
 
       - name: Setup SSH
         uses: webfactory/ssh-agent@v0.9.0
         with:
           ssh-private-key: ${{ secrets.DEPLOY_KEY }}
 
-      - name: Add host to known_hosts
-        run: ssh-keyscan 83.166.246.71 >> ~/.ssh/known_hosts
-
-      - name: Deploy browser/ content to server
+      - name: Clean and deploy
         env:
           DEPLOY_FOLDER: /var/www/band-manager
         run: |
-          # очистить директорию на сервере
           ssh root@83.166.246.71 "rm -rf $DEPLOY_FOLDER/* && mkdir -p $DEPLOY_FOLDER"
-
-          # загрузить ТОЛЬКО содержимое browser/
-          scp -r dist-artifact/browser/* root@83.166.246.71:$DEPLOY_FOLDER/
+          scp -r ./artifact-browser/* root@83.166.246.71:$DEPLOY_FOLDER/
