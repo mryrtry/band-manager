@@ -60,12 +60,7 @@ jobs:
           mkdir -p ~/.ssh
           ssh-keyscan -H ${{ env.SERVER_IP }} >> ~/.ssh/known_hosts
 
-      - name: Unpack artifact
-        run: |
-          mkdir -p ./dist
-          unzip angular-app.zip -d ./dist
-
       - name: Clean and deploy to /var/www/band-manager
         run: |
           ssh root@${{ env.SERVER_IP }} "rm -rf $DEPLOY_FOLDER/* && mkdir -p $DEPLOY_FOLDER"
-          scp -r ./dist/* root@${{ env.SERVER_IP }}:$DEPLOY_FOLDER/
+          scp -r ./angular-app/* root@${{ env.SERVER_IP }}:$DEPLOY_FOLDER/
