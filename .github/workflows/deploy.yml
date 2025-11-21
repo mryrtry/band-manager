@@ -30,13 +30,13 @@ jobs:
 
       - name: Build Angular application
         run: |
-          npm run build -- --configuration=production --base-href="/"
+          npm run build -- --configuration=production --output-path=dist/browser --base-href="/"
 
       - name: Upload dist folder
         uses: actions/upload-artifact@v4
         with:
-          name: angular-app
-          path: dist/BandManagerFrontend/
+          name: angular-dist
+          path: dist/browser/
           retention-days: 1
 
   deploy:
@@ -48,7 +48,7 @@ jobs:
       - name: Download dist files
         uses: actions/download-artifact@v4
         with:
-          name: angular-app
+          name: angular-dist
 
       - name: Setup SSH
         uses: webfactory/ssh-agent@v0.9.0
@@ -63,4 +63,4 @@ jobs:
       - name: Clean and deploy to /var/www/band-manager
         run: |
           ssh root@${{ env.SERVER_IP }} "rm -rf $DEPLOY_FOLDER/* && mkdir -p $DEPLOY_FOLDER"
-          scp -r ./angular-app/* root@${{ env.SERVER_IP }}:$DEPLOY_FOLDER/
+          scp -r ./angular-dist/* root@${{ env.SERVER_IP }}:$DEPLOY_FOLDER/
