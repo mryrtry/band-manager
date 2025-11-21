@@ -1,6 +1,6 @@
 [
   {
-    "name": "The Cosmic Nomads",
+    "name": "123",
     "coordinates": {
       "x": -100,
       "y": 42.5
@@ -30,7 +30,97 @@
     }
   },
   {
-    "name": "Neon Pulse",
+    "name": "341",
+    "coordinates": {
+      "x": -100,
+      "y": 42.5
+    },
+    "genre": "PROGRESSIVE_ROCK",
+    "numberOfParticipants": 4,
+    "singlesCount": 15,
+    "description": "An avant-garde progressive rock band exploring the depths of sound and space.",
+    "bestAlbum": {
+      "name": "Journey to the Unknown",
+      "tracks": 10,
+      "sales": 50000
+    },
+    "albumsCount": 3,
+    "establishmentDate": "2010-06-15",
+    "frontMan": {
+      "name": "Zara Quantum",
+      "eyeColor": "GREEN",
+      "hairColor": "BLACK",
+      "location": {
+        "x": 123,
+        "y": 456789012345,
+        "z": 987654321098
+      },
+      "weight": 65.3,
+      "nationality": "UK"
+    }
+  },
+  {
+    "name": "125",
+    "coordinates": {
+      "x": -100,
+      "y": 42.5
+    },
+    "genre": "PROGRESSIVE_ROCK",
+    "numberOfParticipants": 4,
+    "singlesCount": 15,
+    "description": "An avant-garde progressive rock band exploring the depths of sound and space.",
+    "bestAlbum": {
+      "name": "Journey to the Unknown",
+      "tracks": 10,
+      "sales": 50000
+    },
+    "albumsCount": 3,
+    "establishmentDate": "2010-06-15",
+    "frontMan": {
+      "name": "Zara Quantum",
+      "eyeColor": "GREEN",
+      "hairColor": "BLACK",
+      "location": {
+        "x": 123,
+        "y": 456789012345,
+        "z": 987654321098
+      },
+      "weight": 65.3,
+      "nationality": "UK"
+    }
+  },
+  {
+    "name": "126",
+    "coordinates": {
+      "x": -100,
+      "y": 42.5
+    },
+    "genre": "PROGRESSIVE_ROCK",
+    "numberOfParticipants": 4,
+    "singlesCount": 15,
+    "description": "An avant-garde progressive rock band exploring the depths of sound and space.",
+    "bestAlbum": {
+      "name": "Journey to the Unknown",
+      "tracks": 10,
+      "sales": 50000
+    },
+    "albumsCount": 3,
+    "establishmentDate": "2010-06-15",
+    "frontMan": {
+      "name": "Zara Quantum",
+      "eyeColor": "GREEN",
+      "hairColor": "BLACK",
+      "location": {
+        "x": 123,
+        "y": 456789012345,
+        "z": 987654321098
+      },
+      "weight": 65.3,
+      "nationality": "UK"
+    }
+  },
+  {
+    "name": "124",
     "coordinates": {
       "x": 50,
       "y": -20.0
@@ -60,7 +150,37 @@
     }
   },
   {
-    "name": "Desert Mirage",
+    "name": "128",
+    "coordinates": {
+      "x": 120,
+      "y": 100.0
+    },
+    "genre": "POST_PUNK",
+    "numberOfParticipants": 5,
+    "singlesCount": 12,
+    "description": "A post-punk band from the desert, creating haunting melodies.",
+    "bestAlbum": {
+      "name": "Echoes of the Dunes",
+      "tracks": 11,
+      "sales": 30000
+    },
+    "albumsCount": 1,
+    "establishmentDate": "2018-03-22",
+    "frontMan": {
+      "name": "Samir Oasis",
+      "eyeColor": "BROWN",
+      "hairColor": "ORANGE",
+      "location": {
+        "x": 0,
+        "y": 999999999999,
+        "z": 111111111111
+      },
+      "weight": 72.0,
+      "nationality": "INDIA"
+    }
+  },
+  {
+    "name": "129",
     "coordinates": {
       "x": 120,
       "y": 100.0

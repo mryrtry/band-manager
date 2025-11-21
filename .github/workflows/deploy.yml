@@ -6,7 +6,7 @@ on:
 
 env:
   NODE_VERSION: '20.x'
-  DEPLOY_FOLDER: 'public_html/band-manager'
+  DEPLOY_FOLDER: '/var/www/band-manager'  # <-- путь теперь базовый для nginx
 
 jobs:
   build:
@@ -24,14 +24,12 @@ jobs:
 
       - name: Install dependencies
         run: |
-          # Установка зависимостей
           npm ci
-          # Обновление транзитивных зависимостей rimraf и glob при необходимости
           npm install rimraf@^4.0.0 glob@^9.3.0 --save-dev
 
       - name: Build Angular application
         run: |
-          npm run build -- --configuration=production --base-href="/~s409483/band-manager/"
+          npm run build -- --configuration=production --base-href="/"
 
       - name: Upload dist folder
         uses: actions/upload-artifact@v4
@@ -58,7 +56,8 @@ jobs:
           chmod 600 ~/.ssh/id_rsa
           ssh-keyscan -p 2222 se.ifmo.ru >> ~/.ssh/known_hosts
 
-      - name: Clean and deploy
+      - name: Clean and deploy to /var/www/band-manager
         run: |
-          ssh -p 2222 s409483@se.ifmo.ru "rm -rf ~/$DEPLOY_FOLDER/* && mkdir -p ~/$DEPLOY_FOLDER"
-          scp -P 2222 -r ./dist/BandManagerFrontend/* s409483@se.ifmo.ru:~/$DEPLOY_FOLDER/
+          ssh -p 2222 s409483@se.ifmo.ru "sudo rm -rf $DEPLOY_FOLDER/* && sudo mkdir -p $DEPLOY_FOLDER"
+          scp -P 2222 -r ./dist/BandManagerFrontend/* s409483@se.ifmo.ru:$DEPLOY_FOLDER/
+          ssh -p 2222 s409483@se.ifmo.ru "sudo chown -R www-data:www-data $DEPLOY_FOLDER"
