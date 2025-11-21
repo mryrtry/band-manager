@@ -54,30 +54,27 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: application-jar
+          path: ./artifact
 
       - name: Setup SSH key
         run: |
           mkdir -p ~/.ssh
-          echo "${{ secrets.DEPLOY_KEY }}" > ~/.ssh/id_rsa
+          printf "%s\n" "${{ secrets.DEPLOY_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
           ssh-keyscan 83.166.246.71 >> ~/.ssh/known_hosts
 
       - name: Create directory structure on server
-        run: |
-          ssh root@83.166.246.71 "mkdir -p ~/BandManager"
+        run: ssh root@83.166.246.71 "mkdir -p ~/BandManager"
 
       - name: Stop existing application
-        run: |
-          ssh root@83.166.246.71 pkill -f BandManager.jar || true
-          sleep 2
+        run: ssh root@83.166.246.71 "/usr/bin/pkill -f BandManager.jar || true"
 
       - name: Upload JAR to server
-        run: |
-          scp target/BandManager-0.1.jar root@83.166.246.71:~/BandManager/BandManager.jar
+        run: scp ./artifact/BandManager-0.1.jar root@83.166.246.71:~/BandManager/BandManager.jar
 
       - name: Start application
         run: |
-          ssh root@83.166.246.71 "cd ~/BandManager && pkill -f 'BandManager.jar' || true"
+          ssh root@83.166.246.71 "/usr/bin/pkill -f BandManager.jar || true"
           sleep 5
           ssh root@83.166.246.71 \
             "cd ~/BandManager && _JAVA_OPTIONS='' bash -c 'java -Xmx512m -Xms256m -jar BandManager.jar --spring.profiles.active=prod > band-manager.log 2>&1 &'"
@@ -92,19 +89,16 @@ jobs:
       - name: Setup SSH key
         run: |
           mkdir -p ~/.ssh
-          echo "${{ secrets.DEPLOY_KEY }}" > ~/.ssh/id_rsa
+          printf "%s\n" "${{ secrets.DEPLOY_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
           ssh-keyscan 83.166.246.71 >> ~/.ssh/known_hosts
 
       - name: Check application process
-        run: |
-          ssh root@83.166.246.71 "ps aux | grep BandManager.jar | grep -v grep"
+        run: ssh root@83.166.246.71 "ps aux | grep BandManager.jar | grep -v grep"
 
       - name: Check application logs
-        run: |
-          ssh root@83.166.246.71 "tail -20 ~/BandManager/band-manager.log"
+        run: ssh root@83.166.246.71 "tail -20 ~/BandManager/band-manager.log"
 
       - name: Check health endpoint
-        run: |
-          ssh root@83.166.246.71 \
-            "curl -s -o /dev/null -w 'Health Check: %{http_code}\n' localhost:${{ env.SERVER_PORT }}/health"
+        run: ssh root@83.166.246.71 \
+               "curl -s -o /dev/null -w 'Health Check: %{http_code}\n' localhost:${{ env.SERVER_PORT }}/health"
