@@ -100,5 +100,5 @@ jobs:
         run: ssh root@83.166.246.71 "tail -20 ~/BandManager/band-manager.log"
 
       - name: Check health endpoint
-        run: ssh root@83.166.246.71 \
-               "curl -s -o /dev/null -w 'Health Check: %{http_code}\n' localhost:${{ env.SERVER_PORT }}/health"
+        run: |
+          ssh root@83.166.246.71 "curl -s -o /dev/null -w 'Health Check: %{http_code}\n' localhost:${{ env.SERVER_PORT }}/health"
