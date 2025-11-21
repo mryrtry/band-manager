@@ -1,0 +1,25 @@
+form {
+  width: 100%;
+  flex-direction: column;
+  gap: 10px;
+
+  label {
+    text-transform: uppercase;
+    font-size: 10px;
+    opacity: 0.7;
+    letter-spacing: -0.05em;
+  }
+}
+
+p-message {
+  text-transform: uppercase;
+  --p-message-text-sm-font-size: 10px;
+  max-width: 100%;
+}
+
+.nested-title {
+  text-transform: uppercase;
+  font-size: 10px;
+  opacity: 0.7;
+  letter-spacing: -0.05em;
+}

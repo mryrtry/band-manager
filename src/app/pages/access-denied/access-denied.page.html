@@ -1,0 +1,23 @@
+<div style="position: absolute; top: 0; right: 0; padding: 15px">
+  <app-theme-toggle></app-theme-toggle>
+</div>
+
+<div style="display: flex; flex-direction: column; align-items: center; margin-top: 15%; gap: 10px;">
+  <div class="flex flex-column gap-2">
+  <p-fieldset>
+    <ng-template #header>
+      <p style="font-weight: 700; letter-spacing: -0.05em; font-size: 17px;">ДОСТУП ЗАПРЕЩЕН</p>
+    </ng-template>
+    <p style="text-align: justify">
+      Доступ к запрошенной странице был запрещен.
+    </p>
+    @if (errorData) {
+      Необходимые права для доступа: {{ errorData.requiredRoles }}
+    }
+  </p-fieldset>
+    <a pButton routerLink="/">
+      <span class="pi pi-home" pButtonIcon></span>
+      <span pButtonLabel>На главную</span>
+    </a>
+  </div>
+</div>

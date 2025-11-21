@@ -1,15 +1,7 @@
-<!--<div style="max-width: 1000px; margin: 0 auto; padding: 10px">-->
-<!--  <app-person-selector></app-person-selector>-->
-<!--  <app-album-selector></app-album-selector>-->
-<!--  <app-coordinates-selector></app-coordinates-selector>-->
-<!--  <app-music-band-form [musicBandId]="201" mode="edit"></app-music-band-form>-->
-<!--  <app-music-band-list></app-music-band-list>-->
-<!--  <app-music-band-demo></app-music-band-demo>-->
-<!--</div>-->
-
-<app-header></app-header>
-<app-navigation></app-navigation>
-
-<main class="main-content">
-  <router-outlet></router-outlet>
+<p-confirm-dialog></p-confirm-dialog>
+<main>
+  <p-toast [breakpoints]="{ '920px': { width: '100%', right: '0', left: '0', top: '0', padding: '15px' } }" />
+  <div class="container">
+    <router-outlet></router-outlet>
+  </div>
 </main>

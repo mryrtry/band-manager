@@ -1,0 +1,70 @@
+    <ng-template #header>
+      <p style="font-weight: 700; letter-spacing: -0.05em; font-size: 17px;">
+        ВХОД</p>
+    </ng-template>
+    <form (ngSubmit)="onSubmit()" [formGroup]="loginForm" autofocus>
+      <div class="flex flex-column gap-1">
+        <label for="username">Имя пользователя</label>
+        <input [invalid]="isInvalid('username')"
+               fluid
+               formControlName="username"
+               id="username"
+               pInputText
+               placeholder="Username"
+               type="text"/>
+        @if (isInvalid('username')) {
+          <p-message severity="error" size="small" variant="simple">
+            @if (loginForm.get('username')?.errors?.['required']) {
+              Это поле обязательно
+            }
+            @if (loginForm.get('username')?.errors?.['minlength']) {
+              Минимум 3 символа
+            }
+            @if (loginForm.get('username')?.errors?.['maxlength']) {
+              Максимум 50 символов
+            }
+            @if (loginForm.get('username')?.errors?.['serverError']) {
+              {{ loginForm.get('username')?.errors?.['serverError'] }}
+            }
+          </p-message>
+        }
+      </div>
+      <div class="flex flex-column gap-1">
+        <label for="password">Пароль</label>
+        <p-password
+          [inputId]="'password'"
+          [invalid]="isInvalid('password')"
+          [toggleMask]="true"
+          [feedback]="false"
+          formControlName="password"
+          placeholder="Password"
+          fluid
+        />
+
+        @if (isInvalid('password')) {
+          <p-message severity="error" size="small" variant="simple">
+            @if (loginForm.get('password')?.errors?.['required']) {
+              Это поле обязательно
+            }
+            @if (loginForm.get('password')?.errors?.['minlength']) {
+              Минимум 6 символов
+            }
+            @if (loginForm.get('password')?.errors?.['serverError']) {
+              {{ loginForm.get('password')?.errors?.['serverError'] }}
+            }
+          </p-message>
+        }
+      </div>
+      <button [disabled]="loginForm.invalid || isLoading"
+              pButton
+              severity="primary"
+              type="submit">
+            <span pButtonLabel>
+                @if (isLoading) {
+                  <i class="pi pi-spinner pi-spin"></i>
+                } @else {
+                  ВОЙТИ
+                }
+            </span>
+      </button>
+    </form>

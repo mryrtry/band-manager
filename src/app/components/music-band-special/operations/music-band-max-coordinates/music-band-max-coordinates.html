@@ -1,0 +1,30 @@
+<div class="flex flex-column gap-2">
+  @if (musicBand) {
+    <p-panel>
+      <ng-template #header>
+        <p class="mt-2 font-bold" style="font-size: 1.1rem;">РЕЗУЛЬТАТ</p>
+      </ng-template>
+      <div class="music-band-panel flex flex-column gap-1 mt-2">
+        <p><span>Id:</span> {{ musicBand.id }}</p>
+        <p><span>Название:</span> {{ musicBand.name }}</p>
+        <p>
+          <span>Координаты:</span> (X: {{ musicBand.coordinates.x }}, Y: {{ musicBand.coordinates.y }})
+        </p>
+      </div>
+    </p-panel>
+  } @else {
+    <p-panel [showHeader]="false"
+             class="p-0 flex align-items-center justify-content-center">
+      <p class="empty-result p-3">
+        РЕЗУЛЬТАТА ЕЩЁ НЕТ
+      </p>
+    </p-panel>
+  }
+  <p-button
+    (click)="onMaxCoordinates()"
+    icon="pi pi-map-marker"
+    label="Найти макс. координаты"
+    outlined
+    [loading]="isLoading"
+  />
+</div>

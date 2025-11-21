@@ -1,0 +1,54 @@
+<div class="grid-container">
+  <p-panel [showHeader]="false" class="p-0">
+    <div class="flex flex-column gap-2 p-3">
+      <div class="flex flex-column gap-1">
+        <label for="removeParticipant">ID группы</label>
+        <p-inputNumber
+          [(ngModel)]="musicBandId"
+          [maxFractionDigits]="0"
+          [minFractionDigits]="0"
+          [min]="1"
+          (onInput)="onInput()"
+          class="w-full"
+          fluid
+          id="removeParticipant"
+          mode="decimal"
+          placeholder="ID муз. группы"
+        />
+        @if (errorMessage) {
+          <p-message severity="error" size="small" variant="simple">
+            {{ errorMessage }}
+          </p-message>
+        }
+      </div>
+      <p-button
+        (click)="onRemoveParticipant()"
+        fluid
+        icon="pi pi-user-minus"
+        label="Удалить участника"
+        outlined
+        [loading]="isLoading"
+        [disabled]="!musicBandId"
+      />
+    </div>
+  </p-panel>
+
+  @if (musicBand) {
+    <p-panel>
+      <ng-template #header>
+        <p class="mt-2 font-bold" style="font-size: 1.1rem;">РЕЗУЛЬТАТ</p>
+      </ng-template>
+      <div class="music-band-panel flex flex-column gap-1 mt-2">
+        <p><span>Id:</span> {{ musicBand.id }}</p>
+        <p><span>Название:</span> {{ musicBand.name }}</p>
+        <p><span>Оставшиеся участники:</span> {{ musicBand.numberOfParticipants }}</p>
+      </div>
+    </p-panel>
+  } @else {
+    <p-panel [showHeader]="false" class="p-0 flex align-items-center justify-content-center">
+      <p class="empty-result p-3">
+        РЕЗУЛЬТАТА ЕЩЁ НЕТ
+      </p>
+    </p-panel>
+  }
+</div>

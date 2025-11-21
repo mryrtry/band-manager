@@ -1,0 +1,264 @@
+<form (ngSubmit)="onSubmit()" [formGroup]="musicBandForm" class="music-band-form">
+  <!-- Name Field -->
+  <div class="form-field flex flex-column gap-1 mt-2">
+    <label for="name">Название *</label>
+    <input
+      [invalid]="isInvalid('name')"
+      fluid
+      formControlName="name"
+      id="name"
+      pInputText
+      placeholder="Введите название музыкальной группы"
+      type="text"
+      [readonly]="disabled"
+    />
+    @if (isInvalid('name')) {
+      <p-message severity="error" size="small" variant="simple">
+        {{ getFieldError('name') }}
+      </p-message>
+    }
+  </div>
+
+  <!-- Coordinates Field -->
+  <div class="form-field flex flex-column gap-1">
+    <label for="coordinates" class="mt-2">Координаты *</label>
+    <app-coordinates-selector
+      (coordinatesIdChange)="onCoordinatesChange($event)"
+      [currentUser]="currentUser"
+      [disabled]="isViewMode"
+      [coordinatesId]="musicBand?.coordinates?.id"
+      id="coordinates"
+    ></app-coordinates-selector>
+    @if (isInvalid('coordinatesId')) {
+      <p-message severity="error" size="small" variant="simple">
+        {{ getFieldError('coordinatesId') }}
+      </p-message>
+    }
+  </div>
+
+  <!-- Genre and Establishment Date in one row -->
+  <div class="form-row flex flex-wrap gap-3 mt-2">
+    <!-- Genre Field -->
+    <div class="form-field flex flex-column gap-1 flex-1 min-w-12rem">
+      <label for="genre">Жанр *</label>
+      <p-select
+        [disabled]="isViewMode"
+        [invalid]="isInvalid('genre')"
+        [options]="genres"
+        fluid
+        formControlName="genre"
+        id="genre"
+        placeholder="Выберите музыкальный жанр"
+        appendTo="body"
+      ></p-select>
+      @if (isInvalid('genre')) {
+        <p-message severity="error" size="small" variant="simple">
+          {{ getFieldError('genre') }}
+        </p-message>
+      }
+    </div>
+
+    <!-- Establishment Date Field -->
+    <div class="form-field flex flex-column gap-1 flex-1 min-w-12rem">
+      <label for="establishmentDate">Дата основания *</label>
+      <p-datePicker
+        [disabled]="isViewMode"
+        [invalid]="isInvalid('establishmentDate')"
+        [maxDate]="today"
+        [showButtonBar]="true"
+        formControlName="establishmentDate"
+        id="establishmentDate"
+        placeholder="Выберите дату основания"
+        dateFormat="dd.mm.yy"
+        appendTo="body"
+        fluid
+      ></p-datePicker>
+      @if (isInvalid('establishmentDate')) {
+        <p-message severity="error" size="small" variant="simple">
+          {{ getFieldError('establishmentDate') }}
+        </p-message>
+      }
+    </div>
+  </div>
+
+  <!-- Number of Participants and Singles Count in one row -->
+  <div class="form-row flex flex-wrap gap-3 mt-2">
+    <!-- Number of Participants Field -->
+    <div class="form-field flex flex-column gap-1 flex-1 min-w-12rem">
+      <label for="numberOfParticipants">Количество участников *</label>
+      <p-inputNumber
+        [disabled]="isViewMode"
+        [invalid]="isInvalid('numberOfParticipants')"
+        [maxFractionDigits]="0"
+        [minFractionDigits]="0"
+        [min]="1"
+        class="w-full"
+        fluid
+        formControlName="numberOfParticipants"
+        id="numberOfParticipants"
+        mode="decimal"
+        placeholder="Введите количество участников"
+      />
+      @if (isInvalid('numberOfParticipants')) {
+        <p-message severity="error" size="small" variant="simple">
+          {{ getFieldError('numberOfParticipants') }}
+        </p-message>
+      }
+    </div>
+
+    <!-- Singles Count Field -->
+    <div class="form-field flex flex-column gap-1 flex-1 min-w-12rem">
+      <label for="singlesCount">Количество синглов *</label>
+      <p-inputNumber
+        [disabled]="isViewMode"
+        [invalid]="isInvalid('singlesCount')"
+        [maxFractionDigits]="0"
+        [minFractionDigits]="0"
+        [min]="0"
+        class="w-full"
+        fluid
+        formControlName="singlesCount"
+        id="singlesCount"
+        mode="decimal"
+        placeholder="Введите количество синглов"
+      />
+      @if (isInvalid('singlesCount')) {
+        <p-message severity="error" size="small" variant="simple">
+          {{ getFieldError('singlesCount') }}
+        </p-message>
+      }
+    </div>
+  </div>
+
+  <!-- Albums Count Field (alone) -->
+  <div class="form-field flex flex-column gap-1 mt-2">
+    <label for="albumsCount">Количество альбомов *</label>
+    <p-inputNumber
+      [disabled]="isViewMode"
+      [invalid]="isInvalid('albumsCount')"
+      [maxFractionDigits]="0"
+      [minFractionDigits]="0"
+      [min]="0"
+      class="w-full"
+      fluid
+      formControlName="albumsCount"
+      id="albumsCount"
+      mode="decimal"
+      placeholder="Введите количество альбомов"
+    />
+    @if (isInvalid('albumsCount')) {
+      <p-message severity="error" size="small" variant="simple">
+        {{ getFieldError('albumsCount') }}
+      </p-message>
+    }
+  </div>
+
+  <!-- Description Field -->
+  <div class="form-field flex flex-column gap-1 mt-2">
+    <label for="description">Описание *</label>
+    <textarea
+      [disabled]="isViewMode"
+      [invalid]="isInvalid('description')"
+      class="w-full"
+      formControlName="description"
+      id="description"
+      pTextarea
+      autoResize
+      maxlength="300"
+      placeholder="Введите описание музыкальной группы"
+      rows="3"
+    ></textarea>
+    @if (isInvalid('description')) {
+      <p-message severity="error" size="small" variant="simple">
+        {{ getFieldError('description') }}
+      </p-message>
+    }
+  </div>
+
+  <!-- Best Album Field -->
+  <div class="form-field flex flex-column gap-1">
+    <label for="bestAlbum" class="mt-2">Лучший альбом *</label>
+    <app-album-selector
+      (albumIdChange)="onBestAlbumChange($event)"
+      [currentUser]="currentUser"
+      [disabled]="isViewMode"
+      [albumId]="musicBand?.bestAlbum?.id"
+    ></app-album-selector>
+    @if (isInvalid('bestAlbumId')) {
+      <p-message severity="error" size="small" variant="simple">
+        {{ getFieldError('bestAlbumId') }}
+      </p-message>
+    }
+  </div>
+
+  <!-- Front Man Field -->
+  <div class="form-field flex flex-column gap-1">
+    <label for="frontman" class="mt-2">Лидер группы *</label>
+    <app-person-selector
+      (personIdChange)="onFrontManChange($event)"
+      [currentUser]="currentUser"
+      [disabled]="isViewMode"
+      [personId]="musicBand?.frontMan?.id"
+    ></app-person-selector>
+    @if (isInvalid('frontManId')) {
+      <p-message severity="error" size="small" variant="simple">
+        {{ getFieldError('frontManId') }}
+      </p-message>
+    }
+  </div>
+
+  <div class="flex mt-5 gap-2">
+    @if (isViewMode) {
+      @if (!canUpdate()) {
+        <p-button
+          class="flex-1"
+          icon="pi pi-pencil"
+          label="Редактировать"
+          outlined
+          fluid
+          (click)="enterEditMode()"
+          [disabled]="true"
+          pTooltip="Это не ваш объект, редактировать невозможно"
+        />
+      } @else {
+        <p-button
+          class="flex-1"
+          icon="pi pi-pencil"
+          label="Редактировать"
+          outlined
+          fluid
+          (click)="enterEditMode()"
+          [disabled]="false"
+        />
+      }
+    } @else {
+      <p-button
+        class="flex-1"
+        [icon]="submitButtonIcon"
+        [label]="submitButtonText"
+        outlined
+        fluid
+        type="submit"
+        [loading]="isLoading"
+        [disabled]="musicBandForm.invalid"
+      />
+      @if (!isCreateMode) {
+        <p-button
+          icon="pi pi-eye"
+          severity="secondary"
+          outlined
+          label="Просмотр"
+          (click)="enterViewMode()"
+        />
+      }
+    }
+    <p-button
+      icon="pi pi-times"
+      label="Отмена"
+      severity="secondary"
+      text
+      (click)="onCancel()"
+    />
+  </div>
+
+</form>

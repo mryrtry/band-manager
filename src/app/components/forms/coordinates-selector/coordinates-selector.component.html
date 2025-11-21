@@ -1,0 +1,102 @@
+<div class="coordinates-selector">
+  <!-- Coordinates Select Dropdown with Addons -->
+  <p-inputgroup class="min-w-full">
+    <p-select
+      (ngModelChange)="emitCoordinatesChange($event)"
+      [(ngModel)]="selectedCoordinates"
+      [disabled]="disabled"
+      [filterFields]="['id', 'x', 'y']"
+      [filter]="true"
+      [invalid]="!isLoading && !selectedCoordinates"
+      [options]="coordinatesList"
+      [showClear]="true"
+      (onClear)="emitCoordinatesChange({})"
+      [loading]="isLoading"
+      appendTo="body"
+      fluid
+      optionLabel="x"
+      placeholder="Выберите координаты"
+    >
+      <!-- Selected Item Template -->
+      <ng-template #selectedItem let-selectedCoordinates>
+        @if (selectedCoordinates) {
+          <div class="selected-coordinates">
+            X: {{ selectedCoordinates.x }}, Y: {{ selectedCoordinates.y ? selectedCoordinates.y : 'null' }}
+            <span class="id">ID: {{ selectedCoordinates.id }}</span>
+          </div>
+        }
+      </ng-template>
+
+      <!-- Dropdown Icon Template -->
+      <ng-template #dropdownicon>
+        @if (disabled) {
+          <i class="pi pi-map-marker"></i>
+        } @else {
+          <i class="pi pi-chevron-down"></i>
+        }
+      </ng-template>
+
+      <!-- Item Template -->
+      <ng-template #item let-coordinates>
+        <div class="coordinates-item">
+          X: {{ coordinates.x }}, Y: {{ coordinates.y ? coordinates.y : 'null' }}
+          <span class="id">ID: {{ coordinates.id }}</span>
+        </div>
+      </ng-template>
+    </p-select>
+
+    @if (!disabled) {
+      @if (selectedCoordinates) {
+        <p-inputgroup-addon>
+          @if(!selectedCoordinates || !canUpdate()) {
+            <p-button
+              (click)="showEditForm()"
+              [disabled]="true"
+              pTooltip="Это не ваш объект, редактировать невозможно"
+              icon="pi pi-pencil"
+              outlined
+              severity="secondary"
+            />
+          } @else {
+            <p-button
+              (click)="showEditForm()"
+              [disabled]="!selectedCoordinates || !canUpdate()"
+              icon="pi pi-pencil"
+              outlined
+              severity="secondary"
+            />
+          }
+        </p-inputgroup-addon>
+      } @else {
+        <p-inputgroup-addon>
+          <p-button
+            (click)="showCreateForm()"
+            icon="pi pi-plus"
+            severity="secondary"
+            outlined
+          />
+        </p-inputgroup-addon>
+      }
+    }
+  </p-inputgroup>
+</div>
+
+<!-- Модальное окно для формы -->
+<p-dialog
+  header="{{ formCoordinates ? 'РЕДАКТИРОВАТЬ КООРДИНАТЫ' : 'СОЗДАТЬ КООРДИНАТЫ' }}"
+  [(visible)]="showForm"
+  [modal]="true"
+  (onHide)="hideForm()"
+  [focusOnShow]="false"
+  [draggable]="false"
+  [breakpoints]="{ '640px': '95vw' }"
+  [style]="{ width: '300px' }"
+>
+  @if (showForm) {
+    <app-coordinates-form
+      (cancel)="hideForm()"
+      (coordinatesSubmit)="handleCoordinatesSubmit($event)"
+      [coordinates]="formCoordinates"
+    ></app-coordinates-form>
+  }
+</p-dialog>

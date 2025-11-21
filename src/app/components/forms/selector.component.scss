@@ -1,0 +1,33 @@
+p-card {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+::ng-deep .p-card-body {
+  width: 300px;
+}
+
+::ng-deep .p-select-label {
+  display: flex;
+  align-items: center;
+}
+
+.id {
+  opacity: 0.5;
+}
+
+.header {
+  text-transform: uppercase;
+  font-weight: bold;
+  letter-spacing: -0.05em;
+  font-size: 12px;
+  margin-bottom: 5px;
+}
+
+.not-selected-own-warn {
+  margin-top: 5px;
+  font-size: 9px;
+  opacity: 0.5;
+  text-transform: uppercase;
+}

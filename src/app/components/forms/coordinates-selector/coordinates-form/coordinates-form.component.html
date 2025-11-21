@@ -1,0 +1,76 @@
+<form (ngSubmit)="onSubmit()" [formGroup]="coordinatesForm" class="coordinates-form">
+
+  <!-- X Coordinate (Required) -->
+  <div class="form-field flex flex-column gap-1 mt-2">
+    <label for="x">Координата X *</label>
+    <p-inputNumber
+      [invalid]="isInvalid('x')"
+      class="w-full"
+      fluid
+      formControlName="x"
+      id="x"
+      mode="decimal"
+      placeholder="Введите X"
+      [min]="-146.999999"
+      [minFractionDigits]="0"
+      [maxFractionDigits]="6"
+    />
+    @if (isInvalid('x')) {
+      <p-message severity="error" size="small" variant="simple">
+        {{ getFieldError('x') }}
+      </p-message>
+    }
+  </div>
+
+  <!-- Y Coordinate (Optional) -->
+  <div class="form-field flex flex-column gap-1 mt-2">
+    <label for="y">Координата Y (необязательно)</label>
+    <p-inputNumber
+      [invalid]="isInvalid('y')"
+      class="w-full"
+      fluid
+      formControlName="y"
+      id="y"
+      mode="decimal"
+      placeholder="Введите Y (необязательно)"
+    />
+    @if (isInvalid('y')) {
+      <p-message severity="error" size="small" variant="simple">
+        {{ getFieldError('y') }}
+      </p-message>
+    }
+  </div>
+
+  <!-- Action Buttons -->
+  <div class="action-buttons flex gap-2 mt-5">
+    <!-- Submit Button -->
+    <button
+      [disabled]="coordinatesForm.invalid || isLoading"
+      class="flex-1 align-items-center submit-button"
+      pButton
+      type="submit"
+    >
+      @if (isLoading) {
+        <i class="pi pi-spinner pi-spin"></i>
+      } @else {
+        <span pButtonIcon>
+          <i [class]="submitButtonIcon"></i>
+        </span>
+        <span pButtonLabel>
+          {{ submitButtonText }}
+        </span>
+      }
+    </button>
+
+    <!-- Cancel Button -->
+    <p-button
+      (click)="onCancel()"
+      icon="pi pi-times"
+      label="Отмена"
+      outlined
+      severity="secondary"
+      text
+    ></p-button>
+  </div>
+
+</form>

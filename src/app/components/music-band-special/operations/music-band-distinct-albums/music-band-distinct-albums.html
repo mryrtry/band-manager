@@ -1,0 +1,24 @@
+<div class="flex flex-column gap-2">
+  @if (uniqueAlbumCount) {
+    <p-panel>
+      <ng-template #header>
+        <p class="mt-2 font-bold" style="font-size: 1.1rem;">РЕЗУЛЬТАТ</p>
+      </ng-template>
+      {{ uniqueAlbumCount }}
+    </p-panel>
+  } @else {
+    <p-panel [showHeader]="false"
+             class="p-0 flex align-items-center justify-content-center">
+      <p class="empty-result p-3">
+        РЕЗУЛЬТАТА ЕЩЁ НЕТ
+      </p>
+    </p-panel>
+  }
+  <p-button
+    (click)="onDistinctAlbums()"
+    icon="pi pi-headphones"
+    label="Найти уникальные кол-ва альбомов"
+    outlined
+    [loading]="isLoading"
+  />
+</div>
