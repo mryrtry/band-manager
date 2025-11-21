@@ -67,7 +67,7 @@ jobs:
         run: ssh root@83.166.246.71 "mkdir -p ~/BandManager"
 
       - name: Stop existing application
-        run: ssh root@83.166.246.71 "pkill -f BandManager.jar || true"
+        run: ssh root@83.166.246.71 "exec pkill -f BandManager.jar || true"
 
       - name: Upload JAR to server
         run: scp ./artifact/BandManager-0.1.jar root@83.166.246.71:~/BandManager/BandManager.jar
