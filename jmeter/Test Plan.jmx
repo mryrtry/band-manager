@@ -1640,6 +1640,7 @@ log.info(&quot;Added nested ids to band JSON&quot;)</stringProp>
             </value>
           </objProp>
           <stringProp name="filename"></stringProp>
+          <boolProp name="saveHeaders">false</boolProp>
         </ResultCollector>
         <hashTree/>
       </hashTree>

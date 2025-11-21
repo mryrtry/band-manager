@@ -16,4 +16,6 @@ public class CoordinatesRequest {
 
     private Float y;
 
+	private Long version;
+
 }

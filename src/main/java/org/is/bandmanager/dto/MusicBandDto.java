@@ -30,5 +30,6 @@ public class MusicBandDto {
     private LocalDateTime createdDate;
     private String lastModifiedBy;
     private LocalDateTime lastModifiedDate;
+	private Long version;
 
 }

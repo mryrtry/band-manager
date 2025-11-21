@@ -134,7 +134,7 @@ public class MusicBandServiceImpl implements MusicBandService {
 	}
 
 	@Override
-	@Transactional
+	@Transactional(isolation = Isolation.SERIALIZABLE)
 	public MusicBandDto update(Long id, MusicBandRequest request) {
 		MusicBand updatingBand = findById(id);
 		if (!Objects.equals(request.getName(), updatingBand.getName()) && musicBandRepository.existsByName(request.getName())) {

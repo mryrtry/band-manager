@@ -26,5 +26,6 @@ public class PersonDto {
     private LocalDateTime createdDate;
     private String lastModifiedBy;
     private LocalDateTime lastModifiedDate;
+	private Long version;
 
 }

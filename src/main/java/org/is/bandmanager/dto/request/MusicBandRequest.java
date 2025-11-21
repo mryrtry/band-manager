@@ -53,4 +53,6 @@ public class MusicBandRequest {
     @NotNull(message = "MusicBand.FrontManId не может быть пустым")
     private Long frontManId;
 
+	private Long version;
+
 }

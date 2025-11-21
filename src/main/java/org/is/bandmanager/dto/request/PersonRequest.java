@@ -32,4 +32,6 @@ public class PersonRequest {
     @NotNull(message = "Person.Country не может быть пустым")
     private Country nationality;
 
+	private Long version;
+
 }
