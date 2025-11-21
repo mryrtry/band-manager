@@ -7,6 +7,7 @@ on:
 env:
   NODE_VERSION: '20.x'
   DEPLOY_FOLDER: '/var/www/band-manager'
+  SERVER_IP: '83.166.246.71'
 
 jobs:
   build:
@@ -54,8 +55,12 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.DEPLOY_KEY }}
 
+      - name: Add server to known_hosts
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -H ${{ env.SERVER_IP }} >> ~/.ssh/known_hosts
 
       - name: Clean and deploy to /var/www/band-manager
         run: |
-          ssh root@83.166.246.71 "rm -rf $DEPLOY_FOLDER/* && mkdir -p $DEPLOY_FOLDER"
-          scp -r ./dist/BandManagerFrontend/* root@83.166.246.71:$DEPLOY_FOLDER/
+          ssh root@${{ env.SERVER_IP }} "rm -rf $DEPLOY_FOLDER/* && mkdir -p $DEPLOY_FOLDER"
+          scp -r ./dist/BandManagerFrontend/* root@${{ env.SERVER_IP }}:$DEPLOY_FOLDER/
