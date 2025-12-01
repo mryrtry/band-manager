@@ -116,6 +116,7 @@ jobs:
 
       - name: Check health endpoint
         run: |
+          sleep 30
           ssh root@83.166.246.71 /bin/bash << 'EOF'
           curl -s -o /dev/null -w 'Health Check: %{http_code}\n' localhost:${{ env.SERVER_PORT }}/health
           EOF
