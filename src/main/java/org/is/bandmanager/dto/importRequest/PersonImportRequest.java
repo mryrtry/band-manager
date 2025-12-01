@@ -1,5 +1,6 @@
 package org.is.bandmanager.dto.importRequest;
 
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -27,6 +28,7 @@ public class PersonImportRequest {
     @NotNull(message = "Person.HairColor не может быть пустым")
     private Color hairColor;
 
+	@Valid
     @NotNull(message = "Person.Location не может быть пустым")
     private LocationImportRequest location;
 

@@ -13,8 +13,6 @@ import org.is.bandmanager.service.imports.repository.ImportOperationRepository;
 import org.is.exception.ServiceException;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Isolation;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -35,10 +33,8 @@ public class AsyncImportHandler implements ImportHandler {
 
 	@Override
 	@Async("importTaskExecutor")
-	@Transactional(isolation = Isolation.SERIALIZABLE)
 	public void processImport(Long operationId, byte[] fileContent, String originalFilename, String mimeType, String username) {
-		ImportOperation operation = repository.findById(operationId)
-				.orElseThrow(() -> new ServiceException(BandManagerErrorMessage.SOURCE_WITH_ID_NOT_FOUND, "ImportOperation", operationId));
+		ImportOperation operation = repository.findById(operationId).orElseThrow(() -> new ServiceException(BandManagerErrorMessage.SOURCE_WITH_ID_NOT_FOUND, "ImportOperation", operationId));
 		try {
 			log.debug("Starting import processing for operation {}: {}", operation.getId(), originalFilename);
 			operation.setStatus(ImportStatus.PROCESSING);
@@ -52,8 +48,7 @@ public class AsyncImportHandler implements ImportHandler {
 			operation.setStatus(ImportStatus.COMPLETED);
 			operation.setCreatedEntitiesCount(createdBandIds.size());
 			operation.setCompletedAt(LocalDateTime.now());
-			log.info("Import operation {} completed successfully. Created {} MusicBand entities",
-					operation.getId(), createdBandIds.size());
+			log.info("Import operation {} completed successfully. Created {} MusicBand entities", operation.getId(), createdBandIds.size());
 		} catch (ValidationException e) {
 			operation.setStatus(ImportStatus.VALIDATION_FAILED);
 			operation.setErrorMessage(getErrorMessage(e));

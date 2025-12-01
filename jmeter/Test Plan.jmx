@@ -9,8 +9,8 @@
       <boolProp name="TestPlan.functional_mode">false</boolProp>
     </TestPlan>
     <hashTree>
-      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Main Thread" enabled="false">
-        <intProp name="ThreadGroup.num_threads">200</intProp>
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Main Thread">
+        <intProp name="ThreadGroup.num_threads">10</intProp>
         <intProp name="ThreadGroup.ramp_time">5</intProp>
         <boolProp name="ThreadGroup.same_user_on_next_iteration">true</boolProp>
         <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
@@ -30,7 +30,7 @@ vars.put(&quot;user_name&quot;, &quot;user_${threadNum}_${uniqueTime}&quot;)</st
           <stringProp name="scriptLanguage">groovy</stringProp>
         </JSR223PreProcessor>
         <hashTree/>
-        <JSR223PreProcessor guiclass="TestBeanGUI" testclass="JSR223PreProcessor" testname="Prepare Import File" enabled="true">
+        <JSR223PreProcessor guiclass="TestBeanGUI" testclass="JSR223PreProcessor" testname="Prepare Import File">
           <stringProp name="scriptLanguage">groovy</stringProp>
           <stringProp name="parameters"></stringProp>
           <stringProp name="filename"></stringProp>
@@ -173,7 +173,7 @@ vars.put(&quot;award_json&quot;, new JsonBuilder(award).toString())
 log.info(&quot;Generated 1 unique object of each type for thread ${threadNum}&quot;)</stringProp>
         </JSR223PreProcessor>
         <hashTree/>
-        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Register User">
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Register User" enabled="true">
           <stringProp name="TestPlan.comments">auth/register</stringProp>
           <stringProp name="HTTPSampler.domain">localhost</stringProp>
           <stringProp name="HTTPSampler.port">9000</stringProp>
@@ -317,7 +317,7 @@ log.info(&quot;Generated 1 unique object of each type for thread ${threadNum}&qu
           </ResponseAssertion>
           <hashTree/>
         </hashTree>
-        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Post Person">
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Post Person" enabled="true">
           <stringProp name="HTTPSampler.domain">localhost</stringProp>
           <stringProp name="HTTPSampler.port">9000</stringProp>
           <stringProp name="HTTPSampler.protocol">http</stringProp>
@@ -506,7 +506,7 @@ log.info(&quot;Added locationId to person JSON&quot;)</stringProp>
           </ResponseAssertion>
           <hashTree/>
         </hashTree>
-        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Post Band">
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Post Band" enabled="true">
           <stringProp name="HTTPSampler.domain">localhost</stringProp>
           <stringProp name="HTTPSampler.port">9000</stringProp>
           <stringProp name="HTTPSampler.protocol">http</stringProp>
@@ -709,7 +709,7 @@ log.info(&quot;Updated band JSON with random values&quot;)</stringProp>
           </ResponseAssertion>
           <hashTree/>
         </hashTree>
-        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Update Coordinates">
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Update Coordinates" enabled="true">
           <stringProp name="HTTPSampler.domain">localhost</stringProp>
           <stringProp name="HTTPSampler.port">9000</stringProp>
           <stringProp name="HTTPSampler.protocol">http</stringProp>
@@ -730,7 +730,7 @@ log.info(&quot;Updated band JSON with random values&quot;)</stringProp>
           </elementProp>
         </HTTPSamplerProxy>
         <hashTree>
-          <JSR223PreProcessor guiclass="TestBeanGUI" testclass="JSR223PreProcessor" testname="Update coordinates var">
+          <JSR223PreProcessor guiclass="TestBeanGUI" testclass="JSR223PreProcessor" testname="Update coordinates var" enabled="true">
             <stringProp name="scriptLanguage">groovy</stringProp>
             <stringProp name="parameters"></stringProp>
             <stringProp name="filename"></stringProp>
@@ -751,7 +751,7 @@ vars.put(&quot;coordinates_json&quot;, new JsonBuilder(coordinatesJson).toString
 log.info(&quot;Updated coordinates JSON with random values&quot;)</stringProp>
           </JSR223PreProcessor>
           <hashTree/>
-          <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="Content Type Manager">
+          <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="Content Type Manager" enabled="true">
             <collectionProp name="HeaderManager.headers">
               <elementProp name="" elementType="Header">
                 <stringProp name="Header.name">Content-Type</stringProp>
@@ -948,7 +948,7 @@ log.info(&quot;Updated coordinates JSON with random values&quot;)</stringProp>
         </ResultCollector>
         <hashTree/>
       </hashTree>
-      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Transaction Test Group">
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Transaction Test Group" enabled="false">
         <intProp name="ThreadGroup.num_threads">20</intProp>
         <stringProp name="ThreadGroup.ramp_time">0.5</stringProp>
         <boolProp name="ThreadGroup.same_user_on_next_iteration">true</boolProp>
@@ -1085,7 +1085,7 @@ vars.put(&quot;user_name&quot;, &quot;user_${threadNum}_${uniqueTime}&quot;)</st
           </ResponseAssertion>
           <hashTree/>
         </hashTree>
-        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Get Shared Album">
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Get Shared Album" enabled="true">
           <stringProp name="HTTPSampler.domain">localhost</stringProp>
           <stringProp name="HTTPSampler.port">9000</stringProp>
           <stringProp name="HTTPSampler.protocol">http</stringProp>
@@ -1456,7 +1456,7 @@ log.info(&quot;Added locationId to person JSON&quot;)</stringProp>
           </ResponseAssertion>
           <hashTree/>
         </hashTree>
-        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Post Band">
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Post Band" enabled="true">
           <stringProp name="HTTPSampler.domain">localhost</stringProp>
           <stringProp name="HTTPSampler.port">9000</stringProp>
           <stringProp name="HTTPSampler.protocol">http</stringProp>
@@ -1533,7 +1533,7 @@ log.info(&quot;Added nested ids to band JSON&quot;)</stringProp>
           </ResponseAssertion>
           <hashTree/>
         </hashTree>
-        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Delete Band">
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Delete Band" enabled="true">
           <stringProp name="HTTPSampler.domain">localhost</stringProp>
           <stringProp name="HTTPSampler.port">9000</stringProp>
           <stringProp name="HTTPSampler.protocol">http</stringProp>
@@ -1568,7 +1568,7 @@ log.info(&quot;Added nested ids to band JSON&quot;)</stringProp>
           </ResponseAssertion>
           <hashTree/>
         </hashTree>
-        <ResultCollector guiclass="ViewResultsFullVisualizer" testclass="ResultCollector" testname="View tree">
+        <ResultCollector guiclass="ViewResultsFullVisualizer" testclass="ResultCollector" testname="View tree" enabled="true">
           <boolProp name="ResultCollector.error_logging">false</boolProp>
           <objProp>
             <name>saveConfig</name>
@@ -1605,7 +1605,7 @@ log.info(&quot;Added nested ids to band JSON&quot;)</stringProp>
           <stringProp name="filename"></stringProp>
         </ResultCollector>
         <hashTree/>
-        <ResultCollector guiclass="StatVisualizer" testclass="ResultCollector" testname="Aggregate Report">
+        <ResultCollector guiclass="StatVisualizer" testclass="ResultCollector" testname="Aggregate Report" enabled="true">
           <boolProp name="ResultCollector.error_logging">false</boolProp>
           <objProp>
             <name>saveConfig</name>
@@ -1644,7 +1644,7 @@ log.info(&quot;Added nested ids to band JSON&quot;)</stringProp>
         </ResultCollector>
         <hashTree/>
       </hashTree>
-      <PostThreadGroup guiclass="PostThreadGroupGui" testclass="PostThreadGroup" testname="Tear Down Group">
+      <PostThreadGroup guiclass="PostThreadGroupGui" testclass="PostThreadGroup" testname="Tear Down Group" enabled="true">
         <intProp name="ThreadGroup.num_threads">1</intProp>
         <intProp name="ThreadGroup.ramp_time">1</intProp>
         <boolProp name="ThreadGroup.same_user_on_next_iteration">true</boolProp>

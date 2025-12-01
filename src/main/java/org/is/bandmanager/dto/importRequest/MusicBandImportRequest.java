@@ -2,6 +2,7 @@ package org.is.bandmanager.dto.importRequest;
 
 import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.annotation.Nulls;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -26,6 +27,7 @@ public class MusicBandImportRequest {
     @UniqueMusicBandName
     private String name;
 
+	@Valid
     @NotNull(message = "MusicBand.Coordinates не может быть пустым")
     private CoordinatesImportRequest coordinates;
 
@@ -44,6 +46,7 @@ public class MusicBandImportRequest {
     @NotBlank(message = "MusicBand.Description не может быть пустым")
     private String description;
 
+	@Valid
     @NotNull(message = "MusicBand.BestAlbum не может быть пустым")
     private AlbumImportRequest bestAlbum;
 
@@ -54,6 +57,7 @@ public class MusicBandImportRequest {
     @NotNull(message = "MusicBand.EstablishmentDate не может быть пустым")
     private Date establishmentDate;
 
+	@Valid
     @NotNull(message = "MusicBand.FrontMan не может быть пустым")
     private PersonImportRequest frontMan;
 
