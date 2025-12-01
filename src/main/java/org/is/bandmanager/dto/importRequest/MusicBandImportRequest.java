@@ -16,6 +16,7 @@ import org.is.bandmanager.validation.UniqueMusicBandName;
 
 import java.util.Date;
 
+
 @Getter
 @Setter
 @Builder
@@ -23,42 +24,42 @@ import java.util.Date;
 @AllArgsConstructor
 public class MusicBandImportRequest {
 
-    @NotBlank(message = "MusicBand.Name не может быть пустым")
-    @UniqueMusicBandName
-    private String name;
+	@NotBlank(message = "MusicBand.Name не может быть пустым")
+	@UniqueMusicBandName
+	private String name;
 
 	@Valid
-    @NotNull(message = "MusicBand.Coordinates не может быть пустым")
-    private CoordinatesImportRequest coordinates;
+	@NotNull(message = "MusicBand.Coordinates не может быть пустым")
+	private CoordinatesImportRequest coordinates;
 
-    @NotNull(message = "MusicBand.MusicGenre не может быть пустым")
-    @JsonSetter(nulls = Nulls.SKIP)
-    private MusicGenre genre;
+	@NotNull(message = "MusicBand.MusicGenre не может быть пустым")
+	@JsonSetter(nulls = Nulls.SKIP)
+	private MusicGenre genre;
 
-    @NotNull(message = "MusicBand.NumberOfParticipants не может быть пустым")
-    @DecimalMin(value = "0", inclusive = false, message = "MusicBand.NumberOfParticipants должно быть > 0")
-    private Long numberOfParticipants;
+	@NotNull(message = "MusicBand.NumberOfParticipants не может быть пустым")
+	@DecimalMin(value = "0", inclusive = false, message = "MusicBand.NumberOfParticipants должно быть > 0")
+	private Long numberOfParticipants;
 
-    @NotNull(message = "MusicBand.SinglesCount не может быть пустым")
-    @DecimalMin(value = "0", inclusive = false, message = "MusicBand.NumberOfParticipants должно быть > 0")
-    private Long singlesCount;
+	@NotNull(message = "MusicBand.SinglesCount не может быть пустым")
+	@DecimalMin(value = "0", inclusive = false, message = "MusicBand.NumberOfParticipants должно быть > 0")
+	private Long singlesCount;
 
-    @NotBlank(message = "MusicBand.Description не может быть пустым")
-    private String description;
-
-	@Valid
-    @NotNull(message = "MusicBand.BestAlbum не может быть пустым")
-    private AlbumImportRequest bestAlbum;
-
-    @NotNull(message = "MusicBand.AlbumsCount не может быть пустым")
-    @DecimalMin(value = "0", inclusive = false, message = "MusicBand.AlbumsCount должно быть > 0")
-    private Long albumsCount;
-
-    @NotNull(message = "MusicBand.EstablishmentDate не может быть пустым")
-    private Date establishmentDate;
+	@NotBlank(message = "MusicBand.Description не может быть пустым")
+	private String description;
 
 	@Valid
-    @NotNull(message = "MusicBand.FrontMan не может быть пустым")
-    private PersonImportRequest frontMan;
+	@NotNull(message = "MusicBand.BestAlbum не может быть пустым")
+	private AlbumImportRequest bestAlbum;
+
+	@NotNull(message = "MusicBand.AlbumsCount не может быть пустым")
+	@DecimalMin(value = "0", inclusive = false, message = "MusicBand.AlbumsCount должно быть > 0")
+	private Long albumsCount;
+
+	@NotNull(message = "MusicBand.EstablishmentDate не может быть пустым")
+	private Date establishmentDate;
+
+	@Valid
+	@NotNull(message = "MusicBand.FrontMan не может быть пустым")
+	private PersonImportRequest frontMan;
 
 }
