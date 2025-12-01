@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -130,10 +131,13 @@ public class GlobalExceptionHandler {
 
     // Base exception handler
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ErrorResponse> handleGenericException(Exception ignored) {
+    public ResponseEntity<ErrorResponse> handleGenericException(Exception e) {
         List<ErrorResponse.ErrorDetail> errorDetails = Collections.singletonList(ErrorResponse.ErrorDetail.builder().field("system").message("Внутренняя ошибка сервера").rejectedValue(null).errorType("INTERNAL_ERROR").build());
 
         ErrorResponse errorResponse = ErrorResponse.builder().status(HttpStatus.INTERNAL_SERVER_ERROR.value()).message("Произошла непредвиденная ошибка").details(errorDetails).timestamp(LocalDateTime.now()).build();
+
+		log.error(e.getMessage());
+		log.warn(Arrays.toString(e.getStackTrace()));
 
         return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
     }

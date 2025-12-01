@@ -8,6 +8,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+
 @Getter
 @Setter
 @Builder
@@ -15,10 +16,10 @@ import lombok.Setter;
 @AllArgsConstructor
 public class CoordinatesImportRequest {
 
-    @NotNull(message = "Coordinates.X не может быть пустым")
-    @DecimalMin(value = "-147", inclusive = false, message = "Coordinates.X должно быть больше -147")
-    private Integer x;
+	@NotNull(message = "Coordinates.X не может быть пустым")
+	@DecimalMin(value = "-147", inclusive = false, message = "Coordinates.X должно быть больше -147")
+	private Integer x;
 
-    private Float y;
+	private Float y;
 
 }

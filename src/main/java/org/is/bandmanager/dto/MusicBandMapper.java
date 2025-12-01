@@ -1,6 +1,7 @@
 package org.is.bandmanager.dto;
 
-import org.is.bandmanager.dto.request.MusicBandRequest;
+import org.is.bandmanager.dto.request.MusicBandCreateRequest;
+import org.is.bandmanager.dto.request.MusicBandUpdateRequest;
 import org.is.bandmanager.model.MusicBand;
 import org.mapstruct.InjectionStrategy;
 import org.mapstruct.Mapper;
@@ -21,7 +22,7 @@ public interface MusicBandMapper {
     @Mapping(target = "coordinates", ignore = true)
     @Mapping(target = "bestAlbum", ignore = true)
     @Mapping(target = "frontMan", ignore = true)
-    MusicBand toEntity(MusicBandRequest request);
+    MusicBand toEntity(MusicBandCreateRequest request);
 
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "coordinates", ignore = true)
@@ -31,6 +32,6 @@ public interface MusicBandMapper {
     @Mapping(target = "createdDate", ignore = true)
     @Mapping(target = "lastModifiedBy", ignore = true)
     @Mapping(target = "lastModifiedDate", ignore = true)
-    void updateEntityFromRequest(MusicBandRequest request, @MappingTarget MusicBand entity);
+    void updateEntityFromRequest(MusicBandUpdateRequest request, @MappingTarget MusicBand entity);
 
 }

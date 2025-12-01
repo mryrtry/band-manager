@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 
+
 @Component
 @RequiredArgsConstructor
 @Slf4j
@@ -28,8 +29,7 @@ public class JsonFileParser implements FileParser {
 	public List<MusicBandImportRequest> parse(byte[] fileContent, String originalFilename) {
 		try (InputStream inputStream = new ByteArrayInputStream(fileContent)) {
 			log.debug("Attempting to parse JSON file: {}", originalFilename);
-			List<MusicBandImportRequest> result = objectMapper.readValue(inputStream,
-					objectMapper.getTypeFactory().constructCollectionType(List.class, MusicBandImportRequest.class));
+			List<MusicBandImportRequest> result = objectMapper.readValue(inputStream, objectMapper.getTypeFactory().constructCollectionType(List.class, MusicBandImportRequest.class));
 			log.debug("Successfully parsed {} MusicBandImportRequest objects from file: {}", result.size(), originalFilename);
 			return result;
 		} catch (JsonProcessingException e) {
@@ -45,4 +45,5 @@ public class JsonFileParser implements FileParser {
 	public List<String> getSupportedContentTypes() {
 		return List.of("application/json");
 	}
+
 }
