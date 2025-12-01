@@ -13,6 +13,8 @@ import org.is.bandmanager.service.imports.repository.ImportOperationRepository;
 import org.is.exception.ServiceException;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -33,15 +35,16 @@ public class AsyncImportHandler implements ImportHandler {
 
 	@Override
 	@Async("importTaskExecutor")
+	@Transactional(isolation = Isolation.SERIALIZABLE)
 	public void processImport(Long operationId, byte[] fileContent, String originalFilename, String mimeType, String username) {
 		ImportOperation operation = repository.findById(operationId)
 				.orElseThrow(() -> new ServiceException(BandManagerErrorMessage.SOURCE_WITH_ID_NOT_FOUND, "ImportOperation", operationId));
 		try {
-			log.info("Starting import processing for operation {}: {}", operation.getId(), originalFilename);
+			log.debug("Starting import processing for operation {}: {}", operation.getId(), originalFilename);
 			operation.setStatus(ImportStatus.PROCESSING);
 			operation = repository.save(operation);
 			List<MusicBandImportRequest> importRequests = fileParserFacade.parseFile(fileContent, originalFilename, mimeType);
-			log.info("Parsed {} records from file {}", importRequests.size(), originalFilename);
+			log.debug("Parsed {} records from file {}", importRequests.size(), originalFilename);
 			if (importRequests.isEmpty()) {
 				throw new IllegalArgumentException("Import file is empty");
 			}

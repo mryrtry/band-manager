@@ -1,7 +1,8 @@
 package org.is.bandmanager.controller;
 
 import org.is.bandmanager.config.IntegrationTest;
-import org.is.bandmanager.dto.request.MusicBandRequest;
+import org.is.bandmanager.dto.request.MusicBandCreateRequest;
+import org.is.bandmanager.dto.request.MusicBandUpdateRequest;
 import org.is.bandmanager.model.Album;
 import org.is.bandmanager.model.Coordinates;
 import org.is.bandmanager.model.Location;
@@ -83,13 +84,17 @@ class MusicBandControllerTest extends AbstractIntegrationTest {
         locationRepository.deleteAll();
     }
 
-    private MusicBandRequest createMusicBandRequest() {
-        return MusicBandRequest.builder().name("Radiohead").coordinatesId(savedCoordinates.getId()).genre(ROCK).numberOfParticipants(5L).singlesCount(10L).description("Legendary rock band").bestAlbumId(savedAlbum.getId()).albumsCount(9L).establishmentDate(new Date()).frontManId(savedPerson.getId()).build();
+    private MusicBandCreateRequest createMusicBandCreateRequest() {
+        return MusicBandCreateRequest.builder().name("Radiohead").coordinatesId(savedCoordinates.getId()).genre(ROCK).numberOfParticipants(5L).singlesCount(10L).description("Legendary rock band").bestAlbumId(savedAlbum.getId()).albumsCount(9L).establishmentDate(new Date()).frontManId(savedPerson.getId()).build();
     }
+
+	private MusicBandUpdateRequest createMusicBandUpdateRequest() {
+		return MusicBandUpdateRequest.builder().name("Radiohead").coordinatesId(savedCoordinates.getId()).genre(ROCK).numberOfParticipants(5L).singlesCount(10L).description("Legendary rock band").bestAlbumId(savedAlbum.getId()).albumsCount(9L).establishmentDate(new Date()).frontManId(savedPerson.getId()).build();
+	}
 
     @Test
     void shouldCreateMusicBandSuccessfully() {
-        MusicBandRequest request = createMusicBandRequest();
+        MusicBandCreateRequest request = createMusicBandCreateRequest();
 
         getClient().post("/music-bands", request)
                 .expectStatus().isCreated()
@@ -113,7 +118,7 @@ class MusicBandControllerTest extends AbstractIntegrationTest {
 
     @Test
     void shouldReturnBadRequestWhenNameIsBlank() {
-        MusicBandRequest request = createMusicBandRequest();
+        MusicBandCreateRequest request = createMusicBandCreateRequest();
         request.setName("");
 
         getClient().post("/music-bands", request)
@@ -128,7 +133,7 @@ class MusicBandControllerTest extends AbstractIntegrationTest {
 
     @Test
     void shouldReturnBadRequestWhenCoordinatesIdIsNull() {
-        MusicBandRequest request = createMusicBandRequest();
+        MusicBandCreateRequest request = createMusicBandCreateRequest();
         request.setCoordinatesId(null);
 
         getClient().post("/music-bands", request)
@@ -143,7 +148,7 @@ class MusicBandControllerTest extends AbstractIntegrationTest {
 
     @Test
     void shouldReturnNotFoundWhenCoordinatesIdDoesNotExist() {
-        MusicBandRequest request = createMusicBandRequest();
+        MusicBandCreateRequest request = createMusicBandCreateRequest();
         request.setCoordinatesId(999L);
 
         getClient().post("/music-bands", request)
@@ -211,7 +216,7 @@ class MusicBandControllerTest extends AbstractIntegrationTest {
 
         Person newPerson = personRepository.save(Person.builder().name("New Frontman").eyeColor(GREEN).hairColor(BROWN).location(newLocation).weight(80f).nationality(UK).build());
 
-        MusicBandRequest updateRequest = MusicBandRequest.builder().name("Updated Band").coordinatesId(newCoordinates.getId()).genre(POST_ROCK).numberOfParticipants(8L).singlesCount(15L).description("Updated description").bestAlbumId(newAlbum.getId()).albumsCount(12L).establishmentDate(new Date()).frontManId(newPerson.getId()).build();
+        MusicBandUpdateRequest updateRequest = MusicBandUpdateRequest.builder().name("Updated Band").coordinatesId(newCoordinates.getId()).genre(POST_ROCK).numberOfParticipants(8L).singlesCount(15L).description("Updated description").bestAlbumId(newAlbum.getId()).albumsCount(12L).establishmentDate(new Date()).frontManId(newPerson.getId()).build();
 
         getClient().putWithBody("/music-bands/{id}", updateRequest, saved.getId())
                 .expectStatus().isOk()
@@ -230,7 +235,7 @@ class MusicBandControllerTest extends AbstractIntegrationTest {
 
     @Test
     void shouldReturnNotFoundWhenUpdatingNonExistentBand() {
-        MusicBandRequest updateRequest = createMusicBandRequest();
+	    MusicBandUpdateRequest updateRequest = createMusicBandUpdateRequest();
 
         getClient().putWithBody("/music-bands/{id}", updateRequest, 9999)
                 .expectStatus().isNotFound()

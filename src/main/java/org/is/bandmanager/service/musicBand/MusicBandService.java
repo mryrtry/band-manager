@@ -2,7 +2,8 @@ package org.is.bandmanager.service.musicBand;
 
 import jakarta.validation.Valid;
 import org.is.bandmanager.dto.MusicBandDto;
-import org.is.bandmanager.dto.request.MusicBandRequest;
+import org.is.bandmanager.dto.request.MusicBandCreateRequest;
+import org.is.bandmanager.dto.request.MusicBandUpdateRequest;
 import org.is.bandmanager.model.MusicBand;
 import org.is.bandmanager.repository.filter.MusicBandFilter;
 import org.is.util.pageable.PageableRequest;
@@ -14,7 +15,7 @@ import java.util.List;
 
 public interface MusicBandService {
 
-    MusicBandDto create(@Valid MusicBandRequest request);
+    MusicBandDto create(@Valid MusicBandCreateRequest request);
 
     List<MusicBandDto> getAll();
 
@@ -30,7 +31,7 @@ public interface MusicBandService {
 
     List<Long> getDistinctAlbumsCount();
 
-    MusicBandDto update(Long id, @Valid MusicBandRequest request);
+    MusicBandDto update(Long id, @Valid MusicBandUpdateRequest request);
 
     MusicBandDto delete(Long id);
 

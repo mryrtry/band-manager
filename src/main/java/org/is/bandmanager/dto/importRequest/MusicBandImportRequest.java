@@ -11,6 +11,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.is.bandmanager.model.MusicGenre;
+import org.is.bandmanager.validation.UniqueMusicBandName;
 
 import java.util.Date;
 
@@ -22,6 +23,7 @@ import java.util.Date;
 public class MusicBandImportRequest {
 
     @NotBlank(message = "MusicBand.Name не может быть пустым")
+    @UniqueMusicBandName
     private String name;
 
     @NotNull(message = "MusicBand.Coordinates не может быть пустым")
