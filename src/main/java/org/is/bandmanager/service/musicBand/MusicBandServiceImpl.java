@@ -3,7 +3,9 @@ package org.is.bandmanager.service.musicBand;
 import lombok.RequiredArgsConstructor;
 import org.is.bandmanager.dto.MusicBandDto;
 import org.is.bandmanager.dto.MusicBandMapper;
-import org.is.bandmanager.dto.request.MusicBandRequest;
+import org.is.bandmanager.dto.request.MusicBandBaseRequest;
+import org.is.bandmanager.dto.request.MusicBandCreateRequest;
+import org.is.bandmanager.dto.request.MusicBandUpdateRequest;
 import org.is.bandmanager.model.MusicBand;
 import org.is.bandmanager.repository.BestBandAwardRepository;
 import org.is.bandmanager.repository.MusicBandRepository;
@@ -25,12 +27,10 @@ import org.springframework.validation.annotation.Validated;
 
 import java.util.Date;
 import java.util.List;
-import java.util.Objects;
 
 import static org.is.bandmanager.exception.message.BandManagerErrorMessage.CANNOT_REMOVE_LAST_PARTICIPANT;
 import static org.is.bandmanager.exception.message.BandManagerErrorMessage.ID_MUST_BE_POSITIVE;
 import static org.is.bandmanager.exception.message.BandManagerErrorMessage.MUST_BE_NOT_NULL;
-import static org.is.bandmanager.exception.message.BandManagerErrorMessage.MUST_BE_UNIQUE;
 import static org.is.bandmanager.exception.message.BandManagerErrorMessage.SOURCE_NOT_FOUND;
 import static org.is.bandmanager.exception.message.BandManagerErrorMessage.SOURCE_WITH_ID_NOT_FOUND;
 import static org.is.event.EventType.BULK_DELETED;
@@ -70,7 +70,7 @@ public class MusicBandServiceImpl implements MusicBandService {
 		return musicBandRepository.findById(id).orElseThrow(() -> new ServiceException(SOURCE_WITH_ID_NOT_FOUND, "MusicBand", id));
 	}
 
-	protected void handleDependencies(MusicBandRequest request, MusicBand entity) {
+	protected void handleDependencies(MusicBandBaseRequest request, MusicBand entity) {
 		entity.setFrontMan(personService.getEntity(request.getFrontManId()));
 		entity.setBestAlbum(albumService.getEntity(request.getBestAlbumId()));
 		entity.setCoordinates(coordinatesService.getEntity(request.getCoordinatesId()));
@@ -84,10 +84,7 @@ public class MusicBandServiceImpl implements MusicBandService {
 
 	@Override
 	@Transactional(isolation = Isolation.SERIALIZABLE)
-	public MusicBandDto create(MusicBandRequest request) {
-		if (musicBandRepository.existsByName(request.getName())) {
-			throw new ServiceException(MUST_BE_UNIQUE, "MusicBand.name");
-		}
+	public MusicBandDto create(MusicBandCreateRequest request) {
 		MusicBand musicBand = mapper.toEntity(request);
 		handleDependencies(request, musicBand);
 		MusicBandDto createdMusicBand = mapper.toDto(musicBandRepository.save(musicBand));
@@ -135,11 +132,8 @@ public class MusicBandServiceImpl implements MusicBandService {
 
 	@Override
 	@Transactional(isolation = Isolation.SERIALIZABLE)
-	public MusicBandDto update(Long id, MusicBandRequest request) {
+	public MusicBandDto update(Long id, MusicBandUpdateRequest request) {
 		MusicBand updatingBand = findById(id);
-		if (!Objects.equals(request.getName(), updatingBand.getName()) && musicBandRepository.existsByName(request.getName())) {
-			throw new ServiceException(MUST_BE_UNIQUE, "MusicBand.name");
-		}
 		mapper.updateEntityFromRequest(request, updatingBand);
 		handleDependencies(request, updatingBand);
 		MusicBandDto updatedBand = mapper.toDto(musicBandRepository.save(updatingBand));

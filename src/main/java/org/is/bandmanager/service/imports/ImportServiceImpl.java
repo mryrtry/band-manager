@@ -21,7 +21,6 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
 
-// todo: mass refactor
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -39,7 +38,8 @@ public class ImportServiceImpl implements ImportService {
 
 	@Override
 	public ImportOperation startImport(MultipartFile file) {
-		User user = userService.getEntity(userService.getAuthenticatedUser().getId());
+		Long userId = userService.getAuthenticatedUser().getId();
+		User user = userService.getEntity(userId);
 		String username =  user.getUsername();
 		ImportOperation operation = ImportOperation.builder()
 				.user(user)

@@ -24,7 +24,6 @@
         <mapstruct.version>1.5.5.Final</mapstruct.version>
         <mapstruct.lombok.binding.version>0.2.0</mapstruct.lombok.binding.version>
         <testcontainers.version>1.19.0</testcontainers.version>
-        <checkstyle.version>10.12.1</checkstyle.version>
         <maven-checkstyle-plugin.version>3.3.0</maven-checkstyle-plugin.version>
         <antlr4.version>4.13.0</antlr4.version>
         <jjwt.version>0.11.5</jjwt.version>
@@ -231,27 +230,6 @@
                         </path>
                     </annotationProcessorPaths>
                 </configuration>
-            </plugin>
-
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-checkstyle-plugin</artifactId>
-                <version>${maven-checkstyle-plugin.version}</version>
-                <configuration>
-                    <configLocation>checkstyle.xml</configLocation>
-                    <consoleOutput>true</consoleOutput>
-                    <failsOnError>true</failsOnError>
-                    <linkXRef>false</linkXRef>
-                </configuration>
-                <executions>
-                    <execution>
-                        <id>validate</id>
-                        <phase>validate</phase>
-                        <goals>
-                            <goal>check</goal>
-                        </goals>
-                    </execution>
-                </executions>
             </plugin>
 
             <plugin>

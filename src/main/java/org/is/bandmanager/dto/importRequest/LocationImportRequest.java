@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+
 @Getter
 @Setter
 @Builder
@@ -14,12 +15,12 @@ import lombok.Setter;
 @AllArgsConstructor
 public class LocationImportRequest {
 
-    private Integer x;
+	private Integer x;
 
-    @NotNull(message = "Location.Y не может быть пустым")
-    private Long y;
+	@NotNull(message = "Location.Y не может быть пустым")
+	private Long y;
 
-    @NotNull(message = "Location.Z не может быть пустым")
-    private Long z;
+	@NotNull(message = "Location.Z не может быть пустым")
+	private Long z;
 
 }
