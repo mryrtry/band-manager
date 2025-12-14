@@ -244,6 +244,10 @@ export class ImportTableComponent implements OnInit, OnDestroy {
     return this.userService.isAdminSync();
   }
 
+  canDownload(operation: ImportOperation): boolean {
+    return !!operation && !!operation.filename && !!operation.completedAt;
+  }
+
   // --- Context Menu ---
   onRowRightClick(operation: ImportOperation, event: MouseEvent): void {
     this.contextMenuImport = operation;
@@ -263,12 +267,14 @@ export class ImportTableComponent implements OnInit, OnDestroy {
     }, {separator: true}, {
       label: 'Скачать файл',
       icon: 'pi pi-download',
-      command: () => this.downloadImportFile(operation)
+      command: () => this.downloadImportFile(operation),
+      disabled: !this.canDownload(operation)
     }];
     this.contextMenu.show(event);
   }
 
   downloadImportFile(operation: ImportOperation): void {
+    if (!this.canDownload(operation)) return;
     this.importService.downloadImportFile(operation.id).subscribe({
       next: (response) => {
         if (!response.body) {

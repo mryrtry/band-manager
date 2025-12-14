@@ -115,7 +115,7 @@
               outlined
               severity="secondary"
               size="small"
-              [disabled]="loading"
+              [disabled]="loading || !canDownload(imp)"
             />
           </div>
         </td>

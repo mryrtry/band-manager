@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<musicBands>
+    <musicBand>
+        <name>The Cosmic Guitars</name>
+        <coordinates>
+            <x>-146</x>
+            <y>123.99</y>
+        </coordinates>
+        <genre>PROGRESSIVE_ROCK</genre>
+        <numberOfParticipants>8</numberOfParticipants>
+        <singlesCount>15</singlesCount>
+        <description>An innovative progressive rock band known for their cosmic themes.</description>
+        <bestAlbum>
+            <name>Stellar Echoes</name>
+            <tracks>12</tracks>
+            <sales>500000</sales>
+        </bestAlbum>
+        <albumsCount>7</albumsCount>
+        <establishmentDate>2010-05-17T00:00:00.000+00:00</establishmentDate>
+        <frontMan>
+            <name>Alex Stellar</name>
+            <eyeColor>BLUE</eyeColor>
+            <hairColor>GREEN</hairColor>
+            <location>
+                <x>500</x>
+                <y>100000</y>
+                <z>30000</z>
+            </location>
+            <weight>75.5</weight>
+            <nationality>USA</nationality>
+        </frontMan>
+    </musicBand>
+    <musicBand>
+        <name>Midnight Velocity</name>
+        <coordinates>
+            <x>0</x>
+            <y>-999.1</y>
+        </coordinates>
+        <genre>PUNK_ROCK</genre>
+        <numberOfParticipants>4</numberOfParticipants>
+        <singlesCount>22</singlesCount>
+        <description>Fast-paced punk rockers from the underground scene.</description>
+        <bestAlbum>
+            <name>Neon Nights</name>
+            <tracks>14</tracks>
+            <sales>200000</sales>
+        </bestAlbum>
+        <albumsCount>5</albumsCount>
+        <establishmentDate>2015-11-23T00:00:00.000+00:00</establishmentDate>
+        <frontMan>
+            <name>Riley Dash</name>
+            <eyeColor>BROWN</eyeColor>
+            <hairColor>BLACK</hairColor>
+            <location>
+                <x></x>
+                <y>50000</y>
+                <z>1000</z>
+            </location>
+            <weight>68.0</weight>
+            <nationality>UK</nationality>
+        </frontMan>
+    </musicBand>
+</musicBands>
