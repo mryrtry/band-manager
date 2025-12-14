@@ -11,6 +11,7 @@ import org.is.bandmanager.service.imports.parser.FileParserFacade;
 import org.is.bandmanager.service.imports.processor.MusicBandImportProcessor;
 import org.is.bandmanager.service.imports.repository.ImportOperationRepository;
 import org.is.bandmanager.service.storage.ImportStorageService;
+import org.is.bandmanager.service.storage.StoredObjectMetadata;
 import org.is.exception.ServiceException;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
@@ -38,12 +39,20 @@ public class AsyncImportHandler implements ImportHandler {
 	@Async("importTaskExecutor")
 	public void processImport(Long operationId, byte[] fileContent, String originalFilename, String mimeType, String username) {
 		ImportOperation operation = repository.findById(operationId).orElseThrow(() -> new ServiceException(BandManagerErrorMessage.SOURCE_WITH_ID_NOT_FOUND, "ImportOperation", operationId));
+		boolean fileStored = false;
 		try {
 			log.debug("Starting import processing for operation {}: {}", operation.getId(), originalFilename);
 			operation.setStatus(ImportStatus.PROCESSING);
 			operation = repository.save(operation);
 
-			operation = storeImportFile(operation, fileContent, originalFilename, mimeType);
+			var stored = storeImportFile(operation, fileContent, originalFilename, mimeType);
+			fileStored = stored != null;
+			if (stored != null) {
+				operation.setStorageObjectKey(stored.objectKey());
+				operation.setContentType(stored.contentType());
+				operation.setFileSize(stored.size());
+				operation = repository.save(operation);
+			}
 
 			List<MusicBandImportRequest> importRequests = fileParserFacade.parseFile(fileContent, originalFilename, mimeType);
 			log.debug("Parsed {} records from file {}", importRequests.size(), originalFilename);
@@ -64,7 +73,15 @@ public class AsyncImportHandler implements ImportHandler {
 			operation.setErrorMessage(getErrorMessage(e));
 		} finally {
 			operation.setCompletedAt(LocalDateTime.now());
-			operation = repository.save(operation);
+			try {
+				operation = repository.save(operation);
+			} catch (Exception persistenceException) {
+				if (fileStored && operation.getStorageObjectKey() != null) {
+					storageService.deleteQuietly(operation.getStorageObjectKey());
+					operation.setStorageObjectKey(null);
+				}
+				throw persistenceException;
+			}
 		}
 	}
 
@@ -76,20 +93,13 @@ public class AsyncImportHandler implements ImportHandler {
 		return message;
 	}
 
-	private ImportOperation storeImportFile(ImportOperation operation, byte[] fileContent, String originalFilename, String mimeType) {
+	private StoredObjectMetadata storeImportFile(ImportOperation operation, byte[] fileContent, String originalFilename, String mimeType) {
 		try {
-			var stored = storageService.storeImportFile(operation.getId(), originalFilename, mimeType, fileContent);
-			operation.setStorageObjectKey(stored.objectKey());
-			operation.setContentType(stored.contentType());
-			operation.setFileSize(stored.size());
-			return repository.save(operation);
+			return storageService.storeImportFile(operation.getId(), originalFilename, mimeType, fileContent);
 		} catch (Exception e) {
 			log.warn("Failed to store import file id={} filename={}: {}", operation.getId(), originalFilename, e.getMessage());
-			operation.setStorageObjectKey(null);
-			operation.setContentType(null);
-			operation.setFileSize(null);
 			operation.setErrorMessage("Import file not stored: " + e.getMessage());
-			return repository.save(operation);
+			throw e;
 		}
 	}
 
