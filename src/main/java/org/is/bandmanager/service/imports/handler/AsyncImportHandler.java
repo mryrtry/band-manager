@@ -43,13 +43,13 @@ public class AsyncImportHandler implements ImportHandler {
 			operation.setStatus(ImportStatus.PROCESSING);
 			operation = repository.save(operation);
 
+			operation = storeImportFile(operation, fileContent, originalFilename, mimeType);
+
 			List<MusicBandImportRequest> importRequests = fileParserFacade.parseFile(fileContent, originalFilename, mimeType);
 			log.debug("Parsed {} records from file {}", importRequests.size(), originalFilename);
 			if (importRequests.isEmpty()) {
 				throw new IllegalArgumentException("Import file is empty");
 			}
-
-			operation = storeImportFile(operation, fileContent, originalFilename, mimeType);
 
 			List<Long> createdBandIds = processor.processImport(importRequests, username);
 			operation.setStatus(ImportStatus.COMPLETED);
@@ -59,11 +59,9 @@ public class AsyncImportHandler implements ImportHandler {
 		} catch (ValidationException e) {
 			operation.setStatus(ImportStatus.VALIDATION_FAILED);
 			operation.setErrorMessage(getErrorMessage(e));
-			cleanupStoredFile(operation);
 		} catch (Exception e) {
 			operation.setStatus(ImportStatus.FAILED);
 			operation.setErrorMessage(getErrorMessage(e));
-			cleanupStoredFile(operation);
 		} finally {
 			operation.setCompletedAt(LocalDateTime.now());
 			operation = repository.save(operation);
@@ -92,13 +90,6 @@ public class AsyncImportHandler implements ImportHandler {
 			operation.setFileSize(null);
 			operation.setErrorMessage("Import file not stored: " + e.getMessage());
 			return repository.save(operation);
-		}
-	}
-
-	private void cleanupStoredFile(ImportOperation operation) {
-		if (operation.getStorageObjectKey() != null) {
-			storageService.deleteQuietly(operation.getStorageObjectKey());
-			operation.setStorageObjectKey(null);
 		}
 	}
 
