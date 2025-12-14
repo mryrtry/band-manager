@@ -11,7 +11,6 @@ import org.is.bandmanager.service.imports.parser.FileParserFacade;
 import org.is.bandmanager.service.imports.processor.MusicBandImportProcessor;
 import org.is.bandmanager.service.imports.repository.ImportOperationRepository;
 import org.is.bandmanager.service.storage.ImportStorageService;
-import org.is.bandmanager.service.storage.StoredObjectMetadata;
 import org.is.exception.ServiceException;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
@@ -39,16 +38,9 @@ public class AsyncImportHandler implements ImportHandler {
 	@Async("importTaskExecutor")
 	public void processImport(Long operationId, byte[] fileContent, String originalFilename, String mimeType, String username) {
 		ImportOperation operation = repository.findById(operationId).orElseThrow(() -> new ServiceException(BandManagerErrorMessage.SOURCE_WITH_ID_NOT_FOUND, "ImportOperation", operationId));
-		StoredObjectMetadata storedObject = null;
 		try {
 			log.debug("Starting import processing for operation {}: {}", operation.getId(), originalFilename);
 			operation.setStatus(ImportStatus.PROCESSING);
-			operation = repository.save(operation);
-
-			storedObject = storageService.storeImportFile(operation.getId(), originalFilename, mimeType, fileContent);
-			operation.setStorageObjectKey(storedObject.objectKey());
-			operation.setContentType(storedObject.contentType());
-			operation.setFileSize(storedObject.size());
 			operation = repository.save(operation);
 
 			List<MusicBandImportRequest> importRequests = fileParserFacade.parseFile(fileContent, originalFilename, mimeType);
@@ -64,14 +56,12 @@ public class AsyncImportHandler implements ImportHandler {
 		} catch (ValidationException e) {
 			operation.setStatus(ImportStatus.VALIDATION_FAILED);
 			operation.setErrorMessage(getErrorMessage(e));
+			cleanupStoredFile(operation);
 		} catch (Exception e) {
 			operation.setStatus(ImportStatus.FAILED);
 			operation.setErrorMessage(getErrorMessage(e));
+			cleanupStoredFile(operation);
 		} finally {
-			if (storedObject != null) {
-				storageService.deleteQuietly(storedObject.objectKey());
-				operation.setStorageObjectKey(null);
-			}
 			operation.setCompletedAt(LocalDateTime.now());
 			repository.save(operation);
 		}
@@ -83,6 +73,13 @@ public class AsyncImportHandler implements ImportHandler {
 			message = message.substring(0, MAX_ERROR_MESSAGE_LENGTH) + "... [truncated]";
 		}
 		return message;
+	}
+
+	private void cleanupStoredFile(ImportOperation operation) {
+		if (operation.getStorageObjectKey() != null) {
+			storageService.deleteQuietly(operation.getStorageObjectKey());
+			operation.setStorageObjectKey(null);
+		}
 	}
 
 }
