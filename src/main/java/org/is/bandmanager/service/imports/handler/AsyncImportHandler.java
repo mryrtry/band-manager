@@ -73,15 +73,7 @@ public class AsyncImportHandler implements ImportHandler {
 			operation.setErrorMessage(getErrorMessage(e));
 		} finally {
 			operation.setCompletedAt(LocalDateTime.now());
-			try {
-				operation = repository.save(operation);
-			} catch (Exception persistenceException) {
-				if (fileStored && operation.getStorageObjectKey() != null) {
-					storageService.deleteQuietly(operation.getStorageObjectKey());
-					operation.setStorageObjectKey(null);
-				}
-				throw persistenceException;
-			}
+			saveFresh(operationId, operation, fileStored);
 		}
 	}
 
@@ -100,6 +92,28 @@ public class AsyncImportHandler implements ImportHandler {
 			log.warn("Failed to store import file id={} filename={}: {}", operation.getId(), originalFilename, e.getMessage());
 			operation.setErrorMessage("Import file not stored: " + e.getMessage());
 			throw e;
+		}
+	}
+
+	private void saveFresh(Long operationId, ImportOperation updates, boolean fileStored) {
+		try {
+			ImportOperation fresh = repository.findById(operationId)
+					.orElseThrow(() -> new ServiceException(BandManagerErrorMessage.SOURCE_WITH_ID_NOT_FOUND, "ImportOperation", operationId));
+			fresh.setStatus(updates.getStatus());
+			fresh.setCreatedEntitiesCount(updates.getCreatedEntitiesCount());
+			fresh.setErrorMessage(updates.getErrorMessage());
+			fresh.setCompletedAt(updates.getCompletedAt());
+			if (updates.getStorageObjectKey() != null) {
+				fresh.setStorageObjectKey(updates.getStorageObjectKey());
+				fresh.setContentType(updates.getContentType());
+				fresh.setFileSize(updates.getFileSize());
+			}
+			repository.save(fresh);
+		} catch (Exception persistenceException) {
+			if (fileStored && updates.getStorageObjectKey() != null) {
+				storageService.deleteQuietly(updates.getStorageObjectKey());
+			}
+			throw persistenceException;
 		}
 	}
 
