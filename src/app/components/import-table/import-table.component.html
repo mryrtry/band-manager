@@ -1,3 +1,5 @@
+<p-contextMenu #cm [model]="contextMenuItems"></p-contextMenu>
+
 <app-import-filter #filterComponent (filterChange)="onFilter($event)" [isAdmin]="isCurrentUserAdmin"></app-import-filter>
 
 <div class="flex mt-3 gap-2 align-items-center flex-wrap">
@@ -13,7 +15,7 @@
     [outlined]="true"
     icon="pi pi-filter-slash"
     severity="secondary"
-    label="Очистить фильтры"
+    label="Очистить фильтр"
     (click)="onFilterClear()"
     [severity]="isFilterEmpty ? 'secondary' : 'info'"
   />
@@ -59,33 +61,38 @@
         </th>
         <th [pSortableColumnDisabled]="loading || !imports.length" pSortableColumn="errorMessage" style="width: 22rem">
           <div class="flex items-center gap-2">
-            Сообщение об ошибке
+            Описание ошибки
             <p-sortIcon field="errorMessage"/>
           </div>
         </th>
         <th [pSortableColumnDisabled]="loading || !imports.length" pSortableColumn="startedAt" style="width: 9rem">
           <div class="flex items-center gap-2">
-            Начато
+            Начат
             <p-sortIcon field="startedAt"/>
           </div>
         </th>
         <th [pSortableColumnDisabled]="loading || !imports.length" pSortableColumn="completedAt" style="width: 9rem">
           <div class="flex items-center gap-2">
-            Завершено
+            Завершен
             <p-sortIcon field="completedAt"/>
           </div>
         </th>
         <th [pSortableColumnDisabled]="loading || !imports.length" pSortableColumn="user.username" style="width: 8rem">
           <div class="flex items-center gap-2">
-            Пользователь
+            Создал пользователь
             <p-sortIcon field="user.username"/>
+          </div>
+        </th>
+        <th style="width: 3rem">
+          <div class="flex items-center gap-2">
+            Действия
           </div>
         </th>
       </tr>
     </ng-template>
 
     <ng-template #body let-imp>
-      <tr [class]="rowClass(imp)">
+      <tr [class]="rowClass(imp)" (contextmenu)="onRowRightClick(imp, $event)">
         <td>{{ imp.id }}</td>
         <td class="truncate-cell" [pTooltip]="imp.filename">{{ imp.filename }}</td>
         <td>
@@ -100,13 +107,25 @@
         <td>{{ imp.startedAt ? formatDate(imp.startedAt) + ' ' + formatTime(imp.startedAt) : '—' }}</td>
         <td>{{ imp.completedAt ? formatDate(imp.completedAt) + ' ' + formatTime(imp.completedAt) : '—' }}</td>
         <td>{{ imp.createdBy }}</td>
+        <td>
+          <div class="flex gap-1">
+            <p-button
+              (onClick)="downloadImportFile(imp)"
+              icon="pi pi-download"
+              outlined
+              severity="secondary"
+              size="small"
+              [disabled]="loading"
+            />
+          </div>
+        </td>
       </tr>
     </ng-template>
 
     <ng-template #emptymessage>
       <tr>
         <td colspan="9">
-          {{ generalError || 'Операции импорта не найдены' }}
+          {{ generalError || 'Список импортов пуст' }}
         </td>
       </tr>
     </ng-template>

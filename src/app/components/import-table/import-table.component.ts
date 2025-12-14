@@ -10,11 +10,12 @@ import {ImportFilter} from '../../model/import/import-filter.model';
 import { UserService } from '../../services/auth/user.service';
 import { User } from '../../model/auth/user.model';
 import { HttpErrorResponse } from '@angular/common/http';
-import { MessageService } from 'primeng/api';
+import {MenuItem, MessageService} from 'primeng/api';
 import { TooltipModule } from 'primeng/tooltip';
 import { ImportService } from '../../services/import.service';
 import { Panel } from 'primeng/panel';
 import { ImportFilterComponent } from './import-filter/import-filter.component';
+import {ContextMenu} from 'primeng/contextmenu';
 
 @Component({
   selector: 'app-import-table',
@@ -28,6 +29,7 @@ import { ImportFilterComponent } from './import-filter/import-filter.component';
     TooltipModule,
     Panel,
     ImportFilterComponent,
+    ContextMenu,
   ],
   templateUrl: './import-table.component.html',
   styleUrls: ['./import-table.component.scss'],
@@ -53,9 +55,13 @@ export class ImportTableComponent implements OnInit, OnDestroy {
     page: 0,
     size: 5,
   };
+  // --- Context Menu ---
+  contextMenuItems: MenuItem[] = [];
+  contextMenuImport: ImportOperation | null = null;
 
   // --- ViewChild ---
   @ViewChild('filterComponent') private filterComponent!: ImportFilterComponent;
+  @ViewChild('cm') private contextMenu!: ContextMenu;
 
   // --- Services ---
   private readonly importService = inject(ImportService);
@@ -236,6 +242,75 @@ export class ImportTableComponent implements OnInit, OnDestroy {
   // -- User --
   get isCurrentUserAdmin(): boolean {
     return this.userService.isAdminSync();
+  }
+
+  // --- Context Menu ---
+  onRowRightClick(operation: ImportOperation, event: MouseEvent): void {
+    this.contextMenuImport = operation;
+    this.contextMenuItems = [{
+      label: `
+          <div class="custom-profile-item">
+            <p>Импорт: ${operation.filename || '—'} (#${operation.id})</p>
+            <p>Статус: ${operation.status}</p>
+            <p>Создано сущностей: ${operation.createdEntitiesCount ?? '—'}</p>
+            <p>Начат: ${operation.startedAt ? new Date(operation.startedAt).toLocaleString('ru-RU') : '—'}</p>
+            <p>Завершен: ${operation.completedAt ? new Date(operation.completedAt).toLocaleString('ru-RU') : '—'}</p>
+          </div>
+        `,
+      escape: false,
+      styleClass: 'non-clickable-container',
+      disabled: true
+    }, {separator: true}, {
+      label: 'Скачать файл',
+      icon: 'pi pi-download',
+      command: () => this.downloadImportFile(operation)
+    }];
+    this.contextMenu.show(event);
+  }
+
+  downloadImportFile(operation: ImportOperation): void {
+    this.importService.downloadImportFile(operation.id).subscribe({
+      next: (response) => {
+        if (!response.body) {
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Ошибка',
+            detail: 'Не удалось получить файл импорта'
+          });
+          return;
+        }
+
+        const filename = this.extractFilename(response.headers.get('content-disposition')) || operation.filename || `import-${operation.id}`;
+        const contentType = response.headers.get('content-type') || 'application/octet-stream';
+        const blob = new Blob([response.body], { type: contentType });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        a.click();
+        window.URL.revokeObjectURL(url);
+      },
+      error: () => {
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Ошибка',
+          detail: 'Не удалось скачать файл импорта'
+        });
+      }
+    });
+  }
+
+  private extractFilename(contentDisposition: string | null): string | undefined {
+    if (!contentDisposition) return undefined;
+    const filenameRegex = /filename\*=UTF-8''([^;]+)|filename="?([^\";]+)"?/i;
+    const match = filenameRegex.exec(contentDisposition);
+    if (!match) return undefined;
+    const encodedFilename = match[1] || match[2];
+    try {
+      return decodeURIComponent(encodedFilename);
+    } catch {
+      return encodedFilename;
+    }
   }
 
 }

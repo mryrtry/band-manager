@@ -1,4 +1,4 @@
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpClient, HttpParams, HttpResponse } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
@@ -86,6 +86,13 @@ export class ImportService {
 
   getSupportedFormats(): Observable<string[]> {
     return this.http.get<string[]>(`${this.apiUrl}/supported-formats`);
+  }
+
+  downloadImportFile(id: number): Observable<HttpResponse<Blob>> {
+    return this.http.get(`${this.apiUrl}/operations/${id}/file`, {
+      observe: 'response',
+      responseType: 'blob'
+    });
   }
 
   private formatDate(date: Date): string {
