@@ -18,8 +18,13 @@ import org.is.exception.ServiceException;
 import org.is.util.pageable.PageableFactory;
 import org.is.util.pageable.PageableRequest;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.dao.CannotAcquireLockException;
+import org.springframework.dao.CannotSerializeTransactionException;
+import org.springframework.dao.DeadlockLoserDataAccessException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
@@ -83,6 +88,15 @@ public class MusicBandServiceImpl implements MusicBandService {
 	}
 
 	@Override
+	@Retryable(
+			include = {
+					CannotSerializeTransactionException.class,
+					DeadlockLoserDataAccessException.class,
+					CannotAcquireLockException.class
+			},
+			maxAttempts = 5,
+			backoff = @Backoff(delay = 250, multiplier = 2, maxDelay = 1000)
+	)
 	@Transactional(isolation = Isolation.SERIALIZABLE)
 	public MusicBandDto create(MusicBandCreateRequest request) {
 		MusicBand musicBand = mapper.toEntity(request);
@@ -131,6 +145,15 @@ public class MusicBandServiceImpl implements MusicBandService {
 	}
 
 	@Override
+	@Retryable(
+			include = {
+					CannotSerializeTransactionException.class,
+					DeadlockLoserDataAccessException.class,
+					CannotAcquireLockException.class
+			},
+			maxAttempts = 5,
+			backoff = @Backoff(delay = 250, multiplier = 2, maxDelay = 1000)
+	)
 	@Transactional(isolation = Isolation.SERIALIZABLE)
 	public MusicBandDto update(Long id, MusicBandUpdateRequest request) {
 		MusicBand updatingBand = findById(id);

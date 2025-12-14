@@ -5,6 +5,8 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import lombok.extern.slf4j.Slf4j;
 import org.is.util.fieldOrder.ClassFieldOrderUtil;
+import org.springframework.dao.CannotSerializeTransactionException;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -16,6 +18,7 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
+import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Collections;
@@ -129,7 +132,85 @@ public class GlobalExceptionHandler {
 		return new ResponseEntity<>(errorResponse, HttpStatus.CONFLICT);
 	}
 
-    // Base exception handler
+	// Serializable isolation conflict / deadlock handler
+	@ExceptionHandler({
+			CannotSerializeTransactionException.class
+	})
+	public ResponseEntity<ErrorResponse> handleCannotSerialize(CannotSerializeTransactionException ex) {
+		List<ErrorResponse.ErrorDetail> errorDetails = Collections.singletonList(
+				ErrorResponse.ErrorDetail.builder()
+						.field("concurrency")
+						.message("Конфликт транзакций (SERIALIZABLE). Повторите запрос")
+						.rejectedValue(null)
+						.errorType("SERIALIZATION_FAILURE")
+						.build()
+		);
+
+		ErrorResponse errorResponse = ErrorResponse.builder()
+				.status(HttpStatus.CONFLICT.value())
+				.message("Conflict")
+				.details(errorDetails)
+				.timestamp(LocalDateTime.now())
+				.build();
+
+		log.error(ex.getMessage());
+		log.warn(Arrays.toString(ex.getStackTrace()));
+
+		return new ResponseEntity<>(errorResponse, HttpStatus.CONFLICT);
+	}
+
+	// Unique constraint / data integrity handler
+	@ExceptionHandler(DataIntegrityViolationException.class)
+	public ResponseEntity<ErrorResponse> handleDataIntegrityViolation(DataIntegrityViolationException ex) {
+		SQLException sql = findSqlException(ex);
+
+		if (sql != null && "23505".equals(sql.getSQLState())) {
+			List<ErrorResponse.ErrorDetail> errorDetails = Collections.singletonList(
+					ErrorResponse.ErrorDetail.builder()
+							.field("name")
+							.message("Значение должно быть уникальным")
+							.rejectedValue(null)
+							.errorType("UNIQUE_VIOLATION")
+							.build()
+			);
+
+			ErrorResponse errorResponse = ErrorResponse.builder()
+					.status(HttpStatus.BAD_REQUEST.value())
+					.message("Ошибка уникальности данных")
+					.details(errorDetails)
+					.timestamp(LocalDateTime.now())
+					.build();
+
+			log.error(ex.getMessage());
+			log.warn(Arrays.toString(ex.getStackTrace()));
+
+			return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+		}
+
+		// Остальные integrity-ошибки (FK и т.п.)
+		List<ErrorResponse.ErrorDetail> errorDetails = Collections.singletonList(
+				ErrorResponse.ErrorDetail.builder()
+						.field("data")
+						.message("Нарушение целостности данных")
+						.rejectedValue(null)
+						.errorType("DATA_INTEGRITY_VIOLATION")
+						.build()
+		);
+
+		ErrorResponse errorResponse = ErrorResponse.builder()
+				.status(HttpStatus.BAD_REQUEST.value())
+				.message("Ошибка целостности данных")
+				.details(errorDetails)
+				.timestamp(LocalDateTime.now())
+				.build();
+
+		log.error(ex.getMessage());
+		log.warn(Arrays.toString(ex.getStackTrace()));
+
+		return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+	}
+
+	// Base exception handler
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGenericException(Exception e) {
         List<ErrorResponse.ErrorDetail> errorDetails = Collections.singletonList(ErrorResponse.ErrorDetail.builder().field("system").message("Внутренняя ошибка сервера").rejectedValue(null).errorType("INTERNAL_ERROR").build());
@@ -141,5 +222,15 @@ public class GlobalExceptionHandler {
 
         return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
     }
+
+	private SQLException findSqlException(Throwable t) {
+		Throwable cur = t;
+		while (cur != null) {
+			if (cur instanceof SQLException sql) return sql;
+			cur = cur.getCause();
+		}
+		return null;
+	}
+
 
 }

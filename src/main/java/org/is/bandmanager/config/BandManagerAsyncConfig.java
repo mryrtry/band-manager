@@ -21,6 +21,12 @@ public class BandManagerAsyncConfig {
 
     private final static int QUEUE_CAPACITY = 100;
 
+    private final static int IMPORT_CORE_POOL_SIZE = 1;
+
+    private final static int IMPORT_MAX_POOL_SIZE = 1;
+
+    private final static int IMPORT_QUEUE_CAPACITY = 500;
+
     @Bean(name = "cleanupTaskExecutor")
     public TaskExecutor cleanUpTaskExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
@@ -48,9 +54,10 @@ public class BandManagerAsyncConfig {
     @Bean("importTaskExecutor")
     public TaskExecutor importTaskExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-        executor.setCorePoolSize(CORE_POOL_SIZE);
-        executor.setMaxPoolSize(MAX_POOL_SIZE);
-        executor.setQueueCapacity(QUEUE_CAPACITY);
+        // Импорт выполняем последовательно: один поток + очередь задач
+        executor.setCorePoolSize(IMPORT_CORE_POOL_SIZE);
+        executor.setMaxPoolSize(IMPORT_MAX_POOL_SIZE);
+        executor.setQueueCapacity(IMPORT_QUEUE_CAPACITY);
         executor.setThreadNamePrefix("import-");
 	    executor.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());
 	    executor.initialize();
