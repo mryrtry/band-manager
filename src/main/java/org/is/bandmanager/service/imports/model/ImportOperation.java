@@ -16,12 +16,15 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.is.auth.model.User;
 import org.is.model.AuditableEntity;
 
 import java.time.LocalDateTime;
 
 @Entity
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @Table(name = "import_operations")
 @Getter
 @Setter
@@ -40,6 +43,15 @@ public class ImportOperation extends AuditableEntity {
 
     @Column(nullable = false)
     private String filename;
+
+    @Column(name = "storage_object_key")
+    private String storageObjectKey;
+
+    @Column(name = "content_type")
+    private String contentType;
+
+    @Column(name = "file_size")
+    private Long fileSize;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)

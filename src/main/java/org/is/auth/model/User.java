@@ -20,6 +20,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 import org.is.auth.constants.UserConstants;
@@ -33,6 +35,7 @@ import static org.is.auth.constants.UserConstants.USERNAME_MAX_LENGTH;
 import static org.is.auth.constants.UserConstants.USERNAME_MIN_LENGTH;
 
 @Entity
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @Table(name = "users")
 @Data
 @Builder
@@ -69,6 +72,7 @@ public class User {
             joinColumns = @JoinColumn(name = "user_id"),
             uniqueConstraints = @UniqueConstraint(columnNames = {"user_id", "role"})
     )
+    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     @Column(name = "role")
     @Enumerated(EnumType.STRING)
     @Builder.Default

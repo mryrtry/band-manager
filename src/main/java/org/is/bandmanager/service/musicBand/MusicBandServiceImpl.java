@@ -29,6 +29,7 @@ import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.validation.annotation.Validated;
 
 import java.util.Date;
 import java.util.List;
@@ -47,6 +48,7 @@ import static org.is.event.EventType.UPDATED;
 @Service
 @Slf4j
 @RequiredArgsConstructor
+@Validated
 public class MusicBandServiceImpl implements MusicBandService {
 
 	private final MusicBandRepository musicBandRepository;

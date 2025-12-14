@@ -1,6 +1,5 @@
 package org.is.bandmanager.controller;
 
-import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PastOrPresent;
 import lombok.RequiredArgsConstructor;
@@ -46,7 +45,7 @@ public class MusicBandController {
 
 	@GetMapping()
 	@PreAuthorize("@securityService.canReadEntity()")
-	public ResponseEntity<Page<MusicBandDto>> getAllMusicBands(@ModelAttribute @Valid MusicBandFilter filter, @ModelAttribute PageableRequest config) {
+	public ResponseEntity<Page<MusicBandDto>> getAllMusicBands(@ModelAttribute MusicBandFilter filter, @ModelAttribute PageableRequest config) {
 		Page<MusicBandDto> bands = musicBandService.getAll(filter, config);
 		return ResponseEntity.ok(bands);
 	}
@@ -82,14 +81,14 @@ public class MusicBandController {
 
 	@PostMapping
 	@PreAuthorize("@securityService.canCreate()")
-	public ResponseEntity<MusicBandDto> createMusicBand(@Valid @RequestBody MusicBandCreateRequest request) {
+	public ResponseEntity<MusicBandDto> createMusicBand(@RequestBody MusicBandCreateRequest request) {
 		MusicBandDto createdMusicBand = musicBandService.create(request);
 		return ResponseEntity.status(HttpStatus.CREATED).body(createdMusicBand);
 	}
 
 	@PutMapping("/{id}")
 	@PreAuthorize("@securityService.canUpdateEntity(#id, 'MusicBand')")
-	public ResponseEntity<MusicBandDto> updateMusicBand(@PathVariable Long id, @Valid @RequestBody MusicBandUpdateRequest request) {
+	public ResponseEntity<MusicBandDto> updateMusicBand(@PathVariable Long id, @RequestBody MusicBandUpdateRequest request) {
 		MusicBandDto updatedMusicBand = musicBandService.update(id, request);
 		return ResponseEntity.ok(updatedMusicBand);
 	}

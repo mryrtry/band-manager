@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns="http://www.ehcache.org/v3"
+        xmlns:jcache="http://www.ehcache.org/v3/jsr107"
+        xsi:schemaLocation="http://www.ehcache.org/v3 http://www.ehcache.org/schema/ehcache-core.xsd
+            http://www.ehcache.org/v3/jsr107 http://www.ehcache.org/schema/ehcache-107-ext.xsd">
+
+    <service>
+        <jcache:defaults enable-management="true" enable-statistics="true"/>
+    </service>
+
+    <cache-template name="defaultEntityTemplate">
+        <expiry>
+            <ttl unit="minutes">30</ttl>
+        </expiry>
+        <resources>
+            <heap unit="entries">1000</heap>
+            <offheap unit="MB">64</offheap>
+        </resources>
+    </cache-template>
+
+    <cache-template name="readMostlyTemplate">
+        <expiry>
+            <ttl unit="minutes">60</ttl>
+        </expiry>
+        <resources>
+            <heap unit="entries">2000</heap>
+            <offheap unit="MB">64</offheap>
+        </resources>
+    </cache-template>
+
+    <cache alias="org.is.bandmanager.model.MusicBand" uses-template="defaultEntityTemplate"/>
+    <cache alias="org.is.bandmanager.model.Album" uses-template="defaultEntityTemplate"/>
+    <cache alias="org.is.bandmanager.model.Person" uses-template="defaultEntityTemplate"/>
+    <cache alias="org.is.bandmanager.model.Coordinates" uses-template="defaultEntityTemplate"/>
+    <cache alias="org.is.bandmanager.model.Location" uses-template="defaultEntityTemplate"/>
+    <cache alias="org.is.bandmanager.model.BestBandAward" uses-template="readMostlyTemplate"/>
+    <cache alias="org.is.bandmanager.service.imports.model.ImportOperation" uses-template="defaultEntityTemplate"/>
+    <cache alias="org.is.auth.model.User" uses-template="defaultEntityTemplate"/>
+    <cache alias="org.is.auth.model.User.roles" uses-template="readMostlyTemplate"/>
+
+    <cache alias="org.hibernate.cache.internal.StandardQueryCache">
+        <expiry>
+            <ttl unit="minutes">5</ttl>
+        </expiry>
+        <resources>
+            <heap unit="entries">500</heap>
+            <offheap unit="MB">16</offheap>
+        </resources>
+    </cache>
+
+    <cache alias="org.hibernate.cache.spi.UpdateTimestampsCache">
+        <expiry>
+            <ttl unit="minutes">5</ttl>
+        </expiry>
+        <resources>
+            <heap unit="entries">1000</heap>
+        </resources>
+    </cache>
+
+</config>

@@ -31,7 +31,11 @@ jobs:
           sed -i "s|@DB_URL@|${{ secrets.DB_URL }}|g" src/main/resources/application-prod.properties
           sed -i "s|@DB_USERNAME@|${{ secrets.DB_USERNAME }}|g" src/main/resources/application-prod.properties
           sed -i "s|@DB_PASSWORD@|${{ secrets.DB_PASSWORD }}|g" src/main/resources/application-prod.properties
-          sed -i "s|@JWT_SECRET@|${{ secrets.JWT_SECRET }}|g" src/main/resources/application-prod.properties
+          sed -i "s|http://minio.example.com:9000|${{ secrets.STORAGE_ENDPOINT }}|g" src/main/resources/application-prod.properties
+          sed -i "s|storage.s3.access-key=replace-me|storage.s3.access-key=${{ secrets.STORAGE_ACCESS_KEY }}|g" src/main/resources/application-prod.properties
+          sed -i "s|storage.s3.secret-key=replace-me|storage.s3.secret-key=${{ secrets.STORAGE_SECRET_KEY }}|g" src/main/resources/application-prod.properties
+          sed -i "s|storage.s3.bucket=bandmanager-imports|storage.s3.bucket=${{ secrets.STORAGE_BUCKET }}|g" src/main/resources/application-prod.properties
+          sed -i "s|band-manager.jwt.secret=@JWT_SECRET@|band-manager.jwt.secret=${{ secrets.JWT_SECRET }}|g" src/main/resources/application-prod.properties
 
       - name: Build with Maven
         run: mvn -B clean package -P prod -DskipTests
