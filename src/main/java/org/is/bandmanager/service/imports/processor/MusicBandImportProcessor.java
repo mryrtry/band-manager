@@ -19,7 +19,6 @@ import org.is.bandmanager.repository.LocationRepository;
 import org.is.bandmanager.repository.MusicBandRepository;
 import org.is.bandmanager.repository.PersonRepository;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
-import org.springframework.dao.PessimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
@@ -56,7 +55,7 @@ public class MusicBandImportProcessor {
 			String validationError = validateImportRequest(request);
 			if (!validationError.isEmpty()) {
 				log.warn("Validation failed for record {}: {}", i + 1, validationError);
-				throw new ValidationException("Validation failed for record " + (i + 1) + ": " + validationError); // Исключение для отката транзакции
+				throw new ValidationException("Validation failed for record " + (i + 1) + ": " + validationError);
 			}
 			try {
 				MusicBand musicBand = createMusicBandFromImport(request);
@@ -65,12 +64,9 @@ public class MusicBandImportProcessor {
 				MusicBand savedBand = musicBandRepository.save(musicBand);
 				createdBandIds.add(savedBand.getId());
 				log.debug("Created music band from import idx={} id={}", i, savedBand.getId());
-			} catch (PessimisticLockingFailureException e) {
-				log.warn("Serialization/deadlock issue at import record {}. Will retry. Cause: {}", i + 1, e.getMessage());
-				throw e;
 			} catch (Exception e) {
 				log.error("Failed to process import request at index {}: {}", i + 1, e.getMessage());
-				throw new RuntimeException("Import failed at record " + (i + 1) + ": " + e.getMessage(), e); // Исключение для отката транзакции
+				throw new RuntimeException("Import failed at record " + (i + 1));
 			}
 		}
 		log.info("Completed music band import created={}", createdBandIds.size());

@@ -15,21 +15,15 @@ import org.is.bandmanager.service.storage.StoredObjectMetadata;
 import org.is.exception.ServiceException;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.dao.OptimisticLockingFailureException;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.function.Consumer;
 
 
 @Slf4j
 @Component
 @RequiredArgsConstructor
 public class AsyncImportHandler implements ImportHandler {
-
-	private static final int MAX_ERROR_MESSAGE_LENGTH = 1000;
 
 	private final FileParserFacade fileParserFacade;
 
@@ -41,25 +35,20 @@ public class AsyncImportHandler implements ImportHandler {
 
 	@Override
 	@Async("importTaskExecutor")
-	@Transactional(propagation = Propagation.REQUIRES_NEW)
 	public void processImport(Long operationId, byte[] fileContent, String originalFilename, String mimeType, String username) {
-		ImportOperation operation = repository.findById(operationId)
-				.orElseThrow(() -> new ServiceException(BandManagerErrorMessage.SOURCE_WITH_ID_NOT_FOUND, "ImportOperation", operationId));
+		ImportOperation operation = repository.findById(operationId).orElseThrow(() -> new ServiceException(BandManagerErrorMessage.SOURCE_WITH_ID_NOT_FOUND, "ImportOperation", operationId));
 		try {
 			log.debug("Starting import processing for operation {}: {}", operation.getId(), originalFilename);
-			updateOperation(operationId, op -> {
-				op.setStatus(ImportStatus.PROCESSING);
-				op.setErrorMessage(null);
-				op.setCreatedEntitiesCount(null);
-			});
+			operation.setStatus(ImportStatus.PROCESSING);
+			operation.setErrorMessage(null);
+			operation.setCreatedEntitiesCount(null);
+			repository.saveAndFlush(operation);
 
-			var stored = storeImportFile(operationId, fileContent, originalFilename, mimeType);
+			var stored = storeImportFile(operation, fileContent, originalFilename, mimeType);
 			if (stored != null) {
-				updateOperation(operationId, op -> {
-					op.setStorageObjectKey(stored.objectKey());
-					op.setContentType(stored.contentType());
-					op.setFileSize(stored.size());
-				});
+				operation.setStorageObjectKey(stored.objectKey());
+				operation.setContentType(stored.contentType());
+				operation.setFileSize(stored.size());
 			}
 
 			List<MusicBandImportRequest> importRequests = fileParserFacade.parseFile(fileContent, originalFilename, mimeType);
@@ -69,62 +58,32 @@ public class AsyncImportHandler implements ImportHandler {
 			}
 
 			List<Long> createdBandIds = processor.processImport(importRequests, username);
-			updateOperation(operationId, op -> {
-				op.setStatus(ImportStatus.COMPLETED);
-				op.setCreatedEntitiesCount(createdBandIds.size());
-			});
+
+			operation.setStatus(ImportStatus.COMPLETED);
+			operation.setCreatedEntitiesCount(createdBandIds.size());
+
 			log.info("Import operation {} completed successfully. Created {} MusicBand entities", operation.getId(), createdBandIds.size());
 		} catch (ValidationException e) {
-			updateOperation(operationId, op -> {
-				op.setStatus(ImportStatus.VALIDATION_FAILED);
-				op.setErrorMessage(getErrorMessage(e));
-				op.setCreatedEntitiesCount(null);
-			});
+			operation.setStatus(ImportStatus.VALIDATION_FAILED);
+			operation.setErrorMessage(e.getMessage());
+			operation.setCreatedEntitiesCount(null);
 		} catch (Exception e) {
-			updateOperation(operationId, op -> {
-				op.setStatus(ImportStatus.FAILED);
-				op.setErrorMessage(getErrorMessage(e));
-				op.setCreatedEntitiesCount(null);
-			});
+			operation.setStatus(ImportStatus.FAILED);
+			operation.setErrorMessage("Import operation failed for file %s".formatted(originalFilename));
+			operation.setCreatedEntitiesCount(null);
 		} finally {
-			updateOperation(operationId, op -> op.setCompletedAt(LocalDateTime.now()));
+			operation.setCompletedAt(LocalDateTime.now());
+			repository.saveAndFlush(operation);
 		}
 	}
 
-	private String getErrorMessage(Exception e) {
-		String message = e.getMessage();
-		if (message != null && message.length() > MAX_ERROR_MESSAGE_LENGTH) {
-			message = message.substring(0, MAX_ERROR_MESSAGE_LENGTH) + "... [truncated]";
-		}
-		return message;
-	}
-
-	private StoredObjectMetadata storeImportFile(Long operationId, byte[] fileContent, String originalFilename, String mimeType) {
+	private StoredObjectMetadata storeImportFile(ImportOperation operation, byte[] fileContent, String originalFilename, String mimeType) {
 		try {
-			return storageService.storeImportFile(operationId, originalFilename, mimeType, fileContent);
+			return storageService.storeImportFile(operation.getId(), originalFilename, mimeType, fileContent);
 		} catch (Exception e) {
-			log.warn("Failed to store import file id={} filename={}: {}", operationId, originalFilename, e.getMessage());
-			updateOperation(operationId, op -> op.setErrorMessage("Import file not stored: " + e.getMessage()));
-			return null;
-		}
-	}
-
-	private void updateOperation(Long operationId, Consumer<ImportOperation> consumer) {
-		int attempts = 0;
-		while (attempts < 2) {
-			try {
-				ImportOperation op = repository.findById(operationId)
-						.orElseThrow(() -> new ServiceException(BandManagerErrorMessage.SOURCE_WITH_ID_NOT_FOUND, "ImportOperation", operationId));
-				consumer.accept(op);
-				repository.saveAndFlush(op);
-				return;
-			} catch (OptimisticLockingFailureException ex) {
-				attempts++;
-				if (attempts >= 2) {
-					throw ex;
-				}
-				log.debug("Optimistic lock retry for import operation {} (attempt {})", operationId, attempts + 1);
-			}
+			log.warn("Failed to store import file id={} filename={}: {}", operation.getId(), originalFilename, e.getMessage());
+			operation.setErrorMessage("Import file not stored: " + e.getMessage());
+			throw e;
 		}
 	}
 

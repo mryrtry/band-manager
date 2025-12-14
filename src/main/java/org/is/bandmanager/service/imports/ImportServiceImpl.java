@@ -60,9 +60,9 @@ public class ImportServiceImpl implements ImportService {
             fileContent = file.getBytes();
         } catch (IOException e) {
             log.error("Failed to read file content: {}", file.getOriginalFilename());
-            operation.setStatus(ImportStatus.FAILED);
-            operation.setErrorMessage("Failed to read file content: " + file.getOriginalFilename());
-            repository.save(operation);
+            savedOperation.setStatus(ImportStatus.FAILED);
+            savedOperation.setErrorMessage("Failed to read file content: " + file.getOriginalFilename());
+            repository.save(savedOperation);
             throw new RuntimeException("Failed to read file content: " + file.getOriginalFilename());
         }
         handler.processImport(savedOperation.getId(), fileContent, file.getOriginalFilename(), file.getContentType(), username);
