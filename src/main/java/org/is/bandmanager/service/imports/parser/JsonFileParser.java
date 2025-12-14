@@ -33,10 +33,10 @@ public class JsonFileParser implements FileParser {
 			log.debug("Successfully parsed {} MusicBandImportRequest objects from file: {}", result.size(), originalFilename);
 			return result;
 		} catch (JsonProcessingException e) {
-			log.error("JSON parsing failed for file: {}. Error: {}", originalFilename, e.getMessage(), e);
+			log.warn("JSON parsing failed for file: {}", originalFilename);
 			throw new RuntimeException("JSON parsing failed: " + e.getMessage(), e);
 		} catch (IOException e) {
-			log.error("Failed to read or parse file: {}. Error: {}", originalFilename, e.getMessage(), e);
+			log.warn("Failed to read or parse file: {}", originalFilename);
 			throw new RuntimeException("Failed to read or parse JSON file: " + e.getMessage(), e);
 		}
 	}

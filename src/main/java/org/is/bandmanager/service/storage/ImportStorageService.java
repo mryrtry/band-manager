@@ -2,10 +2,11 @@ package org.is.bandmanager.service.storage;
 
 public interface ImportStorageService {
 
-    StoredObjectMetadata storeImportFile(Long operationId, String originalFilename, String contentType, byte[] content);
+	String putStaging(Long operationId, String originalFilename, String contentType, byte[] content);
 
-    StoredObjectResource loadImportFile(String objectKey, String originalFilename, String contentType, Long sizeHint);
+	String finalizeFromStaging(String stagingKey, Long operationId, String originalFilename);
 
-    void deleteQuietly(String objectKey);
+	StoredObjectResource loadImportFile(String objectKey, String originalFilename, String contentType, Long sizeHint);
 
+	void deleteObject(String objectKey);
 }

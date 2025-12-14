@@ -28,84 +28,86 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ImportServiceImpl implements ImportService {
 
-    private final ImportOperationRepository repository;
+	private final ImportOperationRepository repository;
+	private final FileParserFacade fileParserFacade;
+	private final UserService userService;
+	private final PageableFactory pageableFactory;
+	private final ImportHandler handler;
+	private final ImportStorageService storageService;
 
-    private final FileParserFacade fileParserFacade;
+	@Override
+	public ImportOperation startImport(MultipartFile file) {
+		User user = userService.getEntity(userService.getAuthenticatedUser().getId());
+		String username = user.getUsername();
 
-    private final UserService userService;
+		ImportOperation operation = ImportOperation.builder()
+				.user(user)
+				.filename(file.getOriginalFilename())
+				.contentType(file.getContentType())
+				.fileSize(file.getSize())
+				.status(ImportStatus.PENDING)
+				.startedAt(LocalDateTime.now())
+				.build();
 
-    private final PageableFactory pageableFactory;
+		ImportOperation saved = repository.save(operation);
 
-    private final ImportHandler handler;
+		byte[] bytes;
+		try {
+			bytes = file.getBytes();
+		} catch (IOException e) {
+			saved.setStatus(ImportStatus.FAILED);
+			saved.setErrorMessage("Failed to read file bytes");
+			saved.setCompletedAt(LocalDateTime.now());
+			repository.save(saved);
+			throw new RuntimeException(e);
+		}
 
-    private final ImportStorageService storageService;
+		handler.processImport(
+				saved.getId(),
+				bytes,
+				saved.getFilename(),
+				saved.getContentType(),
+				username
+		);
 
-    @Override
-    public ImportOperation startImport(MultipartFile file) {
-        Long userId = userService.getAuthenticatedUser().getId();
-        User user = userService.getEntity(userId);
-        String username = user.getUsername();
-        log.info("Queueing import for user={} filename={}", username, file.getOriginalFilename());
-        ImportOperation operation = ImportOperation.builder()
-                .user(user)
-                .filename(file.getOriginalFilename())
-                .contentType(file.getContentType())
-                .fileSize(file.getSize())
-                .status(ImportStatus.PENDING)
-                .startedAt(LocalDateTime.now())
-                .build();
-        ImportOperation savedOperation = repository.save(operation);
-        byte[] fileContent;
-        try {
-            fileContent = file.getBytes();
-        } catch (IOException e) {
-            log.error("Failed to read file content: {}", file.getOriginalFilename());
-            savedOperation.setStatus(ImportStatus.FAILED);
-            savedOperation.setErrorMessage("Failed to read file content: " + file.getOriginalFilename());
-            repository.save(savedOperation);
-            throw new RuntimeException("Failed to read file content: " + file.getOriginalFilename());
-        }
-        handler.processImport(savedOperation.getId(), fileContent, file.getOriginalFilename(), file.getContentType(), username);
-        log.info("Import queued id={} filename={}", savedOperation.getId(), file.getOriginalFilename());
-        return savedOperation;
-    }
+		return saved;
+	}
 
-    @Override
-    public Page<ImportOperation> getUserImportHistory(ImportOperationFilter filter, PageableRequest config) {
-        String username = userService.getAuthenticatedUser().getUsername();
-        Pageable pageable = pageableFactory.create(config, ImportOperation.class);
-        return repository.findByUserUsername(filter, username, pageable);
-    }
+	@Override
+	public Page<ImportOperation> getUserImportHistory(ImportOperationFilter filter, PageableRequest config) {
+		String username = userService.getAuthenticatedUser().getUsername();
+		Pageable pageable = pageableFactory.create(config, ImportOperation.class);
+		return repository.findByUserUsername(filter, username, pageable);
+	}
 
-    @Override
-    public Page<ImportOperation> getAllImportHistory(ImportOperationFilter filter, PageableRequest config) {
-        Pageable pageable = pageableFactory.create(config, ImportOperation.class);
-        return repository.find(filter, pageable);
-    }
+	@Override
+	public Page<ImportOperation> getAllImportHistory(ImportOperationFilter filter, PageableRequest config) {
+		Pageable pageable = pageableFactory.create(config, ImportOperation.class);
+		return repository.find(filter, pageable);
+	}
 
-    @Override
-    public ImportOperation getImportOperation(Long id) {
-        return repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Import operation not found: " + id));
-    }
+	@Override
+	public ImportOperation getImportOperation(Long id) {
+		return repository.findById(id)
+				.orElseThrow(() -> new RuntimeException("Import operation not found: " + id));
+	}
 
-    @Override
-    public List<String> getSupportedFormats() {
-        return fileParserFacade.getSupportedFormats();
-    }
+	@Override
+	public List<String> getSupportedFormats() {
+		return fileParserFacade.getSupportedFormats();
+	}
 
-    @Override
-    public StoredObjectResource downloadImportFile(Long operationId) {
-        ImportOperation operation = getImportOperation(operationId);
-        if (operation.getStorageObjectKey() == null) {
-            throw new IllegalStateException("Import file is not available for operation " + operationId);
-        }
-        return storageService.loadImportFile(
-                operation.getStorageObjectKey(),
-                operation.getFilename(),
-                operation.getContentType(),
-                operation.getFileSize()
-        );
-    }
-
+	@Override
+	public StoredObjectResource downloadImportFile(Long operationId) {
+		ImportOperation operation = getImportOperation(operationId);
+		if (operation.getStorageObjectKey() == null) {
+			throw new IllegalStateException("Import file is not available for operation " + operationId);
+		}
+		return storageService.loadImportFile(
+				operation.getStorageObjectKey(),
+				operation.getFilename(),
+				operation.getContentType(),
+				operation.getFileSize()
+		);
+	}
 }

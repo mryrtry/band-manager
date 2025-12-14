@@ -1,21 +1,7 @@
 package org.is.bandmanager.service.imports.model;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import jakarta.persistence.*;
+import lombok.*;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.is.auth.model.User;
@@ -33,39 +19,41 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class ImportOperation extends AuditableEntity {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "user_id", nullable = false)
+	private User user;
 
-    @Column(nullable = false)
-    private String filename;
+	@Column(nullable = false)
+	private String filename;
 
-    @Column(name = "storage_object_key")
-    private String storageObjectKey;
+	@Column(name = "staging_object_key")
+	private String stagingObjectKey;
 
-    @Column(name = "content_type")
-    private String contentType;
+	@Column(name = "storage_object_key")
+	private String storageObjectKey;
 
-    @Column(name = "file_size")
-    private Long fileSize;
+	@Column(name = "content_type")
+	private String contentType;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private ImportStatus status;
+	@Column(name = "file_size")
+	private Long fileSize;
 
-    @Column(name = "created_entities_count")
-    private Integer createdEntitiesCount;
+	@Enumerated(EnumType.STRING)
+	@Column(nullable = false)
+	private ImportStatus status;
 
-    private String errorMessage;
+	@Column(name = "created_entities_count")
+	private Integer createdEntitiesCount;
 
-    @Column(name = "started_at")
-    private LocalDateTime startedAt;
+	private String errorMessage;
 
-    @Column(name = "completed_at")
-    private LocalDateTime completedAt;
+	@Column(name = "started_at")
+	private LocalDateTime startedAt;
 
+	@Column(name = "completed_at")
+	private LocalDateTime completedAt;
 }
