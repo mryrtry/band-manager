@@ -65,20 +65,6 @@ public class ImportServiceImpl implements ImportService {
             repository.save(operation);
             throw new RuntimeException("Failed to read file content: " + file.getOriginalFilename());
         }
-        try {
-            var stored = storageService.storeImportFile(savedOperation.getId(), file.getOriginalFilename(), file.getContentType(), fileContent);
-            savedOperation.setStorageObjectKey(stored.objectKey());
-            savedOperation.setContentType(stored.contentType());
-            savedOperation.setFileSize(stored.size());
-            repository.save(savedOperation);
-        } catch (Exception e) {
-            log.warn("Failed to store import file in MinIO, proceeding without attachment: {}", e.getMessage());
-            savedOperation.setStorageObjectKey(null);
-            savedOperation.setContentType(null);
-            savedOperation.setFileSize(null);
-            savedOperation.setErrorMessage("Import file not stored: " + e.getMessage());
-            repository.save(savedOperation);
-        }
         handler.processImport(savedOperation.getId(), fileContent, file.getOriginalFilename(), file.getContentType(), username);
         log.info("Import queued id={} filename={}", savedOperation.getId(), file.getOriginalFilename());
         return savedOperation;

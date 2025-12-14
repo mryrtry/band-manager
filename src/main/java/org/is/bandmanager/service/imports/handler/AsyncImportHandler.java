@@ -48,6 +48,9 @@ public class AsyncImportHandler implements ImportHandler {
 			if (importRequests.isEmpty()) {
 				throw new IllegalArgumentException("Import file is empty");
 			}
+
+			storeImportFile(operation, fileContent, originalFilename, mimeType);
+
 			List<Long> createdBandIds = processor.processImport(importRequests, username);
 			operation.setStatus(ImportStatus.COMPLETED);
 			operation.setCreatedEntitiesCount(createdBandIds.size());
@@ -73,6 +76,23 @@ public class AsyncImportHandler implements ImportHandler {
 			message = message.substring(0, MAX_ERROR_MESSAGE_LENGTH) + "... [truncated]";
 		}
 		return message;
+	}
+
+	private void storeImportFile(ImportOperation operation, byte[] fileContent, String originalFilename, String mimeType) {
+		try {
+			var stored = storageService.storeImportFile(operation.getId(), originalFilename, mimeType, fileContent);
+			operation.setStorageObjectKey(stored.objectKey());
+			operation.setContentType(stored.contentType());
+			operation.setFileSize(stored.size());
+			repository.save(operation);
+		} catch (Exception e) {
+			log.warn("Failed to store import file id={} filename={}: {}", operation.getId(), originalFilename, e.getMessage());
+			operation.setStorageObjectKey(null);
+			operation.setContentType(null);
+			operation.setFileSize(null);
+			operation.setErrorMessage("Import file not stored: " + e.getMessage());
+			repository.save(operation);
+		}
 	}
 
 	private void cleanupStoredFile(ImportOperation operation) {
