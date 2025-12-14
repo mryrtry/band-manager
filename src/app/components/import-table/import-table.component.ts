@@ -245,7 +245,7 @@ export class ImportTableComponent implements OnInit, OnDestroy {
   }
 
   canDownload(operation: ImportOperation): boolean {
-    return !!operation && !!operation.filename && !!operation.completedAt;
+    return !!operation && !!operation.storageObjectKey && !!operation.completedAt;
   }
 
   // --- Context Menu ---

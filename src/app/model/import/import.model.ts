@@ -1,6 +1,10 @@
 export interface ImportOperation {
   id: number;
   filename: string;
+  storageObjectKey?: string;
+  contentType?: string;
+  fileSize?: number;
+  downloadUrl?: string;
   status: ImportStatus;
   createdEntitiesCount?: number;
   errorMessage?: string;
