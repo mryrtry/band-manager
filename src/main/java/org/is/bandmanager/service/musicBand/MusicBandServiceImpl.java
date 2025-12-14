@@ -1,6 +1,7 @@
 package org.is.bandmanager.service.musicBand;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.is.bandmanager.dto.MusicBandDto;
 import org.is.bandmanager.dto.MusicBandMapper;
 import org.is.bandmanager.dto.request.MusicBandBaseRequest;
@@ -28,7 +29,6 @@ import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.validation.annotation.Validated;
 
 import java.util.Date;
 import java.util.List;
@@ -45,7 +45,7 @@ import static org.is.event.EventType.UPDATED;
 
 
 @Service
-@Validated
+@Slf4j
 @RequiredArgsConstructor
 public class MusicBandServiceImpl implements MusicBandService {
 
@@ -99,10 +99,13 @@ public class MusicBandServiceImpl implements MusicBandService {
 	)
 	@Transactional(isolation = Isolation.SERIALIZABLE)
 	public MusicBandDto create(MusicBandCreateRequest request) {
+		log.info("Creating music band");
+		log.debug("Music band create request: {}", request);
 		MusicBand musicBand = mapper.toEntity(request);
 		handleDependencies(request, musicBand);
 		MusicBandDto createdMusicBand = mapper.toDto(musicBandRepository.save(musicBand));
 		eventPublisher.publishEvent(new EntityEvent<>(CREATED, createdMusicBand));
+		log.info("Created music band id={}", createdMusicBand.getId());
 		return createdMusicBand;
 	}
 
@@ -156,22 +159,27 @@ public class MusicBandServiceImpl implements MusicBandService {
 	)
 	@Transactional(isolation = Isolation.SERIALIZABLE)
 	public MusicBandDto update(Long id, MusicBandUpdateRequest request) {
+		log.info("Updating music band id={}", id);
+		log.debug("Music band update request: {}", request);
 		MusicBand updatingBand = findById(id);
 		mapper.updateEntityFromRequest(request, updatingBand);
 		handleDependencies(request, updatingBand);
 		MusicBandDto updatedBand = mapper.toDto(musicBandRepository.save(updatingBand));
 		eventPublisher.publishEvent(new EntityEvent<>(UPDATED, updatedBand));
+		log.info("Updated music band id={}", id);
 		return updatedBand;
 	}
 
 	@Override
 	@Transactional
 	public MusicBandDto delete(Long id) {
+		log.info("Deleting music band id={}", id);
 		MusicBand musicBand = findById(id);
 		checkDependencies(List.of(musicBand));
 		musicBandRepository.deleteById(id);
 		MusicBandDto deletedBand = mapper.toDto(musicBand);
 		eventPublisher.publishEvent(new EntityEvent<>(DELETED, deletedBand));
+		log.info("Deleted music band id={}", id);
 		return deletedBand;
 	}
 
@@ -181,17 +189,21 @@ public class MusicBandServiceImpl implements MusicBandService {
 		if (ids == null || ids.isEmpty()) {
 			return List.of();
 		}
+		log.info("Bulk deleting music bands count={}", ids.size());
+		log.debug("Music band ids for bulk delete: {}", ids);
 		List<MusicBand> bands = musicBandRepository.findAllById(ids);
 		checkDependencies(bands);
 		musicBandRepository.deleteAll(bands);
 		List<MusicBandDto> deletedBands = bands.stream().map(mapper::toDto).toList();
 		eventPublisher.publishEvent(new EntityEvent<>(BULK_DELETED, deletedBands));
+		log.info("Bulk deleted music bands count={}", deletedBands.size());
 		return deletedBands;
 	}
 
 	@Override
 	@Transactional
 	public MusicBandDto removeParticipant(Long id) {
+		log.info("Removing participant from music band id={}", id);
 		MusicBand musicBand = findById(id);
 		if (musicBand.getNumberOfParticipants() <= 1) {
 			throw new ServiceException(CANNOT_REMOVE_LAST_PARTICIPANT);
@@ -199,6 +211,7 @@ public class MusicBandServiceImpl implements MusicBandService {
 		musicBand.setNumberOfParticipants(musicBand.getNumberOfParticipants() - 1);
 		MusicBandDto updatedBand = mapper.toDto(musicBandRepository.save(musicBand));
 		eventPublisher.publishEvent(new EntityEvent<>(UPDATED, updatedBand));
+		log.info("Removed participant from music band id={}", id);
 		return updatedBand;
 	}
 

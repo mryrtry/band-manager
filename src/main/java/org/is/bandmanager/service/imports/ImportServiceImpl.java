@@ -2,6 +2,7 @@ package org.is.bandmanager.service.imports;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import lombok.extern.slf4j.Slf4j;
 import org.is.auth.model.User;
 import org.is.auth.service.user.UserService;
 import org.is.bandmanager.service.imports.handler.ImportHandler;
@@ -41,6 +42,7 @@ public class ImportServiceImpl implements ImportService {
 		Long userId = userService.getAuthenticatedUser().getId();
 		User user = userService.getEntity(userId);
 		String username =  user.getUsername();
+		log.info("Queueing import for user={} filename={}", username, file.getOriginalFilename());
 		ImportOperation operation = ImportOperation.builder()
 				.user(user)
 				.filename(file.getOriginalFilename())
@@ -59,6 +61,7 @@ public class ImportServiceImpl implements ImportService {
 			throw new RuntimeException("Failed to read file content: " + file.getOriginalFilename());
 		}
 		handler.processImport(savedOperation.getId(), fileContent, file.getOriginalFilename(), file.getContentType(), username);
+		log.info("Import queued id={} filename={}", savedOperation.getId(), file.getOriginalFilename());
 		return savedOperation;
 	}
 

@@ -19,6 +19,7 @@ import org.is.bandmanager.repository.LocationRepository;
 import org.is.bandmanager.repository.MusicBandRepository;
 import org.is.bandmanager.repository.PersonRepository;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
+import org.springframework.dao.PessimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
@@ -48,12 +49,13 @@ public class MusicBandImportProcessor {
 
 	@Transactional(isolation = Isolation.SERIALIZABLE)
 	public List<Long> processImport(List<MusicBandImportRequest> importRequests, String username) {
+		log.info("Processing music band import records={} user={}", importRequests.size(), username);
 		List<Long> createdBandIds = new ArrayList<>();
 		for (int i = 0; i < importRequests.size(); i++) {
 			MusicBandImportRequest request = importRequests.get(i);
 			String validationError = validateImportRequest(request);
 			if (!validationError.isEmpty()) {
-				log.error("Validation failed for record {}: {}", i + 1, validationError);
+				log.warn("Validation failed for record {}: {}", i + 1, validationError);
 				throw new ValidationException("Validation failed for record " + (i + 1) + ": " + validationError); // Исключение для отката транзакции
 			}
 			try {
@@ -62,12 +64,16 @@ public class MusicBandImportProcessor {
 				musicBand.setLastModifiedBy(username);
 				MusicBand savedBand = musicBandRepository.save(musicBand);
 				createdBandIds.add(savedBand.getId());
-				log.debug("Successfully created MusicBand from import request at index {}", i);
+				log.debug("Created music band from import idx={} id={}", i, savedBand.getId());
+			} catch (PessimisticLockingFailureException e) {
+				log.warn("Serialization/deadlock issue at import record {}. Will retry. Cause: {}", i + 1, e.getMessage());
+				throw e;
 			} catch (Exception e) {
 				log.error("Failed to process import request at index {}: {}", i + 1, e.getMessage());
 				throw new RuntimeException("Import failed at record " + (i + 1) + ": " + e.getMessage(), e); // Исключение для отката транзакции
 			}
 		}
+		log.info("Completed music band import created={}", createdBandIds.size());
 		return createdBandIds;
 	}
 
