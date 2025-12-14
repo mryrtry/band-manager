@@ -15,7 +15,6 @@
         </expiry>
         <resources>
             <heap unit="entries">1000</heap>
-            <offheap unit="MB">64</offheap>
         </resources>
     </cache-template>
 
@@ -25,7 +24,6 @@
         </expiry>
         <resources>
             <heap unit="entries">2000</heap>
-            <offheap unit="MB">64</offheap>
         </resources>
     </cache-template>
 
@@ -45,7 +43,6 @@
         </expiry>
         <resources>
             <heap unit="entries">500</heap>
-            <offheap unit="MB">16</offheap>
         </resources>
     </cache>
 
