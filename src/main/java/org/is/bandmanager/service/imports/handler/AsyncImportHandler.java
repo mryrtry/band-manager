@@ -56,6 +56,7 @@ public class AsyncImportHandler implements ImportHandler {
 			operation.setStatus(ImportStatus.FAILED);
 			operation.setErrorMessage(getErrorMessage(e));
 		} finally {
+			operation.setCompletedAt(LocalDateTime.now());
 			repository.save(operation);
 		}
 	}
