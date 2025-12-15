@@ -72,13 +72,13 @@ public class ImportOrchestrator {
 
 				op.setStatus(ImportStatus.PROCESSING);
 				op.setStagingObjectKey(finalStagingKey);
-				repository.save(op);
+				op = repository.save(op);
 
 				List<Long> createdIds = processor.processImport(finalRequests, finalUsername);
 
 				op.setCreatedEntitiesCount(createdIds.size());
 				op.setStatus(ImportStatus.FINALIZING_FILE);
-				repository.save(op);
+				op = repository.save(op);
 
 				return new DbCommitResult(createdIds.size());
 			});
@@ -106,7 +106,7 @@ public class ImportOrchestrator {
 				op2.setStorageObjectKey(finalKey);
 				op2.setStatus(ImportStatus.COMPLETED);
 				op2.setCompletedAt(LocalDateTime.now());
-				repository.save(op2);
+				op2 = repository.save(op2);
 			});
 
 			log.info("Import opId={} completed", operationId);
@@ -146,7 +146,7 @@ public class ImportOrchestrator {
 				op.setErrorMessage(msg);
 				op.setCreatedEntitiesCount(null);
 				op.setCompletedAt(LocalDateTime.now());
-				repository.save(op);
+				op = repository.save(op);
 			});
 		} finally {
 			cleanup(stagingKey);
