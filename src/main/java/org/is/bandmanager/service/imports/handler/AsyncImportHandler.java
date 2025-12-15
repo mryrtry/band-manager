@@ -11,6 +11,7 @@ import org.is.bandmanager.service.imports.parser.FileParserFacade;
 import org.is.bandmanager.service.imports.processor.MusicBandImportProcessor;
 import org.is.bandmanager.service.imports.repository.ImportOperationRepository;
 import org.is.bandmanager.service.storage.ImportStorageService;
+import org.is.bandmanager.service.storage.StorageException;
 import org.is.exception.ServiceException;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
@@ -49,15 +50,18 @@ public class AsyncImportHandler implements ImportHandler {
 			operation.setStatus(ImportStatus.PROCESSING);
 			operation = repository.save(operation);
 
+			// Pre commit: minio
 			stagingKey = storageService.putStaging(
 					operationId,
 					originalFilename,
 					mimeType,
 					fileContent
 			);
+
 			operation.setStagingObjectKey(stagingKey);
 			operation = repository.save(operation);
 
+			// Pre commit: bd
 			List<MusicBandImportRequest> requests =
 					fileParserFacade.parseFile(fileContent, originalFilename, mimeType);
 
@@ -65,30 +69,35 @@ public class AsyncImportHandler implements ImportHandler {
 				throw new IllegalArgumentException("Import file is empty");
 			}
 
+			// Commit: bd
 			List<Long> createdIds = processor.processImport(requests, username);
 
+			// Commit: minio
 			String finalKey = storageService.finalizeFromStaging(
 					stagingKey,
 					operationId,
 					originalFilename
 			);
 
+			// Set success
 			operation.setStorageObjectKey(finalKey);
 			operation.setCreatedEntitiesCount(createdIds.size());
 			operation.setStatus(ImportStatus.COMPLETED);
-
 		} catch (ValidationException e) {
 			operation.setStatus(ImportStatus.VALIDATION_FAILED);
 			operation.setErrorMessage(e.getMessage());
 			operation.setCreatedEntitiesCount(null);
 			cleanup(stagingKey);
-
+		} catch (StorageException e) {
+			operation.setStatus(ImportStatus.FAILED);
+			operation.setErrorMessage("Failed to store import file %s".formatted(originalFilename));
+			operation.setCreatedEntitiesCount(null);
+			cleanup(stagingKey);
 		} catch (Exception e) {
 			operation.setStatus(ImportStatus.FAILED);
 			operation.setErrorMessage("Import failed for file %s".formatted(originalFilename));
 			operation.setCreatedEntitiesCount(null);
 			cleanup(stagingKey);
-
 		} finally {
 			operation.setCompletedAt(LocalDateTime.now());
 			repository.save(operation);
