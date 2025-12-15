@@ -25,7 +25,6 @@ public class CacheStatisticsLoggingAspect {
 
     @Pointcut("execution(* org.is..repository..*(..))")
     public void repositoryLayer() {
-        // pointcut marker
     }
 
     @Around("repositoryLayer()")

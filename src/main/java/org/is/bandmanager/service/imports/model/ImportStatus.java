@@ -5,5 +5,6 @@ public enum ImportStatus {
     PROCESSING,
     COMPLETED,
     FAILED,
-    VALIDATION_FAILED
+	FINALIZING_FILE,
+	VALIDATION_FAILED
 }

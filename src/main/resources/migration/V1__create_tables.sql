@@ -132,7 +132,7 @@ CREATE TABLE import_operations
     filename               VARCHAR(255)             NOT NULL,
     status                 VARCHAR(50)              NOT NULL CHECK (status IN
                                                                     ('PENDING', 'PROCESSING', 'COMPLETED', 'FAILED',
-                                                                     'VALIDATION_FAILED')),
+                                                                     'VALIDATION_FAILED', 'FINALIZING_FILE')),
     created_entities_count INTEGER                  DEFAULT 0,
     error_message          TEXT,
     started_at             TIMESTAMP WITH TIME ZONE NOT NULL,

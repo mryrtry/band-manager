@@ -34,10 +34,10 @@ public class JsonFileParser implements FileParser {
 			return result;
 		} catch (JsonProcessingException e) {
 			log.warn("JSON parsing failed for file: {}", originalFilename);
-			throw new RuntimeException("JSON parsing failed: " + e.getMessage(), e);
+			throw new RuntimeException("JSON parsing failed: " + e.getMessage());
 		} catch (IOException e) {
 			log.warn("Failed to read or parse file: {}", originalFilename);
-			throw new RuntimeException("Failed to read or parse JSON file: " + e.getMessage(), e);
+			throw new RuntimeException("Failed to read or parse JSON file: " + e.getMessage());
 		}
 	}
 
